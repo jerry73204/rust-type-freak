@@ -7,7 +7,7 @@ description = "Collection of typed data structures, trait operators and aliases"
 repository = "https://github.com/jerry73204/rust-type-freak"
 homepage = "https://github.com/jerry73204/rust-type-freak"
 readme = "README.md"
-license-file = "LICENSE"
+license-file = "LICENSE.md"
 
 [dependencies]
 typenum = "*"
