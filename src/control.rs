@@ -1,8 +1,5 @@
-use crate::{
-    boolean::{Boolean, False, True},
-    tuple::SecondOfOut,
-};
-use typenum::{IsEqual, IsGreater, IsGreaterOrEqual, IsLess, IsLessOrEqual};
+use crate::{boolean::Boolean, tuple::SecondOfOut};
+use typenum::{False, IsEqual, IsGreater, IsGreaterOrEqual, IsLess, IsLessOrEqual, True};
 
 // if
 

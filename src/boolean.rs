@@ -1,4 +1,4 @@
-use typenum::{B0, B1};
+use typenum::{False, True};
 
 // boolean type def
 
@@ -7,15 +7,9 @@ pub trait Boolean {
     const BOOL: bool;
 }
 
-/// An alias of [typenum::B0].
-pub type False = B0;
-
 impl Boolean for False {
     const BOOL: bool = false;
 }
-
-/// An alias of [typenum::B1].
-pub type True = B1;
 
 impl Boolean for True {
     const BOOL: bool = true;
