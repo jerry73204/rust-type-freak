@@ -24,4 +24,4 @@ type-freak = { git = "https://github.com/jerry73204/rust-type-freak.git", branch
 
 ## License
 
-[MIT License](LICENSE)
+The project licensed under [MIT](LICENSE-MIT) or [Apache 2.0](LICENSE-APACHE). Pick the one that suits you.
