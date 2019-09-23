@@ -172,3 +172,58 @@ where
 {
     type Output = IfPredicateOutput<Output, Eq<Lhs, Rhs>>;
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use typenum::{consts::*, Le, Unsigned};
+
+    type Assert1 = IfOutput<U3, ()>;
+    type Assert2 = IfSameOutput<(), u8, u8>;
+    type Assert3 = IfPredicateOutput<(), Le<U3, U4>>;
+    type Assert4 = IfElsePredicateOutput<True, False, Le<U3, U4>>;
+
+    type Assert5 = IfLessOutput<(), U6, U9>;
+
+    type Assert6 = IfLessOrEqualOutput<(), U6, U6>;
+    type Assert7 = IfLessOrEqualOutput<(), U6, U7>;
+
+    type Assert8 = IfGreaterOutput<(), U7, U4>;
+
+    type Assert9 = IfGreaterOrEqualOutput<(), U7, U4>;
+    type Assert10 = IfGreaterOrEqualOutput<(), U7, U7>;
+
+    type Assert11 = IfEqualOutput<(), Z0, Z0>;
+
+    #[test]
+    fn control_test() {
+        // if constructed
+        assert_eq!(3, Assert1::USIZE);
+
+        // if type equivalence
+        let _: Assert2 = ();
+
+        // if predicate
+        let _: Assert3 = ();
+
+        // if else predicate
+        assert!(Assert4::BOOL);
+
+        // if less than
+        let _: Assert5 = ();
+
+        // if less than or equal
+        let _: Assert6 = ();
+        let _: Assert7 = ();
+
+        // if greater than
+        let _: Assert8 = ();
+
+        // if greater than or equal
+        let _: Assert9 = ();
+        let _: Assert10 = ();
+
+        // if equal
+        let _: Assert11 = ();
+    }
+}
