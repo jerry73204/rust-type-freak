@@ -17,6 +17,19 @@ impl<Cond, Output> If<Cond> for Output {
     type Out = SecondOfOut<(Cond, Output)>;
 }
 
+// if type equivalence
+
+/// A type operator that checks you both types are equivalent.
+pub trait IfSame<Lhs, Rhs> {
+    type Out;
+}
+
+pub type IfSameOut<Out, Lhs, Rhs> = <Out as IfSame<Lhs, Rhs>>::Out;
+
+impl<Same, Output> IfSame<Same, Same> for Output {
+    type Out = Output;
+}
+
 // if predicate
 
 /// A type operator that checks if condition is [True](crate::boolean::True).
