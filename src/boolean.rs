@@ -15,6 +15,36 @@ impl Boolean for True {
     const BOOL: bool = true;
 }
 
+// assert true
+
+pub trait AssertTrue
+where
+    Self: Boolean,
+{
+    type Output;
+}
+
+pub type AssertTrueOutput<Input> = <Input as AssertTrue>::Output;
+
+impl AssertTrue for True {
+    type Output = ();
+}
+
+// assert false
+
+pub trait AssertFalse
+where
+    Self: Boolean,
+{
+    type Output;
+}
+
+pub type AssertFalseOutput<Input> = <Input as AssertFalse>::Output;
+
+impl AssertFalse for False {
+    type Output = ();
+}
+
 // and op
 
 /// A type operator that joins two [Boolean] types.
