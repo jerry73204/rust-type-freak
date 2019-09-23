@@ -1,3 +1,7 @@
+mod reduction;
+
+pub use reduction::*;
+
 use crate::counter::{Counter, Current, Next};
 use std::{marker::PhantomData, ops::Add};
 use typenum::{Sum, Unsigned, U0, U1};
