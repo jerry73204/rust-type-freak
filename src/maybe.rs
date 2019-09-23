@@ -21,7 +21,7 @@ impl Maybe for Nothing {}
 
 // unwrap op
 
-/// A trait operator that unwraps [Just<T>](Just).
+/// A type operator that unwraps [Just<T>](Just).
 pub trait Unwrap
 where
     Self: Maybe,

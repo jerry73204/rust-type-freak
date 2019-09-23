@@ -17,7 +17,7 @@ impl Boolean for True {
 
 // and op
 
-/// A trait operator that joins two [Boolean] types.
+/// A type operator that joins two [Boolean] types.
 pub trait And<Rhs>
 where
     Self: Boolean,
@@ -46,7 +46,7 @@ impl And<False> for False {
 
 // or op
 
-/// A trait operator that meets two [Boolean] types.
+/// A type operator that meets two [Boolean] types.
 pub trait Or<Rhs>
 where
     Self: Boolean,
@@ -75,7 +75,7 @@ impl Or<False> for False {
 
 // not op
 
-/// A trait operator that inverts [Boolean] types.
+/// A type operator that inverts [Boolean] types.
 pub trait Not
 where
     Self: Boolean,
@@ -96,7 +96,7 @@ impl Not for False {
 
 // xor op
 
-/// A trait operator that takes exclusive-or of two [Boolean] types.
+/// A type operator that takes exclusive-or of two [Boolean] types.
 pub trait Xor<Rhs>
 where
     Self: Boolean,
@@ -125,7 +125,7 @@ impl Xor<False> for False {
 
 // iff op
 
-/// A trait operator that checks if two [Boolean] types are equal.
+/// A type operator that checks if two [Boolean] types are equal.
 pub trait Iff<Rhs>
 where
     Self: Boolean,

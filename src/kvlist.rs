@@ -50,7 +50,7 @@ impl<Key, Value, Tail> NonEmptyKVList for KVCons<Key, Value, Tail> where Tail: K
 
 // length of list
 
-/// A trait operator that gets length of [KVList].
+/// A type operator that gets length of [KVList].
 pub trait KVLength
 where
     Self: KVList,
@@ -76,7 +76,7 @@ pub type KVLengthOut<KVist> = <KVist as KVLength>::Out;
 
 // prepend
 
-/// A trait operator that prepends a key-value pair to [KVList].
+/// A type operator that prepends a key-value pair to [KVList].
 pub trait KVPrepend<Key, Value>
 where
     Self: KVList,
@@ -95,7 +95,7 @@ pub type KVPrependOut<KVist, Key, Value> = <KVist as KVPrepend<Key, Value>>::Out
 
 // append
 
-/// A trait operator that appends a key-value pair to [KVList].
+/// A type operator that appends a key-value pair to [KVList].
 pub trait KVAppend<Key, Value>
 where
     Self: KVList,
@@ -120,7 +120,7 @@ pub type KVAppendOut<KVist, NewKey, NewValue> = <KVist as KVAppend<NewKey, NewVa
 
 // insert at
 
-/// A trait operator that inserts a key-value pair into [KVList] at specific key.
+/// A type operator that inserts a key-value pair into [KVList] at specific key.
 pub trait KVInsertAt<Key, Value, Target, Index>
 where
     Index: Counter,

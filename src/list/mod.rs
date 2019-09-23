@@ -383,7 +383,7 @@ pub type LConcatOut<Lhs, Rhs> = <Lhs as LConcat<Rhs>>::Out;
 // insert if not exist
 // TODO test
 
-/// A trait operator that inserts a new item if not existing in the list.
+/// A type operator that inserts a new item if not existing in the list.
 pub trait LInsertIfNotExist<Target, Index>
 where
     Index: Counter,

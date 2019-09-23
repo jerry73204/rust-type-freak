@@ -1,6 +1,6 @@
 // first type of pair
 
-/// A trait operator that takes first type of tuple.
+/// A type operator that takes first type of tuple.
 pub trait FirstOf {
     type Out;
 }
@@ -29,7 +29,7 @@ impl<A, B, C, D, E> FirstOf for (A, B, C, D, E) {
 
 // second type of pair
 
-/// A trait operator that takes second type of tuple.
+/// A type operator that takes second type of tuple.
 pub trait SecondOf {
     type Out;
 }
@@ -54,7 +54,7 @@ impl<A, B, C, D, E> SecondOf for (A, B, C, D, E) {
 
 // thirt type of pair
 
-/// A trait operator that takes third type of tuple.
+/// A type operator that takes third type of tuple.
 pub trait ThirdOf {
     type Out;
 }

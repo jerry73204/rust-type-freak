@@ -3,7 +3,7 @@ use typenum::{False, IsEqual, IsGreater, IsGreaterOrEqual, IsLess, IsLessOrEqual
 
 // if
 
-/// A trait operator that checks if type can be constructed.
+/// A type operator that checks if type can be constructed.
 pub trait If<Cond> {
     type Out;
 }
@@ -16,7 +16,7 @@ impl<Cond, Output> If<Cond> for Output {
 
 // if predicate
 
-/// A trait operator that checks if condition is [True](crate::boolean::True).
+/// A type operator that checks if condition is [True](crate::boolean::True).
 pub trait IfPredicate<Cond>
 where
     Cond: Boolean,
@@ -32,7 +32,7 @@ impl<Output> IfPredicate<True> for Output {
 
 // if-else predicate
 
-/// A trait operator that returns output depending [Boolean](crate::boolean::Boolean) condition.
+/// A type operator that returns output depending [Boolean](crate::boolean::Boolean) condition.
 pub trait IfElsePredicate<Cond>
 where
     Cond: Boolean,
@@ -53,7 +53,7 @@ impl<TrueOut, FalseOut> IfElsePredicate<False> for (TrueOut, FalseOut) {
 
 // if not predicate
 
-/// A trait operator that checks if condition is [False](crate::boolean::False).
+/// A type operator that checks if condition is [False](crate::boolean::False).
 pub trait IfNotPredicate<Cond>
 where
     Cond: Boolean,
@@ -69,7 +69,7 @@ impl<Output> IfNotPredicate<False> for Output {
 
 // if less than
 
-/// A trait operator that checks if left-hand-site is less than right-hand-side.
+/// A type operator that checks if left-hand-site is less than right-hand-side.
 pub trait IfLess<Lhs, Rhs>
 where
     Lhs: IsLess<Rhs>,
@@ -88,7 +88,7 @@ where
 
 // if less than or equal
 
-/// A trait operator that checks if left-hand-site is less than or equals to right-hand-side.
+/// A type operator that checks if left-hand-site is less than or equals to right-hand-side.
 pub trait IfLessOrEqual<Lhs, Rhs>
 where
     Lhs: IsLessOrEqual<Rhs>,
@@ -107,7 +107,7 @@ where
 
 // if greater than
 
-/// A trait operator that checks if left-hand-site is greater than right-hand-side.
+/// A type operator that checks if left-hand-site is greater than right-hand-side.
 pub trait IfGreater<Lhs, Rhs>
 where
     Lhs: IsGreater<Rhs>,
@@ -126,7 +126,7 @@ where
 
 // if greater than or equal
 
-/// A trait operator that checks if left-hand-site is greater than or equals to right-hand-side.
+/// A type operator that checks if left-hand-site is greater than or equals to right-hand-side.
 pub trait IfGreaterOrEqual<Lhs, Rhs>
 where
     Lhs: IsGreaterOrEqual<Rhs>,
@@ -145,7 +145,7 @@ where
 
 // if equal
 
-/// A trait operator that checks if left-hand-site equals to right-hand-side.
+/// A type operator that checks if left-hand-site equals to right-hand-side.
 pub trait IfEqual<Lhs, Rhs>
 where
     Lhs: IsEqual<Rhs>,

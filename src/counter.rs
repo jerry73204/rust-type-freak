@@ -3,7 +3,7 @@ use typenum::{Sum, Unsigned, U0, U1};
 
 /// A trait that counts the number of steps.
 ///
-/// It is useful for contructing recursive trait operators.
+/// It is useful for contructing recursive type operators.
 /// [Current] can indicate the termination point of recursion,
 /// while [Next] indicates a recursion step before termination.
 pub trait Counter {}
