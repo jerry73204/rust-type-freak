@@ -1,4 +1,4 @@
-use crate::{boolean::Boolean, tuple::SecondOfOutput};
+use crate::{boolean::Boolean, tuple::FirstOfOutput};
 use typenum::{
     Eq, False, Gr, GrEq, IsEqual, IsGreater, IsGreaterOrEqual, IsLess, IsLessOrEqual, Le, LeEq,
     True,
@@ -6,16 +6,8 @@ use typenum::{
 
 // if
 
-/// A type operator that checks if type can be constructed.
-pub trait If<Cond> {
-    type Output;
-}
-
-pub type IfOutput<Output, Cond> = <Output as If<Cond>>::Output;
-
-impl<Cond, Output> If<Cond> for Output {
-    type Output = SecondOfOutput<(Cond, Output)>;
-}
+/// A type alias that checks if type can be constructed.
+pub type IfOutput<Output, Cond> = FirstOfOutput<(Output, Cond)>;
 
 // if type equivalence
 
