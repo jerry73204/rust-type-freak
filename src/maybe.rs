@@ -26,11 +26,11 @@ pub trait Unwrap
 where
     Self: Maybe,
 {
-    type Out;
+    type Output;
 }
 
 impl<T> Unwrap for Just<T> {
-    type Out = T;
+    type Output = T;
 }
 
-pub type UnwrapOut<T> = <T as Unwrap>::Out;
+pub type UnwrapOutput<T> = <T as Unwrap>::Output;

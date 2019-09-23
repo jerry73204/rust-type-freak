@@ -1,6 +1,6 @@
 use crate::{
     counter::{Counter, Current, Next},
-    kvlist::{KVGetOrDefaultValue, KVGetOrDefaultValueOut, KVList},
+    kvlist::{KVGetOrDefaultValue, KVGetOrDefaultValueOutput, KVList},
 };
 use std::{
     marker::PhantomData,
@@ -69,7 +69,7 @@ where
 //     RVar: Variable,
 //     RCoefs: KVList,
 // {
-//     type Output = KVGetOrDefaultValueOut<RCoefs, Z0, ConstantTerm<Z0>, Index>;
+//     type Output = KVGetOrDefaultValueOutput<RCoefs, Z0, ConstantTerm<Z0>, Index>;
 
 //     fn add(self, _rhs: ConstantTerm<RValue>) -> Self::Output {
 //         Self::Output::new()
@@ -83,9 +83,9 @@ where
     Var: Variable,
     Remain: Polynomial,
     Self: Polynomial,
-    Self::Out: Polynomial,
+    Self::Output: Polynomial,
 {
-    type Out;
+    type Output;
 }
 
 impl<Var, Remain, Value> ToMajorVariable<Var, Remain> for ConstantTerm<Value>
@@ -93,7 +93,7 @@ where
     Var: Variable,
     Remain: Polynomial,
 {
-    type Out = Self;
+    type Output = Self;
 }
 
 impl<Var, Remain, Coefs> ToMajorVariable<Var, Remain> for Nomial<Var, Coefs>
@@ -102,7 +102,7 @@ where
     Remain: Polynomial,
     Coefs: KVList,
 {
-    type Out = Self;
+    type Output = Self;
 }
 
-pub type ToMajorVariableOut<Poly, Var, Remain> = <Poly as ToMajorVariable<Var, Remain>>::Out;
+pub type ToMajorVariableOutput<Poly, Var, Remain> = <Poly as ToMajorVariable<Var, Remain>>::Output;

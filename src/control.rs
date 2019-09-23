@@ -1,4 +1,4 @@
-use crate::{boolean::Boolean, tuple::SecondOfOut};
+use crate::{boolean::Boolean, tuple::SecondOfOutput};
 use typenum::{
     Eq, False, Gr, GrEq, IsEqual, IsGreater, IsGreaterOrEqual, IsLess, IsLessOrEqual, Le, LeEq,
     True,
@@ -8,26 +8,26 @@ use typenum::{
 
 /// A type operator that checks if type can be constructed.
 pub trait If<Cond> {
-    type Out;
+    type Output;
 }
 
-pub type IfOut<Out, Cond> = <Out as If<Cond>>::Out;
+pub type IfOutput<Output, Cond> = <Output as If<Cond>>::Output;
 
 impl<Cond, Output> If<Cond> for Output {
-    type Out = SecondOfOut<(Cond, Output)>;
+    type Output = SecondOfOutput<(Cond, Output)>;
 }
 
 // if type equivalence
 
 /// A type operator that checks you both types are equivalent.
 pub trait IfSame<Lhs, Rhs> {
-    type Out;
+    type Output;
 }
 
-pub type IfSameOut<Out, Lhs, Rhs> = <Out as IfSame<Lhs, Rhs>>::Out;
+pub type IfSameOutput<Output, Lhs, Rhs> = <Output as IfSame<Lhs, Rhs>>::Output;
 
 impl<Same, Output> IfSame<Same, Same> for Output {
-    type Out = Output;
+    type Output = Output;
 }
 
 // if predicate
@@ -37,13 +37,13 @@ pub trait IfPredicate<Cond>
 where
     Cond: Boolean,
 {
-    type Out;
+    type Output;
 }
 
-pub type IfPredicateOut<Out, Cond> = <Out as IfPredicate<Cond>>::Out;
+pub type IfPredicateOutput<Output, Cond> = <Output as IfPredicate<Cond>>::Output;
 
 impl<Output> IfPredicate<True> for Output {
-    type Out = Output;
+    type Output = Output;
 }
 
 // if-else predicate
@@ -53,18 +53,18 @@ pub trait IfElsePredicate<Cond>
 where
     Cond: Boolean,
 {
-    type Out;
+    type Output;
 }
 
-pub type IfElsePredicateOut<TrueOut, FalseOut, Cond> =
-    <(TrueOut, FalseOut) as IfElsePredicate<Cond>>::Out;
+pub type IfElsePredicateOutput<TrueOutput, FalseOutput, Cond> =
+    <(TrueOutput, FalseOutput) as IfElsePredicate<Cond>>::Output;
 
-impl<TrueOut, FalseOut> IfElsePredicate<True> for (TrueOut, FalseOut) {
-    type Out = TrueOut;
+impl<TrueOutput, FalseOutput> IfElsePredicate<True> for (TrueOutput, FalseOutput) {
+    type Output = TrueOutput;
 }
 
-impl<TrueOut, FalseOut> IfElsePredicate<False> for (TrueOut, FalseOut) {
-    type Out = FalseOut;
+impl<TrueOutput, FalseOutput> IfElsePredicate<False> for (TrueOutput, FalseOutput) {
+    type Output = FalseOutput;
 }
 
 // if not predicate
@@ -74,23 +74,23 @@ pub trait IfNotPredicate<Cond>
 where
     Cond: Boolean,
 {
-    type Out;
+    type Output;
 }
 
-pub type IfNotPredicateOut<Out, Cond> = <Out as IfPredicate<Cond>>::Out;
+pub type IfNotPredicateOutput<Output, Cond> = <Output as IfPredicate<Cond>>::Output;
 
 impl<Output> IfNotPredicate<False> for Output {
-    type Out = Output;
+    type Output = Output;
 }
 
 // if less than
 
 /// A type operator that checks if left-hand-site is less than right-hand-side.
 pub trait IfLess<Lhs, Rhs> {
-    type Out;
+    type Output;
 }
 
-pub type IfLessOut<Out, Lhs, Rhs> = <Out as IfLess<Lhs, Rhs>>::Out;
+pub type IfLessOutput<Output, Lhs, Rhs> = <Output as IfLess<Lhs, Rhs>>::Output;
 
 impl<Lhs, Rhs, Output> IfLess<Lhs, Rhs> for Output
 where
@@ -98,17 +98,17 @@ where
     Output: IfPredicate<Le<Lhs, Rhs>>,
     Le<Lhs, Rhs>: Boolean,
 {
-    type Out = IfPredicateOut<Output, Le<Lhs, Rhs>>;
+    type Output = IfPredicateOutput<Output, Le<Lhs, Rhs>>;
 }
 
 // if less than or equal
 
 /// A type operator that checks if left-hand-site is less than or equals to right-hand-side.
 pub trait IfLessOrEqual<Lhs, Rhs> {
-    type Out;
+    type Output;
 }
 
-pub type IfLessOrEqualOut<Out, Lhs, Rhs> = <Out as IfLessOrEqual<Lhs, Rhs>>::Out;
+pub type IfLessOrEqualOutput<Output, Lhs, Rhs> = <Output as IfLessOrEqual<Lhs, Rhs>>::Output;
 
 impl<Lhs, Rhs, Output> IfLessOrEqual<Lhs, Rhs> for Output
 where
@@ -116,17 +116,17 @@ where
     Output: IfPredicate<LeEq<Lhs, Rhs>>,
     LeEq<Lhs, Rhs>: Boolean,
 {
-    type Out = IfPredicateOut<Output, LeEq<Lhs, Rhs>>;
+    type Output = IfPredicateOutput<Output, LeEq<Lhs, Rhs>>;
 }
 
 // if greater than
 
 /// A type operator that checks if left-hand-site is greater than right-hand-side.
 pub trait IfGreater<Lhs, Rhs> {
-    type Out;
+    type Output;
 }
 
-pub type IfGreaterOut<Out, Lhs, Rhs> = <Out as IfGreater<Lhs, Rhs>>::Out;
+pub type IfGreaterOutput<Output, Lhs, Rhs> = <Output as IfGreater<Lhs, Rhs>>::Output;
 
 impl<Lhs, Rhs, Output> IfGreater<Lhs, Rhs> for Output
 where
@@ -134,17 +134,17 @@ where
     Output: IfPredicate<Gr<Lhs, Rhs>>,
     Gr<Lhs, Rhs>: Boolean,
 {
-    type Out = IfPredicateOut<Output, Gr<Lhs, Rhs>>;
+    type Output = IfPredicateOutput<Output, Gr<Lhs, Rhs>>;
 }
 
 // if greater than or equal
 
 /// A type operator that checks if left-hand-site is greater than or equals to right-hand-side.
 pub trait IfGreaterOrEqual<Lhs, Rhs> {
-    type Out;
+    type Output;
 }
 
-pub type IfGreaterOrEqualOut<Out, Lhs, Rhs> = <Out as IfGreaterOrEqual<Lhs, Rhs>>::Out;
+pub type IfGreaterOrEqualOutput<Output, Lhs, Rhs> = <Output as IfGreaterOrEqual<Lhs, Rhs>>::Output;
 
 impl<Lhs, Rhs, Output> IfGreaterOrEqual<Lhs, Rhs> for Output
 where
@@ -152,17 +152,17 @@ where
     Output: IfPredicate<GrEq<Lhs, Rhs>>,
     GrEq<Lhs, Rhs>: Boolean,
 {
-    type Out = IfPredicateOut<Output, GrEq<Lhs, Rhs>>;
+    type Output = IfPredicateOutput<Output, GrEq<Lhs, Rhs>>;
 }
 
 // if equal
 
 /// A type operator that checks if left-hand-site equals to right-hand-side.
 pub trait IfEqual<Lhs, Rhs> {
-    type Out;
+    type Output;
 }
 
-pub type IfEqualOut<Out, Lhs, Rhs> = <Out as IfEqual<Lhs, Rhs>>::Out;
+pub type IfEqualOutput<Output, Lhs, Rhs> = <Output as IfEqual<Lhs, Rhs>>::Output;
 
 impl<Lhs, Rhs, Output> IfEqual<Lhs, Rhs> for Output
 where
@@ -170,5 +170,5 @@ where
     Output: IfPredicate<Eq<Lhs, Rhs>>,
     Eq<Lhs, Rhs>: Boolean,
 {
-    type Out = IfPredicateOut<Output, Eq<Lhs, Rhs>>;
+    type Output = IfPredicateOutput<Output, Eq<Lhs, Rhs>>;
 }

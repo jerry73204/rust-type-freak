@@ -21,19 +21,19 @@
 //     Rhs: Monoid,
 //     Kind: ComposeKind,
 //     Self: Monoid,
-//     Self::Out: Monoid,
+//     Self::Output: <Monoid,
 // {
-//     type Out;
+//     type Output;
 // }
 
-// pub type ComposeOut<Lhs, Rhs, Kind> = <Lhs as Compose<Rhs, Kind>>::Out;
+// pub type ComposeOutput<Lhs, Rhs, Kind> = <Lhs as Compose<Rhs, Kind>>::Output;
 
 // impl<Lhs, Rhs> Compose<Rhs, LeftIdentity> for Lhs
 // where
 //     Lhs: Identity,
 //     Rhs: Monoid,
 // {
-//     type Out = Rhs;
+//     type Output = Rhs;
 // }
 
 // impl<Lhs, Rhs> Compose<Rhs, RightIdentity> for Lhs
@@ -41,7 +41,7 @@
 //     Lhs: Monoid,
 //     Rhs: Identity,
 // {
-//     type Out = Lhs;
+//     type Output = Lhs;
 // }
 
 // impl<Lhs, Rhs> Compose<Rhs, BothIdentity> for Lhs
@@ -49,7 +49,7 @@
 //     Lhs: Identity,
 //     Rhs: Identity,
 // {
-//     type Out = Lhs;
+//     type Output = Lhs;
 // }
 
 // #[cfg(test)]
@@ -83,10 +83,10 @@
 //     impl Monoid for E {}
 //     impl Identity for E {}
 
-//     type X<Kind> = ComposeOut<A, E, Kind>;
-//     type Y<Kind> = ComposeOut<E, B, Kind>;
-//     type Z<Kind> = ComposeOut<E, E, Kind>;
-//     type W<Kind> = ComposeOut<A, B, Kind>;
+//     type X<Kind> = ComposeOutput<A, E, Kind>;
+//     type Y<Kind> = ComposeOutput<E, B, Kind>;
+//     type Z<Kind> = ComposeOutput<E, E, Kind>;
+//     type W<Kind> = ComposeOutput<A, B, Kind>;
 
 //     #[test]
 //     fn monoid_test() {

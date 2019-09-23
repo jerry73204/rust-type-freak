@@ -25,22 +25,22 @@ impl Counter for Current {}
 
 pub trait Count
 where
-    Self::Out: Unsigned,
+    Self::Output: Unsigned,
 {
-    type Out;
+    type Output;
 }
 
 impl Count for Current {
-    type Out = U0;
+    type Output = U0;
 }
 
 impl<Cnt> Count for Next<Cnt>
 where
     Cnt: Counter + Count,
-    CountOut<Cnt>: Add<U1>,
-    Sum<CountOut<Cnt>, U1>: Unsigned,
+    CountOutput<Cnt>: Add<U1>,
+    Sum<CountOutput<Cnt>, U1>: Unsigned,
 {
-    type Out = Sum<CountOut<Cnt>, U1>;
+    type Output = Sum<CountOutput<Cnt>, U1>;
 }
 
-pub type CountOut<Cnt> = <Cnt as Count>::Out;
+pub type CountOutput<Cnt> = <Cnt as Count>::Output;

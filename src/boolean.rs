@@ -21,27 +21,27 @@ impl Boolean for True {
 pub trait And<Rhs>
 where
     Self: Boolean,
-    Self::Out: Boolean,
+    Self::Output: Boolean,
 {
-    type Out;
+    type Output;
 }
 
-pub type AndOut<Lhs, Rhs> = <Lhs as And<Rhs>>::Out;
+pub type AndOutput<Lhs, Rhs> = <Lhs as And<Rhs>>::Output;
 
 impl And<True> for True {
-    type Out = True;
+    type Output = True;
 }
 
 impl And<True> for False {
-    type Out = False;
+    type Output = False;
 }
 
 impl And<False> for True {
-    type Out = False;
+    type Output = False;
 }
 
 impl And<False> for False {
-    type Out = False;
+    type Output = False;
 }
 
 // or op
@@ -50,27 +50,27 @@ impl And<False> for False {
 pub trait Or<Rhs>
 where
     Self: Boolean,
-    Self::Out: Boolean,
+    Self::Output: Boolean,
 {
-    type Out;
+    type Output;
 }
 
-pub type OrOut<Lhs, Rhs> = <Lhs as Or<Rhs>>::Out;
+pub type OrOutput<Lhs, Rhs> = <Lhs as Or<Rhs>>::Output;
 
 impl Or<True> for True {
-    type Out = True;
+    type Output = True;
 }
 
 impl Or<True> for False {
-    type Out = True;
+    type Output = True;
 }
 
 impl Or<False> for True {
-    type Out = True;
+    type Output = True;
 }
 
 impl Or<False> for False {
-    type Out = False;
+    type Output = False;
 }
 
 // not op
@@ -79,19 +79,19 @@ impl Or<False> for False {
 pub trait Not
 where
     Self: Boolean,
-    Self::Out: Boolean,
+    Self::Output: Boolean,
 {
-    type Out;
+    type Output;
 }
 
-pub type NotOut<In> = <In as Not>::Out;
+pub type NotOutput<In> = <In as Not>::Output;
 
 impl Not for True {
-    type Out = False;
+    type Output = False;
 }
 
 impl Not for False {
-    type Out = True;
+    type Output = True;
 }
 
 // xor op
@@ -100,27 +100,27 @@ impl Not for False {
 pub trait Xor<Rhs>
 where
     Self: Boolean,
-    Self::Out: Boolean,
+    Self::Output: Boolean,
 {
-    type Out;
+    type Output;
 }
 
-pub type XorOut<Lhs, Rhs> = <Lhs as Xor<Rhs>>::Out;
+pub type XorOutput<Lhs, Rhs> = <Lhs as Xor<Rhs>>::Output;
 
 impl Xor<True> for True {
-    type Out = False;
+    type Output = False;
 }
 
 impl Xor<True> for False {
-    type Out = True;
+    type Output = True;
 }
 
 impl Xor<False> for True {
-    type Out = True;
+    type Output = True;
 }
 
 impl Xor<False> for False {
-    type Out = False;
+    type Output = False;
 }
 
 // iff op
@@ -129,25 +129,25 @@ impl Xor<False> for False {
 pub trait Iff<Rhs>
 where
     Self: Boolean,
-    Self::Out: Boolean,
+    Self::Output: Boolean,
 {
-    type Out;
+    type Output;
 }
 
-pub type IffOut<Lhs, Rhs> = <Lhs as Iff<Rhs>>::Out;
+pub type IffOutput<Lhs, Rhs> = <Lhs as Iff<Rhs>>::Output;
 
 impl Iff<True> for True {
-    type Out = True;
+    type Output = True;
 }
 
 impl Iff<True> for False {
-    type Out = False;
+    type Output = False;
 }
 
 impl Iff<False> for True {
-    type Out = False;
+    type Output = False;
 }
 
 impl Iff<False> for False {
-    type Out = True;
+    type Output = True;
 }

@@ -39,25 +39,25 @@ impl TList for LNil {}
 pub trait LLength
 where
     Self: TList,
-    Self::Out: Unsigned,
+    Self::Output: Unsigned,
 {
-    type Out;
+    type Output;
 }
 
 impl LLength for LNil {
-    type Out = U0;
+    type Output = U0;
 }
 
 impl<Head, Tail> LLength for LCons<Head, Tail>
 where
     Tail: TList + LLength,
-    LLengthOut<Tail>: Add<U1>,
-    Sum<LLengthOut<Tail>, U1>: Unsigned,
+    LLengthOutput<Tail>: Add<U1>,
+    Sum<LLengthOutput<Tail>, U1>: Unsigned,
 {
-    type Out = Sum<LLengthOut<Tail>, U1>;
+    type Output = Sum<LLengthOutput<Tail>, U1>;
 }
 
-pub type LLengthOut<List> = <List as LLength>::Out;
+pub type LLengthOutput<List> = <List as LLength>::Output;
 
 // {,non-}empty list trait
 
@@ -75,40 +75,40 @@ pub trait LPrepend<Head>
 where
     Self: TList,
 {
-    type Out;
+    type Output;
 }
 
 impl<Item, List> LPrepend<Item> for List
 where
     List: TList,
 {
-    type Out = LCons<Item, List>;
+    type Output = LCons<Item, List>;
 }
 
-pub type LPrependOut<List, Item> = <List as LPrepend<Item>>::Out;
+pub type LPrependOutput<List, Item> = <List as LPrepend<Item>>::Output;
 
 // append
 
 pub trait LAppend<Item>
 where
     Self: TList,
-    Self::Out: TList,
+    Self::Output: TList,
 {
-    type Out;
+    type Output;
 }
 
 impl<Item> LAppend<Item> for LNil {
-    type Out = LCons<Item, LNil>;
+    type Output = LCons<Item, LNil>;
 }
 
 impl<Item, Head, Tail> LAppend<Item> for LCons<Head, Tail>
 where
     Tail: TList + LAppend<Item>,
 {
-    type Out = LCons<Head, LAppendOut<Tail, Item>>;
+    type Output = LCons<Head, LAppendOutput<Tail, Item>>;
 }
 
-pub type LAppendOut<List, Item> = <List as LAppend<Item>>::Out;
+pub type LAppendOutput<List, Item> = <List as LAppend<Item>>::Output;
 
 // insert at
 
@@ -116,16 +116,16 @@ pub trait LInsertAt<Item, Target, Index>
 where
     Index: Counter,
     Self: TList,
-    Self::Out: TList,
+    Self::Output: TList,
 {
-    type Out;
+    type Output;
 }
 
 impl<Target, Item, Tail> LInsertAt<Item, Target, Current> for LCons<Target, Tail>
 where
     Tail: TList,
 {
-    type Out = LCons<Target, LCons<Item, Tail>>;
+    type Output = LCons<Target, LCons<Item, Tail>>;
 }
 
 impl<Item, Target, Index, NonTarget, Tail> LInsertAt<Item, Target, Next<Index>>
@@ -134,10 +134,11 @@ where
     Tail: TList + LInsertAt<Item, Target, Index>,
     Index: Counter,
 {
-    type Out = LCons<NonTarget, LInsertAtOut<Tail, Item, Target, Index>>;
+    type Output = LCons<NonTarget, LInsertAtOutput<Tail, Item, Target, Index>>;
 }
 
-pub type LInsertAtOut<List, Item, Target, Index> = <List as LInsertAt<Item, Target, Index>>::Out;
+pub type LInsertAtOutput<List, Item, Target, Index> =
+    <List as LInsertAt<Item, Target, Index>>::Output;
 
 // remove
 
@@ -145,16 +146,16 @@ pub trait LRemoveAt<Target, Index>
 where
     Index: Counter,
     Self: TList,
-    Self::Out: TList,
+    Self::Output: TList,
 {
-    type Out;
+    type Output;
 }
 
 impl<Target, Tail> LRemoveAt<Target, Current> for LCons<Target, Tail>
 where
     Tail: TList,
 {
-    type Out = Tail;
+    type Output = Tail;
 }
 
 impl<Target, Index, NonTarget, Tail> LRemoveAt<Target, Next<Index>> for LCons<NonTarget, Tail>
@@ -162,10 +163,10 @@ where
     Index: Counter,
     Tail: TList + LRemoveAt<Target, Index>,
 {
-    type Out = LCons<NonTarget, LRemoveAtOut<Tail, Target, Index>>;
+    type Output = LCons<NonTarget, LRemoveAtOutput<Tail, Target, Index>>;
 }
 
-pub type LRemoveAtOut<List, Target, Index> = <List as LRemoveAt<Target, Index>>::Out;
+pub type LRemoveAtOutput<List, Target, Index> = <List as LRemoveAt<Target, Index>>::Output;
 
 // remove multiple items
 
@@ -174,16 +175,16 @@ where
     Targets: TList,
     Indexes: TList,
     Self: TList,
-    Self::Out: TList,
+    Self::Output: TList,
 {
-    type Out;
+    type Output;
 }
 
 impl<List> LRemoveMany<LNil, LNil> for List
 where
     List: TList,
 {
-    type Out = List;
+    type Output = List;
 }
 
 impl<Index, IRemain, Target, TRemain, Head, Tail>
@@ -194,12 +195,13 @@ where
     TRemain: TList,
     Tail: TList,
     Self: LRemoveAt<Target, Index>,
-    <Self as LRemoveAt<Target, Index>>::Out: LRemoveMany<TRemain, IRemain>,
+    <Self as LRemoveAt<Target, Index>>::Output: LRemoveMany<TRemain, IRemain>,
 {
-    type Out = LRemoveManyOut<LRemoveAtOut<Self, Target, Index>, TRemain, IRemain>;
+    type Output = LRemoveManyOutput<LRemoveAtOutput<Self, Target, Index>, TRemain, IRemain>;
 }
 
-pub type LRemoveManyOut<List, Targets, Indexes> = <List as LRemoveMany<Targets, Indexes>>::Out;
+pub type LRemoveManyOutput<List, Targets, Indexes> =
+    <List as LRemoveMany<Targets, Indexes>>::Output;
 
 // index of item
 
@@ -247,7 +249,7 @@ where
     }
 
     fn inverse_indexes() -> Vec<usize> {
-        (0..LLengthOut::<List>::USIZE).collect()
+        (0..LLengthOutput::<List>::USIZE).collect()
     }
 }
 
@@ -279,16 +281,16 @@ pub trait LReverseWithTail<Tail>
 where
     Tail: TList,
     Self: TList,
-    Self::Out: TList,
+    Self::Output: TList,
 {
-    type Out;
+    type Output;
 }
 
 impl<Tail> LReverseWithTail<Tail> for LNil
 where
     Tail: TList,
 {
-    type Out = Tail;
+    type Output = Tail;
 }
 
 impl<ReversedTail, Head, Tail> LReverseWithTail<ReversedTail> for LCons<Head, Tail>
@@ -296,11 +298,12 @@ where
     ReversedTail: TList,
     Tail: TList + LReverseWithTail<LCons<Head, ReversedTail>>,
 {
-    type Out = LReverseWithTailOut<Tail, LCons<Head, ReversedTail>>;
+    type Output = LReverseWithTailOutput<Tail, LCons<Head, ReversedTail>>;
 }
 
-pub type LReverseWithTailOut<List, ReversedTail> = <List as LReverseWithTail<ReversedTail>>::Out;
-pub type LReverseOut<List> = LReverseWithTailOut<List, LNil>;
+pub type LReverseWithTailOutput<List, ReversedTail> =
+    <List as LReverseWithTail<ReversedTail>>::Output;
+pub type LReverseOutput<List> = LReverseWithTailOutput<List, LNil>;
 
 // set equal
 
@@ -310,11 +313,11 @@ where
     Indexes: TList,
     Self: TList,
 {
-    type Out;
+    type Output;
 }
 
 impl LSetEqual<LNil, LNil> for LNil {
-    type Out = ();
+    type Output = ();
 }
 
 impl<LHead, LTail, RHead, RTail, Index, IRemain>
@@ -325,53 +328,53 @@ where
     LTail: TList,
     RTail: TList,
     Self: LRemoveAt<RHead, Index>,
-    LRemoveAtOut<Self, RHead, Index>: LSetEqual<RTail, IRemain>,
+    LRemoveAtOutput<Self, RHead, Index>: LSetEqual<RTail, IRemain>,
 {
-    type Out = LSetEqualOut<LRemoveAtOut<Self, RHead, Index>, RTail, IRemain>;
+    type Output = LSetEqualOutput<LRemoveAtOutput<Self, RHead, Index>, RTail, IRemain>;
 }
 
-pub type LSetEqualOut<Lhs, Rhs, Indexes> = <Lhs as LSetEqual<Rhs, Indexes>>::Out;
+pub type LSetEqualOutput<Lhs, Rhs, Indexes> = <Lhs as LSetEqual<Rhs, Indexes>>::Output;
 
 // combine two identical lists to one
 
 pub trait LCombineEqual<Rhs>
 where
     Self: TList,
-    Self::Out: TList,
+    Self::Output: TList,
 {
-    type Out;
+    type Output;
 }
 
 impl LCombineEqual<LNil> for LNil {
-    type Out = LNil;
+    type Output = LNil;
 }
 
 impl<Item, LTail, RTail> LCombineEqual<LCons<Item, RTail>> for LCons<Item, LTail>
 where
     LTail: TList + LCombineEqual<RTail>,
     RTail: TList,
-    LCombineEqualOut<LTail, RTail>: TList,
+    LCombineEqualOutput<LTail, RTail>: TList,
 {
-    type Out = LCons<Item, LCombineEqualOut<LTail, RTail>>;
+    type Output = LCons<Item, LCombineEqualOutput<LTail, RTail>>;
 }
 
-pub type LCombineEqualOut<Lhs, Rhs> = <Lhs as LCombineEqual<Rhs>>::Out;
+pub type LCombineEqualOutput<Lhs, Rhs> = <Lhs as LCombineEqual<Rhs>>::Output;
 
 // concatenate
 
 pub trait LConcat<Rhs>
 where
     Self: TList,
-    Self::Out: TList,
+    Self::Output: TList,
 {
-    type Out;
+    type Output;
 }
 
 impl<Rhs> LConcat<Rhs> for LNil
 where
     Rhs: TList,
 {
-    type Out = Rhs;
+    type Output = Rhs;
 }
 
 impl<Rhs, Head, Tail> LConcat<Rhs> for LCons<Head, Tail>
@@ -379,10 +382,10 @@ where
     Rhs: TList,
     Tail: TList + LConcat<Rhs>,
 {
-    type Out = LCons<Head, LConcatOut<Tail, Rhs>>;
+    type Output = LCons<Head, LConcatOutput<Tail, Rhs>>;
 }
 
-pub type LConcatOut<Lhs, Rhs> = <Lhs as LConcat<Rhs>>::Out;
+pub type LConcatOutput<Lhs, Rhs> = <Lhs as LConcat<Rhs>>::Output;
 
 // insert if not exist
 // TODO test
@@ -392,23 +395,23 @@ pub trait LInsertIfNotExist<Target, Index>
 where
     Index: Counter,
     Self: TList,
-    Self::Out: TList,
+    Self::Output: TList,
 {
-    type Out;
+    type Output;
 }
 
-pub type LInsertIfNotExistOut<List, Target, Index> =
-    <List as LInsertIfNotExist<Target, Index>>::Out;
+pub type LInsertIfNotExistOutput<List, Target, Index> =
+    <List as LInsertIfNotExist<Target, Index>>::Output;
 
 impl<Target> LInsertIfNotExist<Target, Current> for LNil {
-    type Out = LCons<Target, LNil>;
+    type Output = LCons<Target, LNil>;
 }
 
 impl<Target, Tail> LInsertIfNotExist<Target, Current> for LCons<Target, Tail>
 where
     Tail: TList,
 {
-    type Out = Self;
+    type Output = Self;
 }
 
 impl<Target, Index, NonTarget, Tail> LInsertIfNotExist<Target, Next<Index>>
@@ -417,14 +420,14 @@ where
     Index: Counter,
     Tail: TList + LInsertIfNotExist<Target, Index>,
 {
-    type Out = LCons<NonTarget, LInsertIfNotExistOut<Tail, Target, Index>>;
+    type Output = LCons<NonTarget, LInsertIfNotExistOutput<Tail, Target, Index>>;
 }
 
 // functor and fmap for list
 // currently not working
 
 // pub trait Functor {
-//     type Out<In>;
+//     type Output<In>;
 // }
 
 // pub trait LMap<Func>
@@ -432,25 +435,25 @@ where
 //     Self: TList,
 //     Func: Functor,
 // {
-//     type Out;
+//     type Output;
 // }
 
-// pub type LMapOut<List, Func> = <List as LMap<Func>>::Out;
+// pub type LMapOutput<List, Func> = <List as LMap<Func>>::Output;
 
 // impl<Func> LMap<Func> for LNil
 // where
 //     Func: Functor,
 // {
-//     type Out = LNil;
+//     type Output = LNil;
 // }
 
 // impl<Func, Head, Tail> LMap<Func> for LCons<Head, Tail>
 // where
 //     Func: Functor,
 //     Tail: TList + LMap<Func>,
-//     LMapOut<Tail, Func>: TList,
+//     LMapOutput<Tail, Func>: TList,
 // {
-//     type Out = LCons<Func::Out<Head>, LMapOut<Tail, Func>>;
+//     type Output = LCons<Func::Output<Head>, LMapOutput<Tail, Func>>;
 // }
 
 // macro
@@ -465,9 +468,9 @@ macro_rules! TListType {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{control::IfOut, TListType};
+    use crate::{control::IfOutput, TListType};
 
-    type AssertEqual<Lhs, Rhs> = IfOut<(), LCombineEqualOut<Lhs, Rhs>>;
+    type AssertEqual<Lhs, Rhs> = IfOutput<(), LCombineEqualOutput<Lhs, Rhs>>;
 
     struct A;
     struct B;
@@ -479,28 +482,28 @@ mod tests {
     type SomeList = TListType! {A, B, C};
     type AnotherList = TListType! {D, E};
 
-    type Assert1 = AssertEqual<LPrependOut<EmptyList, A>, TListType! {A}>;
-    type Assert2 = AssertEqual<LAppendOut<EmptyList, D>, TListType! {D}>;
+    type Assert1 = AssertEqual<LPrependOutput<EmptyList, A>, TListType! {A}>;
+    type Assert2 = AssertEqual<LAppendOutput<EmptyList, D>, TListType! {D}>;
 
-    type Assert3 = AssertEqual<LPrependOut<SomeList, D>, TListType! {D, A, B, C}>;
-    type Assert4 = AssertEqual<LAppendOut<SomeList, D>, TListType! {A, B, C, D}>;
+    type Assert3 = AssertEqual<LPrependOutput<SomeList, D>, TListType! {D, A, B, C}>;
+    type Assert4 = AssertEqual<LAppendOutput<SomeList, D>, TListType! {A, B, C, D}>;
 
-    type Assert5<Idx> = AssertEqual<LInsertAtOut<SomeList, D, B, Idx>, TListType! {A, B, D, C}>;
-    type Assert6<Idx> = AssertEqual<LInsertAtOut<SomeList, D, C, Idx>, TListType! {A, B, C, D}>;
+    type Assert5<Idx> = AssertEqual<LInsertAtOutput<SomeList, D, B, Idx>, TListType! {A, B, D, C}>;
+    type Assert6<Idx> = AssertEqual<LInsertAtOutput<SomeList, D, C, Idx>, TListType! {A, B, C, D}>;
 
-    type Assert7<Idx> = AssertEqual<LRemoveAtOut<SomeList, B, Idx>, TListType! {A, C}>;
+    type Assert7<Idx> = AssertEqual<LRemoveAtOutput<SomeList, B, Idx>, TListType! {A, C}>;
 
     type Assert8<Idx> =
-        AssertEqual<LRemoveManyOut<SomeList, TListType! {A, C}, Idx>, TListType! {B}>;
+        AssertEqual<LRemoveManyOutput<SomeList, TListType! {A, C}, Idx>, TListType! {B}>;
 
     type Assert9<Idx> =
-        AssertEqual<LRemoveManyOut<SomeList, TListType! {B, A, C}, Idx>, TListType! {}>;
+        AssertEqual<LRemoveManyOutput<SomeList, TListType! {B, A, C}, Idx>, TListType! {}>;
 
-    type Assert10 = AssertEqual<LReverseOut<SomeList>, TListType! {C, B, A}>;
+    type Assert10 = AssertEqual<LReverseOutput<SomeList>, TListType! {C, B, A}>;
 
-    type Assert11<Idx> = LSetEqualOut<SomeList, TListType! {C, A, B}, Idx>;
+    type Assert11<Idx> = LSetEqualOutput<SomeList, TListType! {C, A, B}, Idx>;
 
-    type Assert12 = AssertEqual<LConcatOut<SomeList, AnotherList>, TListType! {A, B, C, D, E}>;
+    type Assert12 = AssertEqual<LConcatOutput<SomeList, AnotherList>, TListType! {A, B, C, D, E}>;
 
     #[test]
     fn tlist_test() {

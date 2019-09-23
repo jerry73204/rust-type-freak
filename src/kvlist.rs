@@ -54,25 +54,25 @@ impl<Key, Value, Tail> NonEmptyKVList for KVCons<Key, Value, Tail> where Tail: K
 pub trait KVLength
 where
     Self: KVList,
-    Self::Out: Unsigned,
+    Self::Output: Unsigned,
 {
-    type Out;
+    type Output;
 }
 
 impl KVLength for KVNil {
-    type Out = U0;
+    type Output = U0;
 }
 
 impl<Key, Value, Tail> KVLength for KVCons<Key, Value, Tail>
 where
     Tail: KVList + KVLength,
-    KVLengthOut<Tail>: Add<U1>,
-    Sum<KVLengthOut<Tail>, U1>: Unsigned,
+    KVLengthOutput<Tail>: Add<U1>,
+    Sum<KVLengthOutput<Tail>, U1>: Unsigned,
 {
-    type Out = Sum<KVLengthOut<Tail>, U1>;
+    type Output = Sum<KVLengthOutput<Tail>, U1>;
 }
 
-pub type KVLengthOut<KVist> = <KVist as KVLength>::Out;
+pub type KVLengthOutput<KVist> = <KVist as KVLength>::Output;
 
 // prepend
 
@@ -81,17 +81,17 @@ pub trait KVPrepend<Key, Value>
 where
     Self: KVList,
 {
-    type Out;
+    type Output;
 }
 
 impl<Key, Value, List> KVPrepend<Key, Value> for List
 where
     List: KVList,
 {
-    type Out = KVCons<Key, Value, List>;
+    type Output = KVCons<Key, Value, List>;
 }
 
-pub type KVPrependOut<KVist, Key, Value> = <KVist as KVPrepend<Key, Value>>::Out;
+pub type KVPrependOutput<KVist, Key, Value> = <KVist as KVPrepend<Key, Value>>::Output;
 
 // append
 
@@ -99,24 +99,24 @@ pub type KVPrependOut<KVist, Key, Value> = <KVist as KVPrepend<Key, Value>>::Out
 pub trait KVAppend<Key, Value>
 where
     Self: KVList,
-    Self::Out: KVList,
+    Self::Output: KVList,
 {
-    type Out;
+    type Output;
 }
 
 impl<Key, Value> KVAppend<Key, Value> for KVNil {
-    type Out = KVCons<Key, Value, KVNil>;
+    type Output = KVCons<Key, Value, KVNil>;
 }
 
 impl<NewKey, NewValue, Key, Value, Tail> KVAppend<NewKey, NewValue> for KVCons<Key, Value, Tail>
 where
     Tail: KVList + KVAppend<NewKey, NewValue>,
-    KVAppendOut<Tail, NewKey, NewValue>: KVList,
+    KVAppendOutput<Tail, NewKey, NewValue>: KVList,
 {
-    type Out = KVCons<Key, Value, KVAppendOut<Tail, NewKey, NewValue>>;
+    type Output = KVCons<Key, Value, KVAppendOutput<Tail, NewKey, NewValue>>;
 }
 
-pub type KVAppendOut<KVist, NewKey, NewValue> = <KVist as KVAppend<NewKey, NewValue>>::Out;
+pub type KVAppendOutput<KVist, NewKey, NewValue> = <KVist as KVAppend<NewKey, NewValue>>::Output;
 
 // insert at
 
@@ -125,9 +125,9 @@ pub trait KVInsertAt<Key, Value, Target, Index>
 where
     Index: Counter,
     Self: KVList,
-    Self::Out: KVList,
+    Self::Output: KVList,
 {
-    type Out;
+    type Output;
 }
 
 impl<Key, Value, Target, TargetValue, Tail> KVInsertAt<Key, Value, Target, Current>
@@ -135,7 +135,7 @@ impl<Key, Value, Target, TargetValue, Tail> KVInsertAt<Key, Value, Target, Curre
 where
     Tail: KVList,
 {
-    type Out = KVCons<Target, TargetValue, KVCons<Key, Value, Tail>>;
+    type Output = KVCons<Target, TargetValue, KVCons<Key, Value, Tail>>;
 }
 
 impl<NewKey, NewValue, Target, Index, Key, Value, Tail>
@@ -144,11 +144,11 @@ where
     Tail: KVList + KVInsertAt<NewKey, NewValue, Target, Index>,
     Index: Counter,
 {
-    type Out = KVCons<Key, Value, KVInsertAtOut<Tail, NewKey, NewValue, Target, Index>>;
+    type Output = KVCons<Key, Value, KVInsertAtOutput<Tail, NewKey, NewValue, Target, Index>>;
 }
 
-pub type KVInsertAtOut<KVist, NewKey, NewValue, Target, Index> =
-    <KVist as KVInsertAt<NewKey, NewValue, Target, Index>>::Out;
+pub type KVInsertAtOutput<KVist, NewKey, NewValue, Target, Index> =
+    <KVist as KVInsertAt<NewKey, NewValue, Target, Index>>::Output;
 
 // remove
 
@@ -156,16 +156,16 @@ pub trait KVRemoveAt<Target, Index>
 where
     Index: Counter,
     Self: KVList,
-    Self::Out: KVList,
+    Self::Output: KVList,
 {
-    type Out;
+    type Output;
 }
 
 impl<Target, Value, Tail> KVRemoveAt<Target, Current> for KVCons<Target, Value, Tail>
 where
     Tail: KVList,
 {
-    type Out = Tail;
+    type Output = Tail;
 }
 
 impl<Target, Index, NonTarget, Value, Tail> KVRemoveAt<Target, Next<Index>>
@@ -174,10 +174,10 @@ where
     Index: Counter,
     Tail: KVList + KVRemoveAt<Target, Index>,
 {
-    type Out = KVCons<NonTarget, Value, KVRemoveAtOut<Tail, Target, Index>>;
+    type Output = KVCons<NonTarget, Value, KVRemoveAtOutput<Tail, Target, Index>>;
 }
 
-pub type KVRemoveAtOut<KVist, Target, Index> = <KVist as KVRemoveAt<Target, Index>>::Out;
+pub type KVRemoveAtOutput<KVist, Target, Index> = <KVist as KVRemoveAt<Target, Index>>::Output;
 
 // remove multiple items
 
@@ -186,16 +186,16 @@ where
     Targets: TList,
     Indexes: TList,
     Self: KVList,
-    Self::Out: KVList,
+    Self::Output: KVList,
 {
-    type Out;
+    type Output;
 }
 
 impl<List> KVRemoveMany<LNil, LNil> for List
 where
     List: KVList,
 {
-    type Out = List;
+    type Output = List;
 }
 
 impl<Index, IRemain, Target, TRemain, Key, Value, Tail>
@@ -206,12 +206,13 @@ where
     TRemain: TList,
     Tail: KVList,
     Self: KVRemoveAt<Target, Index>,
-    KVRemoveAtOut<Self, Target, Index>: KVRemoveMany<TRemain, IRemain>,
+    KVRemoveAtOutput<Self, Target, Index>: KVRemoveMany<TRemain, IRemain>,
 {
-    type Out = KVRemoveManyOut<KVRemoveAtOut<Self, Target, Index>, TRemain, IRemain>;
+    type Output = KVRemoveManyOutput<KVRemoveAtOutput<Self, Target, Index>, TRemain, IRemain>;
 }
 
-pub type KVRemoveManyOut<KVist, Targets, Indexes> = <KVist as KVRemoveMany<Targets, Indexes>>::Out;
+pub type KVRemoveManyOutput<KVist, Targets, Indexes> =
+    <KVist as KVRemoveMany<Targets, Indexes>>::Output;
 
 // index of item
 
@@ -260,7 +261,7 @@ where
     }
 
     fn inverse_indexes() -> Vec<usize> {
-        (0..KVLengthOut::<List>::USIZE).collect()
+        (0..KVLengthOutput::<List>::USIZE).collect()
     }
 }
 
@@ -292,16 +293,16 @@ pub trait KVReverseWithTail<Tail>
 where
     Tail: KVList,
     Self: KVList,
-    Self::Out: KVList,
+    Self::Output: KVList,
 {
-    type Out;
+    type Output;
 }
 
 impl<Tail> KVReverseWithTail<Tail> for KVNil
 where
     Tail: KVList,
 {
-    type Out = Tail;
+    type Output = Tail;
 }
 
 impl<ReversedTail, Key, Value, Tail> KVReverseWithTail<ReversedTail> for KVCons<Key, Value, Tail>
@@ -309,12 +310,12 @@ where
     ReversedTail: KVList,
     Tail: KVList + KVReverseWithTail<KVCons<Key, Value, ReversedTail>>,
 {
-    type Out = KVReverseWithTailOut<Tail, KVCons<Key, Value, ReversedTail>>;
+    type Output = KVReverseWithTailOutput<Tail, KVCons<Key, Value, ReversedTail>>;
 }
 
-pub type KVReverseWithTailOut<KVist, ReversedTail> =
-    <KVist as KVReverseWithTail<ReversedTail>>::Out;
-pub type KVReverseOut<KVist> = KVReverseWithTailOut<KVist, KVNil>;
+pub type KVReverseWithTailOutput<KVist, ReversedTail> =
+    <KVist as KVReverseWithTail<ReversedTail>>::Output;
+pub type KVReverseOutput<KVist> = KVReverseWithTailOutput<KVist, KVNil>;
 
 // set equal
 
@@ -324,11 +325,11 @@ where
     Indexes: TList,
     Self: KVList,
 {
-    type Out;
+    type Output;
 }
 
 impl KVSetEqual<KVNil, LNil> for KVNil {
-    type Out = ();
+    type Output = ();
 }
 
 impl<LKey, LValue, LTail, RKey, RValue, RTail, Index, IRemain>
@@ -339,28 +340,28 @@ where
     LTail: KVList,
     RTail: KVList,
     Self: KVRemoveAt<RKey, Index>,
-    KVRemoveAtOut<Self, RKey, Index>: KVSetEqual<RTail, IRemain>,
+    KVRemoveAtOutput<Self, RKey, Index>: KVSetEqual<RTail, IRemain>,
 {
-    type Out = KVSetEqualOut<KVRemoveAtOut<Self, RKey, Index>, RTail, IRemain>;
+    type Output = KVSetEqualOutput<KVRemoveAtOutput<Self, RKey, Index>, RTail, IRemain>;
 }
 
-pub type KVSetEqualOut<KVhs, Rhs, Indexes> = <KVhs as KVSetEqual<Rhs, Indexes>>::Out;
+pub type KVSetEqualOutput<KVhs, Rhs, Indexes> = <KVhs as KVSetEqual<Rhs, Indexes>>::Output;
 
 // concatenate
 
 pub trait KVConcat<Rhs>
 where
     Self: KVList,
-    Self::Out: KVList,
+    Self::Output: KVList,
 {
-    type Out;
+    type Output;
 }
 
 impl<Rhs> KVConcat<Rhs> for KVNil
 where
     Rhs: KVList,
 {
-    type Out = Rhs;
+    type Output = Rhs;
 }
 
 impl<Rhs, Key, Value, Tail> KVConcat<Rhs> for KVCons<Key, Value, Tail>
@@ -368,23 +369,23 @@ where
     Rhs: KVList,
     Tail: KVList + KVConcat<Rhs>,
 {
-    type Out = KVCons<Key, Value, KVConcatOut<Tail, Rhs>>;
+    type Output = KVCons<Key, Value, KVConcatOutput<Tail, Rhs>>;
 }
 
-pub type KVConcatOut<KVhs, Rhs> = <KVhs as KVConcat<Rhs>>::Out;
+pub type KVConcatOutput<KVhs, Rhs> = <KVhs as KVConcat<Rhs>>::Output;
 
 // combine two identical lists
 
 pub trait KVCombineEqual<Rhs>
 where
     Self: KVList,
-    Self::Out: KVList,
+    Self::Output: KVList,
 {
-    type Out;
+    type Output;
 }
 
 impl KVCombineEqual<KVNil> for KVNil {
-    type Out = KVNil;
+    type Output = KVNil;
 }
 
 impl<Key, Value, LTail, RTail> KVCombineEqual<KVCons<Key, Value, RTail>>
@@ -392,12 +393,12 @@ impl<Key, Value, LTail, RTail> KVCombineEqual<KVCons<Key, Value, RTail>>
 where
     LTail: KVList + KVCombineEqual<RTail>,
     RTail: KVList,
-    KVCombineEqualOut<LTail, RTail>: KVList,
+    KVCombineEqualOutput<LTail, RTail>: KVList,
 {
-    type Out = KVCons<Key, Value, KVCombineEqualOut<LTail, RTail>>;
+    type Output = KVCons<Key, Value, KVCombineEqualOutput<LTail, RTail>>;
 }
 
-pub type KVCombineEqualOut<Lhs, Rhs> = <Lhs as KVCombineEqual<Rhs>>::Out;
+pub type KVCombineEqualOutput<Lhs, Rhs> = <Lhs as KVCombineEqual<Rhs>>::Output;
 
 // get value of key
 // TODO test
@@ -406,16 +407,16 @@ pub trait KVGetValue<Target, Index>
 where
     Self: KVList,
 {
-    type Out;
+    type Output;
 }
 
-pub type KVGetValueOut<List, Target, Index> = <List as KVGetValue<Target, Index>>::Out;
+pub type KVGetValueOutput<List, Target, Index> = <List as KVGetValue<Target, Index>>::Output;
 
 impl<Target, Value, Tail> KVGetValue<Target, Current> for KVCons<Target, Value, Tail>
 where
     Tail: KVList,
 {
-    type Out = Value;
+    type Output = Value;
 }
 
 impl<Target, Index, Key, Value, Tail> KVGetValue<Target, Next<Index>> for KVCons<Key, Value, Tail>
@@ -423,7 +424,7 @@ where
     Index: Counter,
     Tail: KVList + KVGetValue<Target, Index>,
 {
-    type Out = KVGetValueOut<Tail, Target, Index>;
+    type Output = KVGetValueOutput<Tail, Target, Index>;
 }
 
 // insert if not exists
@@ -433,16 +434,16 @@ pub trait KVInsertIfNotExists<Target, DefaultValue, Index>
 where
     Index: Counter,
     Self: KVList,
-    Self::Out: KVList,
+    Self::Output: KVList,
 {
-    type Out;
+    type Output;
 }
 
-pub type KVInsertIfNotExistsOut<List, Target, Value, Index> =
-    <List as KVInsertIfNotExists<Target, Value, Index>>::Out;
+pub type KVInsertIfNotExistsOutput<List, Target, Value, Index> =
+    <List as KVInsertIfNotExists<Target, Value, Index>>::Output;
 
 impl<Target, Value> KVInsertIfNotExists<Target, Value, Current> for KVNil {
-    type Out = KVCons<Target, Value, KVNil>;
+    type Output = KVCons<Target, Value, KVNil>;
 }
 
 impl<Target, DefaultValue, Value, Tail> KVInsertIfNotExists<Target, DefaultValue, Current>
@@ -450,7 +451,7 @@ impl<Target, DefaultValue, Value, Tail> KVInsertIfNotExists<Target, DefaultValue
 where
     Tail: KVList,
 {
-    type Out = Self;
+    type Output = Self;
 }
 
 impl<Target, DefaultValue, Index, Key, Value, Tail>
@@ -459,7 +460,7 @@ where
     Index: Counter,
     Tail: KVList + KVInsertIfNotExists<Target, DefaultValue, Index>,
 {
-    type Out = KVCons<Key, Value, KVInsertIfNotExistsOut<Tail, Target, DefaultValue, Index>>;
+    type Output = KVCons<Key, Value, KVInsertIfNotExistsOutput<Tail, Target, DefaultValue, Index>>;
 }
 
 // get or insert value
@@ -469,14 +470,14 @@ where
     Index: Counter,
     Self: KVList,
 {
-    type Out;
+    type Output;
 }
 
-pub type KVGetOrDefaultValueOut<List, Target, Value, Index> =
-    <List as KVGetOrDefaultValue<Target, Value, Index>>::Out;
+pub type KVGetOrDefaultValueOutput<List, Target, Value, Index> =
+    <List as KVGetOrDefaultValue<Target, Value, Index>>::Output;
 
 impl<Target, Value> KVGetOrDefaultValue<Target, Value, Current> for KVNil {
-    type Out = Value;
+    type Output = Value;
 }
 
 impl<Target, DefaultValue, Value, Tail> KVGetOrDefaultValue<Target, DefaultValue, Current>
@@ -484,7 +485,7 @@ impl<Target, DefaultValue, Value, Tail> KVGetOrDefaultValue<Target, DefaultValue
 where
     Tail: KVList,
 {
-    type Out = Value;
+    type Output = Value;
 }
 
 impl<Target, DefaultValue, Index, Key, Value, Tail>
@@ -493,7 +494,7 @@ where
     Index: Counter,
     Tail: KVList + KVGetOrDefaultValue<Target, DefaultValue, Index>,
 {
-    type Out = KVGetOrDefaultValueOut<Tail, Target, DefaultValue, Index>;
+    type Output = KVGetOrDefaultValueOutput<Tail, Target, DefaultValue, Index>;
 }
 
 // replace value
@@ -502,20 +503,20 @@ pub trait KVReplaceValue<Target, Value, Index>
 where
     Index: Counter,
     Self: KVList,
-    Self::Out: KVList,
+    Self::Output: KVList,
 {
-    type Out;
+    type Output;
 }
 
-pub type KVReplaceValueOut<List, Target, Value, Index> =
-    <List as KVReplaceValue<Target, Value, Index>>::Out;
+pub type KVReplaceValueOutput<List, Target, Value, Index> =
+    <List as KVReplaceValue<Target, Value, Index>>::Output;
 
 impl<Target, NewValue, OldValue, Tail> KVReplaceValue<Target, NewValue, Current>
     for KVCons<Target, OldValue, Tail>
 where
     Tail: KVList,
 {
-    type Out = KVCons<Target, NewValue, Tail>;
+    type Output = KVCons<Target, NewValue, Tail>;
 }
 
 impl<Target, NewValue, Index, Key, Value, Tail> KVReplaceValue<Target, NewValue, Next<Index>>
@@ -524,7 +525,7 @@ where
     Index: Counter,
     Tail: KVList + KVReplaceValue<Target, NewValue, Index>,
 {
-    type Out = KVCons<Key, Value, KVReplaceValueOut<Tail, Target, NewValue, Index>>;
+    type Output = KVCons<Key, Value, KVReplaceValueOutput<Tail, Target, NewValue, Index>>;
 }
 
 // macro
@@ -539,9 +540,9 @@ macro_rules! KVListType {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{control::IfOut, KVListType, TListType};
+    use crate::{control::IfOutput, KVListType, TListType};
 
-    type AssertEqual<Lhs, Rhs> = IfOut<(), KVCombineEqualOut<Lhs, Rhs>>;
+    type AssertEqual<Lhs, Rhs> = IfOutput<(), KVCombineEqualOutput<Lhs, Rhs>>;
 
     struct A;
     struct B;
@@ -559,40 +560,42 @@ mod tests {
     type SomeList = KVListType! {(A, Va), (B, Vb), (C, Vc)};
     type AnotherList = KVListType! {(D, Vd), (E, Ve)};
 
-    type Assert1 = AssertEqual<KVPrependOut<EmptyList, A, Va>, KVListType! {(A, Va)}>;
-    type Assert2 = AssertEqual<KVAppendOut<EmptyList, D, Vd>, KVListType! {(D, Vd)}>;
+    type Assert1 = AssertEqual<KVPrependOutput<EmptyList, A, Va>, KVListType! {(A, Va)}>;
+    type Assert2 = AssertEqual<KVAppendOutput<EmptyList, D, Vd>, KVListType! {(D, Vd)}>;
 
     type Assert3 = AssertEqual<
-        KVPrependOut<SomeList, D, Vd>,
+        KVPrependOutput<SomeList, D, Vd>,
         KVListType! {(D, Vd), (A, Va), (B, Vb), (C, Vc)},
     >;
-    type Assert4 =
-        AssertEqual<KVAppendOut<SomeList, D, Vd>, KVListType! {(A, Va), (B, Vb), (C, Vc), (D, Vd)}>;
+    type Assert4 = AssertEqual<
+        KVAppendOutput<SomeList, D, Vd>,
+        KVListType! {(A, Va), (B, Vb), (C, Vc), (D, Vd)},
+    >;
 
     type Assert5<Idx> = AssertEqual<
-        KVInsertAtOut<SomeList, D, Vd, B, Idx>,
+        KVInsertAtOutput<SomeList, D, Vd, B, Idx>,
         KVListType! {(A, Va), (B, Vb), (D, Vd), (C, Vc)},
     >;
     type Assert6<Idx> = AssertEqual<
-        KVInsertAtOut<SomeList, D, Vd, C, Idx>,
+        KVInsertAtOutput<SomeList, D, Vd, C, Idx>,
         KVListType! {(A, Va), (B, Vb), (C, Vc), (D, Vd)},
     >;
 
     type Assert7<Idx> =
-        AssertEqual<KVRemoveAtOut<SomeList, B, Idx>, KVListType! {(A, Va), (C, Vc)}>;
+        AssertEqual<KVRemoveAtOutput<SomeList, B, Idx>, KVListType! {(A, Va), (C, Vc)}>;
 
     type Assert8<Idx> =
-        AssertEqual<KVRemoveManyOut<SomeList, TListType! {A, C}, Idx>, KVListType! {(B, Vb)}>;
+        AssertEqual<KVRemoveManyOutput<SomeList, TListType! {A, C}, Idx>, KVListType! {(B, Vb)}>;
 
     type Assert9<Idx> =
-        AssertEqual<KVRemoveManyOut<SomeList, TListType! {B, A, C}, Idx>, KVListType! {}>;
+        AssertEqual<KVRemoveManyOutput<SomeList, TListType! {B, A, C}, Idx>, KVListType! {}>;
 
-    type Assert10 = AssertEqual<KVReverseOut<SomeList>, KVListType! {(C, Vc), (B, Vb), (A, Va)}>;
+    type Assert10 = AssertEqual<KVReverseOutput<SomeList>, KVListType! {(C, Vc), (B, Vb), (A, Va)}>;
 
-    type Assert11<Idx> = KVSetEqualOut<SomeList, KVListType! {(C, Vc), (A, Va), (B, Vb)}, Idx>;
+    type Assert11<Idx> = KVSetEqualOutput<SomeList, KVListType! {(C, Vc), (A, Va), (B, Vb)}, Idx>;
 
     type Assert12 = AssertEqual<
-        KVConcatOut<SomeList, AnotherList>,
+        KVConcatOutput<SomeList, AnotherList>,
         KVListType! {(A, Va), (B, Vb), (C, Vc), (D, Vd), (E, Ve)},
     >;
 

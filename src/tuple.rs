@@ -2,97 +2,97 @@
 
 /// A type operator that takes first type of tuple.
 pub trait FirstOf {
-    type Out;
+    type Output;
 }
 
-pub type FirstOfOut<T> = <T as FirstOf>::Out;
+pub type FirstOfOutput<T> = <T as FirstOf>::Output;
 
 impl<A> FirstOf for (A,) {
-    type Out = A;
+    type Output = A;
 }
 
 impl<A, B> FirstOf for (A, B) {
-    type Out = A;
+    type Output = A;
 }
 
 impl<A, B, C> FirstOf for (A, B, C) {
-    type Out = A;
+    type Output = A;
 }
 
 impl<A, B, C, D> FirstOf for (A, B, C, D) {
-    type Out = A;
+    type Output = A;
 }
 
 impl<A, B, C, D, E> FirstOf for (A, B, C, D, E) {
-    type Out = A;
+    type Output = A;
 }
 
 // second type of pair
 
 /// A type operator that takes second type of tuple.
 pub trait SecondOf {
-    type Out;
+    type Output;
 }
 
-pub type SecondOfOut<T> = <T as SecondOf>::Out;
+pub type SecondOfOutput<T> = <T as SecondOf>::Output;
 
 impl<A, B> SecondOf for (A, B) {
-    type Out = B;
+    type Output = B;
 }
 
 impl<A, B, C> SecondOf for (A, B, C) {
-    type Out = B;
+    type Output = B;
 }
 
 impl<A, B, C, D> SecondOf for (A, B, C, D) {
-    type Out = B;
+    type Output = B;
 }
 
 impl<A, B, C, D, E> SecondOf for (A, B, C, D, E) {
-    type Out = B;
+    type Output = B;
 }
 
 // thirt type of pair
 
 /// A type operator that takes third type of tuple.
 pub trait ThirdOf {
-    type Out;
+    type Output;
 }
 
-pub type ThirdOfOut<T> = <T as ThirdOf>::Out;
+pub type ThirdOfOutput<T> = <T as ThirdOf>::Output;
 
 impl<A, B, C> ThirdOf for (A, B, C) {
-    type Out = C;
+    type Output = C;
 }
 
 impl<A, B, C, D> ThirdOf for (A, B, C, D) {
-    type Out = C;
+    type Output = C;
 }
 
 impl<A, B, C, D, E> ThirdOf for (A, B, C, D, E) {
-    type Out = C;
+    type Output = C;
 }
 
 // left associate
 
 pub trait LeftAssociate {
-    type Out;
+    type Output;
 }
 
-pub type LeftAssociateOut<T> = <T as LeftAssociate>::Out;
+pub type LeftAssociateOutput<T> = <T as LeftAssociate>::Output;
 
 impl<A, B, C> LeftAssociate for (A, (B, C)) {
-    type Out = ((A, B), C);
+    type Output = ((A, B), C);
 }
 
 // Right associate
 
 pub trait RightAssociate {
-    type Out;
+    type Output;
 }
 
-pub type RightAssociateOut<T> = <T as RightAssociate>::Out;
+pub type RightAssociateOutput<T> = <T as RightAssociate>::Output;
 
 impl<A, B, C> RightAssociate for ((A, B), C) {
-    type Out = (A, (B, C));
+    type Output = (A, (B, C));
 }
