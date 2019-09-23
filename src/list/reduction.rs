@@ -179,7 +179,6 @@ mod tests {
     use super::*;
     use crate::{control::IfEqualOut, TListType};
     use typenum::consts::*;
-    use typenum::IsEqual;
 
     type List1 = TListType! {U2, U5, U3, U0};
     type List2 = TListType! {N3, P7, Z0, N4};
@@ -203,8 +202,6 @@ mod tests {
 
     #[test]
     fn tlist_reduction_test() {
-        // let _: Assert = ();
-
         let _: Assert1 = ();
         let _: Assert2 = ();
         let _: Assert3 = ();
