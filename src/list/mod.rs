@@ -2,7 +2,10 @@ mod reduction;
 
 pub use reduction::*;
 
-use crate::counter::{Counter, Current, Next};
+use crate::{
+    counter::{Counter, Current, Next},
+    TListType,
+};
 use std::{marker::PhantomData, ops::Add};
 use typenum::{Sum, Unsigned, U0, U1};
 
@@ -97,6 +100,8 @@ where
     type Output;
 }
 
+pub type LAppendOutput<List, Item> = <List as LAppend<Item>>::Output;
+
 impl<Item> LAppend<Item> for LNil {
     type Output = LCons<Item, LNil>;
 }
@@ -107,8 +112,6 @@ where
 {
     type Output = LCons<Head, LAppendOutput<Tail, Item>>;
 }
-
-pub type LAppendOutput<List, Item> = <List as LAppend<Item>>::Output;
 
 // insert at
 
@@ -205,27 +208,32 @@ pub type LRemoveManyOutput<List, Targets, Indexes> =
 
 // index of item
 
-pub trait LIndexOf<Item, Index>
+pub trait LIndexOf<Target, Index>
 where
     Self: TList,
     Index: Counter,
+    Self::Index: Unsigned,
 {
-    const INDEX: usize;
+    type Index;
 }
+
+pub type LIndexOfIndex<List, Target, Index> = <List as LIndexOf<Target, Index>>::Index;
 
 impl<Target, Tail> LIndexOf<Target, Current> for LCons<Target, Tail>
 where
     Tail: TList,
 {
-    const INDEX: usize = 0;
+    type Index = U0;
 }
 
 impl<Target, Index, NonTarget, Tail> LIndexOf<Target, Next<Index>> for LCons<NonTarget, Tail>
 where
     Index: Counter,
     Tail: TList + LIndexOf<Target, Index>,
+    LIndexOfIndex<Tail, Target, Index>: Add<U1>,
+    Sum<LIndexOfIndex<Tail, Target, Index>, U1>: Unsigned,
 {
-    const INDEX: usize = 1 + <Tail as LIndexOf<Target, Index>>::INDEX;
+    type Index = Sum<LIndexOfIndex<Tail, Target, Index>, U1>;
 }
 
 // index of many
@@ -235,44 +243,32 @@ where
     Self: TList,
     Targets: TList,
     Indexes: TList,
+    Self::Indexes: TList,
 {
-    fn indexes() -> Vec<usize>;
-    fn inverse_indexes() -> Vec<usize>;
+    type Indexes;
 }
+
+pub type LIndexOfManyIndexes<List, Targets, Indexes> =
+    <List as LIndexOfMany<Targets, Indexes>>::Indexes;
 
 impl<List> LIndexOfMany<LNil, LNil> for List
 where
-    List: TList + LLength,
+    List: TList,
 {
-    fn indexes() -> Vec<usize> {
-        vec![]
-    }
-
-    fn inverse_indexes() -> Vec<usize> {
-        (0..LLengthOutput::<List>::USIZE).collect()
-    }
+    type Indexes = TListType! {};
 }
 
-impl<Index, IRemain, Target, TRemain, Head, Tail>
-    LIndexOfMany<LCons<Target, TRemain>, LCons<Index, IRemain>> for LCons<Head, Tail>
+impl<List, Index, IRemain, Target, TRemain>
+    LIndexOfMany<LCons<Target, TRemain>, LCons<Index, IRemain>> for List
 where
+    List: NonEmptyTList,
     Index: Counter,
     IRemain: TList,
     TRemain: TList,
-    Tail: TList,
-    Self: LIndexOf<Target, Index> + LIndexOfMany<TRemain, IRemain>,
+    Self: LIndexOfMany<TRemain, IRemain> + LIndexOf<Target, Index>,
 {
-    fn indexes() -> Vec<usize> {
-        let mut indexes = <Self as LIndexOfMany<TRemain, IRemain>>::indexes();
-        indexes.insert(0, <Self as LIndexOf<Target, Index>>::INDEX);
-        indexes
-    }
-
-    fn inverse_indexes() -> Vec<usize> {
-        let mut indexes = <Self as LIndexOfMany<TRemain, IRemain>>::inverse_indexes();
-        indexes.remove_item(&<Self as LIndexOf<Target, Index>>::INDEX);
-        indexes
-    }
+    type Indexes =
+        LCons<LIndexOfIndex<Self, Target, Index>, LIndexOfManyIndexes<Self, TRemain, IRemain>>;
 }
 
 // reverse
@@ -423,6 +419,38 @@ where
     type Output = LCons<NonTarget, LInsertIfNotExistOutput<Tail, Target, Index>>;
 }
 
+// into vector of integers
+
+pub trait LToUsizeVec {
+    fn to_usize_vec() -> Vec<usize>;
+    fn append_usize_vec(values: &mut Vec<usize>);
+}
+
+impl LToUsizeVec for LNil {
+    fn to_usize_vec() -> Vec<usize> {
+        vec![]
+    }
+
+    fn append_usize_vec(values: &mut Vec<usize>) {}
+}
+
+impl<Value, Tail> LToUsizeVec for LCons<Value, Tail>
+where
+    Value: Unsigned,
+    Tail: TList + LToUsizeVec,
+{
+    fn to_usize_vec() -> Vec<usize> {
+        let mut values = vec![];
+        Self::append_usize_vec(&mut values);
+        values
+    }
+
+    fn append_usize_vec(values: &mut Vec<usize>) {
+        values.push(Value::USIZE);
+        Tail::append_usize_vec(values);
+    }
+}
+
 // functor and fmap for list
 // currently not working
 
@@ -468,9 +496,10 @@ macro_rules! TListType {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{control::IfOutput, TListType};
+    use crate::{control::IfSameOutput, TListType};
+    use typenum::consts::*;
 
-    type AssertEqual<Lhs, Rhs> = IfOutput<(), LCombineEqualOutput<Lhs, Rhs>>;
+    type AssertSame<Lhs, Rhs> = IfSameOutput<(), Lhs, Rhs>;
 
     struct A;
     struct B;
@@ -482,76 +511,72 @@ mod tests {
     type SomeList = TListType! {A, B, C};
     type AnotherList = TListType! {D, E};
 
-    type Assert1 = AssertEqual<LPrependOutput<EmptyList, A>, TListType! {A}>;
-    type Assert2 = AssertEqual<LAppendOutput<EmptyList, D>, TListType! {D}>;
+    // prepend empty list
+    type Assert1 = AssertSame<LPrependOutput<EmptyList, A>, TListType! {A}>;
 
-    type Assert3 = AssertEqual<LPrependOutput<SomeList, D>, TListType! {D, A, B, C}>;
-    type Assert4 = AssertEqual<LAppendOutput<SomeList, D>, TListType! {A, B, C, D}>;
+    // append empty list
+    type Assert2 = AssertSame<LAppendOutput<EmptyList, D>, TListType! {D}>;
 
-    type Assert5<Idx> = AssertEqual<LInsertAtOutput<SomeList, D, B, Idx>, TListType! {A, B, D, C}>;
-    type Assert6<Idx> = AssertEqual<LInsertAtOutput<SomeList, D, C, Idx>, TListType! {A, B, C, D}>;
+    // prepend non-empty list
+    type Assert3 = AssertSame<LPrependOutput<SomeList, D>, TListType! {D, A, B, C}>;
 
-    type Assert7<Idx> = AssertEqual<LRemoveAtOutput<SomeList, B, Idx>, TListType! {A, C}>;
+    // append non-empty list
+    type Assert4 = AssertSame<LAppendOutput<SomeList, D>, TListType! {A, B, C, D}>;
 
+    // insert in middle
+    type Assert5<Idx> = AssertSame<LInsertAtOutput<SomeList, D, B, Idx>, TListType! {A, B, D, C}>;
+
+    // insert at end
+    type Assert6<Idx> = AssertSame<LInsertAtOutput<SomeList, D, C, Idx>, TListType! {A, B, C, D}>;
+
+    // remove
+    type Assert7<Idx> = AssertSame<LRemoveAtOutput<SomeList, B, Idx>, TListType! {A, C}>;
+
+    // remove multiple items
     type Assert8<Idx> =
-        AssertEqual<LRemoveManyOutput<SomeList, TListType! {A, C}, Idx>, TListType! {B}>;
+        AssertSame<LRemoveManyOutput<SomeList, TListType! {A, C}, Idx>, TListType! {B}>;
 
+    // remove until empty
     type Assert9<Idx> =
-        AssertEqual<LRemoveManyOutput<SomeList, TListType! {B, A, C}, Idx>, TListType! {}>;
+        AssertSame<LRemoveManyOutput<SomeList, TListType! {B, A, C}, Idx>, TListType! {}>;
 
-    type Assert10 = AssertEqual<LReverseOutput<SomeList>, TListType! {C, B, A}>;
+    // reverse list
+    type Assert10 = AssertSame<LReverseOutput<SomeList>, TListType! {C, B, A}>;
 
+    // assert identical set of items
     type Assert11<Idx> = LSetEqualOutput<SomeList, TListType! {C, A, B}, Idx>;
 
-    type Assert12 = AssertEqual<LConcatOutput<SomeList, AnotherList>, TListType! {A, B, C, D, E}>;
+    // concat
+    type Assert12 = AssertSame<LConcatOutput<SomeList, AnotherList>, TListType! {A, B, C, D, E}>;
+
+    // index of tiem
+    type Assert13<Idx> = AssertSame<LIndexOfIndex<SomeList, A, Idx>, U0>;
+    type Assert14<Idx> = AssertSame<LIndexOfIndex<SomeList, B, Idx>, U1>;
+    type Assert15<Idx> = AssertSame<LIndexOfIndex<SomeList, C, Idx>, U2>;
+
+    // index of multiple items
+    type Indexes<Idx> = LIndexOfManyIndexes<SomeList, TListType! {C, A, B}, Idx>;
+    type Assert16<Idx> = AssertSame<Indexes<Idx>, TListType! {U2, U0, U1}>;
 
     #[test]
     fn tlist_test() {
-        // prepend empty list
         let _: Assert1 = ();
-
-        // append empty list
         let _: Assert2 = ();
-
-        // prepend non-empty list
         let _: Assert3 = ();
-
-        // append non-empty list
         let _: Assert4 = ();
-
-        // insert in middle
         let _: Assert5<_> = ();
-
-        // insert at end
         let _: Assert6<_> = ();
-
-        // remove
         let _: Assert7<_> = ();
-
-        // remove multiple items
         let _: Assert8<_> = ();
-
-        // remove until empty
         let _: Assert9<_> = ();
-
-        // reverse list
         let _: Assert10 = ();
-
-        // assert identical set of items
         let _: Assert11<_> = ();
-
-        // concat
         let _: Assert12 = ();
+        let _: Assert13<_> = ();
+        let _: Assert14<_> = ();
+        let _: Assert15<_> = ();
+        let _: Assert16<_> = ();
 
-        // index of item
-        assert_eq!(<SomeList as LIndexOf<A, _>>::INDEX, 0);
-        assert_eq!(<SomeList as LIndexOf<B, _>>::INDEX, 1);
-        assert_eq!(<SomeList as LIndexOf<C, _>>::INDEX, 2);
-
-        // index of multiple items
-        assert_eq!(
-            <SomeList as LIndexOfMany<TListType! {C, A, B}, _>>::indexes(),
-            &[2, 0, 1]
-        );
+        assert_eq!(<Indexes<_> as LToUsizeVec>::to_usize_vec(), &[2, 0, 1]);
     }
 }
