@@ -1,8 +1,14 @@
 # Type Freak
 
-The crate is a collection of typed data structures, trait operators and useful type aliases for Rust. It was introduced to support [tch-typed-tensor](https://github.com/jerry73204/tch-typed-tensor) project, which provides compile-time checked tensor type.
+The crate is a collection of typed data structures, trait operators and
+useful type aliases for Rust.
+It was introduced to support [tch-typed-tensor](https://github.com/jerry73204/tch-typed-tensor) project,
+which provides compile-time checked tensor type.
 
-It reduces runtime computation to minimum by design. The DSTs are manipulated by _trait operators_. That is, with Rust's associated types and generics, we can build non-trivial types like lists and key-value map.
+It reduces runtime computation to minimum by design.
+The DSTs are manipulated by _trait operators_.
+That is, with Rust's associated types and generics,
+we can build non-trivial types like lists and key-value map.
 
 So far, the crate ships following features. It's still in alpha stage and I'm glad for contributions!
 
@@ -21,6 +27,143 @@ It's not published on crates.io yet. To give it a try, put this on your `Cargo.t
 ```toml
 type-freak = { git = "https://github.com/jerry73204/rust-type-freak.git", branch = "master" }
 ```
+
+## Examples
+
+### Compile-time guards and static assertions
+
+To assert one typed integer is less than the other typed integer:
+
+```rust
+use typenum::consts::*;
+use type_freak::control::IfLessOutput;
+
+type Out1 = IfLessOutput<usize, U3, U5>;  // U3 < U5 is true, thus Out1 ~= usize
+type Out2 = IfLessOutput<usize, U5, U3>;  // U5 < U5 is false
+
+fn assert() {
+   let _: Out1 = 0;  // Goes fine here.
+   let _: Out2 = 0;  // Compile error!!!
+}
+ ```
+
+We can make sure two generic parameters are of the same type by `IfSame`
+trait bound.
+
+```rust
+use type_freak::control::IfSame;
+
+fn guarded_function<Lhs, Rhs>() -> String
+where
+    Lhs: IfSame<Lhs, Rhs>
+{
+    "Yeeeeeee!".to_owned()
+}
+
+fn comile_me() {
+    let _ = guarded_function::<String, String>();  // fine
+    let _ = guarded_function::<String, u8>();      // Compile error!!!
+}
+```
+
+### Typed list
+
+The `TList` type represents a list of arbitrary types. It can be constructed
+by `TListType!` macro. The crate ships a variety of traits as _type operators_ to
+manipuate the list structure.
+
+```rust
+use type_freak::{TListType, list::*};
+
+type List1 = TListType! {u8, u16, u32};
+
+type List2 = LPrependOutput<List1, u64>;
+// List2 ~= TListType! {u64, u8, u16, u32}
+// is alias of <List1 as LPrepend<List1, u64>>::Output
+
+type List3<Index1> = LRemoveAtOutput<List2, u16, Index1>;
+// List3<_> ~= TListType! {u64, u8, u32}
+
+type List4<Index1> = LAppendOutput<List3<Index1>, f32>;
+// List4 ~= TListType! {u64, u8, u32, f32}
+
+type List5<Index1, Index2> = LInsertAtOutput<List4<Index1>, u8, f64, Index2>;
+// List5 ~= TListType! {u64, u8, f64, u32, f32}
+```
+
+### Trait-level `Option`
+
+The `Maybe` is analogous to std's `Option`.
+
+```rust
+use typenum::consts::*;
+use type_freak::maybe::{Maybe, Just, Nothing, UnwrapOutput, UnwrapOrOutput};
+
+type Opt1 = Just<U3>;
+type Opt2 = Nothing;
+
+type Val1 = UnwrapOutput<Opt1>;       // U3
+type Val2 = UnwrapOrOutput<Opt1, U0>; // U3
+type Val3 = UnwrapOrOutput<Opt2, U0>; // U0
+```
+
+### Auto-inferred counters
+
+The `Counter` traits along with `Next` and `Current` types are handly
+tools to build recursive type operators. The following demo implements
+an trait that removes a specific type from `TList`.
+
+The example works by a termination step and recursive step, corresponding
+to to impl blocks. Note that the `Index` argument is necessary to let compiler
+distinguish the signatures of two impl blocks. Otherwise, the compiler will
+complain about conflicting implementations.
+
+
+```rust
+use type_freak::{
+    list::{TList, LCons, LNil},
+    counter::{Counter, Current, Next},
+};
+
+/* Definition */
+
+pub trait LRemoveAt<Target, Index>
+where
+    Index: Counter,
+    Self: TList,
+    Self::Output: TList,
+{
+    type Output;
+}
+
+// termination step
+impl<Target, Tail> LRemoveAt<Target, Current> for LCons<Target, Tail>
+where
+    Tail: TList,
+{
+    type Output = Tail;
+}
+
+// recursion step
+impl<Target, Index, NonTarget, Tail> LRemoveAt<Target, Next<Index>> for LCons<NonTarget, Tail>
+where
+    Index: Counter,
+    Tail: TList + LRemoveAt<Target, Index>,
+{
+    type Output = LCons<NonTarget, <Tail as LRemoveAt<Target, Index>>::Output>;
+}
+
+/* Auto-inference example */
+
+// Here SomeList is equivalent to TListType! {u8, u32}
+type SomeList<Index> = <TListType! {u8, u16, u32} as LRemoveAt<u16, Index>>::Output;
+
+// The Index argument can be inferred by compiler
+fn auto_inference() {
+    let _ = SomeList::<_>::new();
+}
+```
+
 
 ## License
 
