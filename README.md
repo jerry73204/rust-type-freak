@@ -26,7 +26,7 @@ Put this line to your `Cargo.toml`. Note that the crate is still in alpha stage.
 Stabilized API is not guaranteed.
 
 ```toml
-type-freak = "~0";
+type-freak = "~0"
 ```
 
 ## Examples
