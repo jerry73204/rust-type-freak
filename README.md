@@ -22,10 +22,11 @@ So far, the crate ships following features. It's still in alpha stage and I'm gl
 
 ## Usage
 
-It's not published on crates.io yet. To give it a try, put this on your `Cargo.toml`.
+Put this line to your `Cargo.toml`. Note that the crate is still in alpha stage.
+Stabilized API is not guaranteed.
 
 ```toml
-type-freak = { git = "https://github.com/jerry73204/rust-type-freak.git", branch = "master" }
+type-freak = "~0";
 ```
 
 ## Examples
