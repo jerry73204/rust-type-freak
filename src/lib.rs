@@ -9,6 +9,4 @@ pub mod counter;
 pub mod kvlist;
 pub mod list;
 pub mod maybe;
-pub mod monoid;
-pub mod polynomial;
 pub mod tuple;
