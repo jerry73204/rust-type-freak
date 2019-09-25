@@ -10,4 +10,4 @@ readme = "README.md"
 license-file = "LICENSE.md"
 
 [dependencies]
-typenum = "*"
+typenum = "~1"
