@@ -431,7 +431,7 @@ impl LToUsizeVec for LNil {
         vec![]
     }
 
-    fn append_usize_vec(values: &mut Vec<usize>) {}
+    fn append_usize_vec(_values: &mut Vec<usize>) {}
 }
 
 impl<Value, Tail> LToUsizeVec for LCons<Value, Tail>
