@@ -1,4 +1,65 @@
-//! Static guards and compile-time assertions.
+//! Compile-time guards and static assertions.
+//!
+//! ## Overview
+//! Most type operators in this module copies the input type to `Self::Output`
+//! when certain conditions are met. We have these categories of operators:
+//!
+//! - [IfOutput<Output, Type>](crate::control::IfOutput):
+//!     Asserts `Type` can be constructed.
+//! - [IfPredicate<Output, Predicate>](crate::control::IfPredicate):
+//!     Asserts `Predicate` derives to [True](typenum::True).
+//! - [IfSame<Output, Lhs, Rhs>](crate::control::IfSame):
+//!     Asserts `Lhs` and `Rhs` are of the same type.
+//! - [IfLess](crate::control::IfLess), [IfLessOrEqual](crate::control::IfLessOrEqual),
+//!     [IfGreater](crate::control::IfGreater), [IfGreaterOrEqual](crate::control::IfGreaterOrEqual),
+//!     [IfEqual](crate::control::IfEqual):
+//!     Asserts two [typenum] numbers follows the order.
+//!
+//! By convention, [IfSameOutput<Output, Lhs, Rhs>](crate::control::IfSameOutput) is type alias of
+//! `<Output as IfSame<Lhs, Rhs>>::Output` trait cast, and others follow.
+//! Only [IfOutput<Output, Type>](crate::control::IfOutput) has no corresponding trait.
+//!
+//! ## Static assertions
+//! We can make use of `If*Output` aliases to build compile time assertions.
+//! For example, [IfLessOutput](crate::control::IfLessOutput) asserts LHS
+//! is less than RHS.
+//!
+//! ```ignore
+//! use typenum::consts::*;
+//! use type_freak::control::IfLessOutput;
+//!
+//! type Out1 = IfLessOutput<usize, U3, U5>;  // U3 < U5 is true, thus Out1 ~= usize
+//! type Out2 = IfLessOutput<usize, U5, U3>;  // U5 < U5 is false
+//!
+//! fn assert() {
+//!    let _: Out1 = 0;  // Goes fine here.
+//!    let _: Out2 = 0;  // Compile error!!!
+//! }
+//!  ```
+//!
+//! ## Compile-time guards
+//! By placing `If*` trait bounds in `where` block. we can build compile-time
+//! guarded functions. For example, we add `IfSame` trait bound to assert two function
+//! generic parameters have identical types.
+//! The same trick applies to guarded structs, traits and impl blocks.
+//!
+//! ```ignore
+//! use type_freak::control::IfSame;
+//!
+//! fn guarded_function<Lhs, Rhs>() -> String
+//! where
+//!     Lhs: IfSame<Lhs, Rhs>
+//! {
+//!     "Yeeeeeee!".to_owned()
+//! }
+//!
+//! fn comile_me() {
+//!     let _ = guarded_function::<String, String>();  // fine
+//!     let _ = guarded_function::<String, u8>();      // Compile error!!!
+//! }
+//! ```
+//!
+//!
 
 use crate::{boolean::Boolean, tuple::FirstOfOutput};
 use typenum::{

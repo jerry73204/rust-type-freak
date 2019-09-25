@@ -1,4 +1,26 @@
 //! Trait level boolean algrbra.
+//!
+//! This module reuses [True](typenum::True) and [False](typenum::False) types
+//! from [typenum]. It provides common logic arithmetic boolean operators:
+//! [Not](crate::boolean::Not), [And](crate::boolean::And), [Or](crate::boolean::Or),
+//! [Xor](crate::boolean::Xor) and [Iff](crate::boolean::Iff).
+//!
+//! ```rust
+//! use typenum::{True, False};
+//! use type_freak::boolean::*;
+//!
+//! type L = True;
+//! type R = False;
+//! type R1 = NotOutput<L>;     // False
+//! type R2 = AndOutput<L, R>;  // False
+//! type R3 = OrOutput<L, R>;   // True
+//! type R4 = XorOutput<L, R>;  // True
+//! type R5 = IffOutput<L, R>;  // False
+//!
+//! fn get_value() -> bool {
+//!     R1::BOOL  // Get constant value
+//! }
+//! ```
 
 use typenum::{False, True};
 
