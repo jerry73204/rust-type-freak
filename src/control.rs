@@ -61,10 +61,13 @@
 //!
 //!
 
-use crate::{boolean::Boolean, tuple::FirstOfOutput};
+use crate::{
+    boolean::{Boolean, Or, OrOutput},
+    tuple::FirstOfOutput,
+};
 use typenum::{
     Eq, False, Gr, GrEq, IsEqual, IsGreater, IsGreaterOrEqual, IsLess, IsLessOrEqual, Le, LeEq,
-    True,
+    NonZero, True, B0, U0, Z0,
 };
 
 // if
@@ -228,57 +231,106 @@ where
     type Output = IfPredicateOutput<Output, Eq<Lhs, Rhs>>;
 }
 
+// if zero
+
+/// A type operator that checks if a [typenum] value is either
+/// [B0](typenum::B0), [Z0](typenum::Z0) or [U0](typenum::U0).
+pub trait IfZero<Value> {
+    type Output;
+}
+
+pub type IfZeroOutput<Output, Value> = <Output as IfZero<Value>>::Output;
+
+impl<Output> IfZero<B0> for Output {
+    type Output = Output;
+}
+
+impl<Output> IfZero<Z0> for Output {
+    type Output = Output;
+}
+
+impl<Output> IfZero<U0> for Output {
+    type Output = Output;
+}
+
+// if non-zero
+
+/// A type operator that checks if a [typenum] value implements
+/// [NonZero](typenum::NonZero) trait.
+pub trait IfNonZero<Value>
+where
+    Value: NonZero,
+{
+    type Output;
+}
+
+pub type IfNonZeroOutput<Output, Value> = <Output as IfNonZero<Value>>::Output;
+
+impl<Value, Output> IfNonZero<Value> for Output
+where
+    Value: NonZero,
+{
+    type Output = Output;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use typenum::{consts::*, Le, Unsigned};
 
+    // if constructed
     type Assert1 = IfOutput<U3, ()>;
+
+    // if type equivalence
     type Assert2 = IfSameOutput<(), u8, u8>;
+
+    // if predicate
     type Assert3 = IfPredicateOutput<(), Le<U3, U4>>;
+
+    // if else predicate
     type Assert4 = IfElsePredicateOutput<True, False, Le<U3, U4>>;
 
+    // if less than
     type Assert5 = IfLessOutput<(), U6, U9>;
 
+    // if less than or equal
     type Assert6 = IfLessOrEqualOutput<(), U6, U6>;
     type Assert7 = IfLessOrEqualOutput<(), U6, U7>;
 
+    // if greater than
     type Assert8 = IfGreaterOutput<(), U7, U4>;
 
+    // if greater than or equal
     type Assert9 = IfGreaterOrEqualOutput<(), U7, U4>;
     type Assert10 = IfGreaterOrEqualOutput<(), U7, U7>;
 
+    // if equal
     type Assert11 = IfEqualOutput<(), Z0, Z0>;
+
+    // if zero
+    type Assert12<Value> = IfZeroOutput<(), Value>;
+
+    // if non-zero
+    type Assert13<Value> = IfNonZeroOutput<(), Value>;
 
     #[test]
     fn control_test() {
-        // if constructed
         assert_eq!(3, Assert1::USIZE);
-
-        // if type equivalence
         let _: Assert2 = ();
-
-        // if predicate
         let _: Assert3 = ();
-
-        // if else predicate
         assert!(Assert4::BOOL);
-
-        // if less than
         let _: Assert5 = ();
-
-        // if less than or equal
         let _: Assert6 = ();
         let _: Assert7 = ();
-
-        // if greater than
         let _: Assert8 = ();
-
-        // if greater than or equal
         let _: Assert9 = ();
         let _: Assert10 = ();
-
-        // if equal
         let _: Assert11 = ();
+        let _: Assert12<B0> = ();
+        let _: Assert12<Z0> = ();
+        let _: Assert12<U0> = ();
+        let _: Assert13<P1> = ();
+        let _: Assert13<N1> = ();
+        let _: Assert13<U1> = ();
     }
 }
