@@ -1,3 +1,5 @@
+//! Type operators for tuple types.
+
 // first type of pair
 
 /// A type operator that takes first type of tuple.

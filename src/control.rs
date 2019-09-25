@@ -1,3 +1,5 @@
+//! Static guards and compile-time assertions.
+
 use crate::{boolean::Boolean, tuple::FirstOfOutput};
 use typenum::{
     Eq, False, Gr, GrEq, IsEqual, IsGreater, IsGreaterOrEqual, IsLess, IsLessOrEqual, Le, LeEq,

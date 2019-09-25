@@ -1,3 +1,20 @@
+//! Trait-level equivalences to [Option](std::option::Option).
+//!
+//! The trait [Maybe](crate::maybe::Maybe) corresponds to [Option](std::option::Option). The types
+//! [Just](crate::maybe::Just) and [Nothing](crate::maybe::Nothing) corresponds `Some` and `None` respectively.
+//!
+//! ```rust
+//! use typenum::consts::*;
+//! use type_freak::maybe::{Maybe, Just, Nothing, UnwrapOutput, UnwrapOrOutput};
+//!
+//! type Opt1 = Just<U3>;
+//! type Opt2 = Nothing;
+//!
+//! type Val1 = UnwrapOutput<Opt1>;       // U3
+//! type Val2 = UnwrapOrOutput<Opt1, U0>; // U3
+//! type Val3 = UnwrapOrOutput<Opt2, U0>; // U0
+//! ```
+
 use std::marker::PhantomData;
 
 // maybe def
@@ -7,6 +24,7 @@ pub trait Maybe {}
 
 // just def
 
+/// A type analogous to `Some`.
 pub struct Just<T> {
     _phantom: PhantomData<T>,
 }
@@ -15,6 +33,7 @@ impl<T> Maybe for Just<T> {}
 
 // nothing def
 
+/// A type analogous to `None`.
 pub struct Nothing;
 
 impl Maybe for Nothing {}

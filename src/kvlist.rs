@@ -1,3 +1,5 @@
+//! A typed list of key-value pairs.
+
 use crate::{
     counter::{Counter, Current, Next},
     list::{LCons, LNil, TList},
@@ -530,6 +532,7 @@ where
 
 // macro
 
+/// Builds a type that implements [KVList](crate::kvlist::KVList).
 #[macro_export]
 macro_rules! KVListType {
     () => { $crate::kvlist::KVNil };

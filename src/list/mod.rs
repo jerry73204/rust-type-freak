@@ -1,3 +1,89 @@
+//! Typed list that supports insertion, removal and look-up.
+//!
+//! ## Type construction
+//! The [TList](crate::list::TList) trait represents a typed list of arbitrary types.
+//! The type [LCons](crate::list::LCons) forms intermediate nodes, while
+//! [LNil](crate::list::LNil) type marks the end of list. For a list of `u8`, `u16`
+//! and `u32` types:
+//!
+//! ```ignore
+//! LCons<u8, LCons<u16, LCons<u32, LNil>>>
+//! ```
+//!
+//! Most of the time you don't need to write in this cumbersome way.
+//! The [TListType] macro let you write in more compact syntax. For example,
+//!
+//! ```ignore
+//! TListType! {u8, u16, u32}
+//! ```
+//!
+//! ## List manipuation
+//! The module ships a collection of _type operators_ to manipulate lists,
+//! including [LPrepend](crate::list::LPrepend), [LAppend](crate::list::LAppend),
+//! [LInsertAt](crate::list::LInsertAt), [LRemoveAt](crate::list::LRemoveAt).
+//! As the name explains itself, you can append or prepend a type to this list,
+//! insert a new type after a some type, or remove a specific type. We can work
+//! it out by their type aliases for convenience.
+//!
+//! ```rust
+//! use type_freak::{TListType, list::*};
+//!
+//! type List1 = TListType! {u8, u16, u32};
+//!
+//! type List2 = LPrependOutput<List1, u64>;
+//! // List2 ~= TListType! {u64, u8, u16, u32}
+//! // is alias of <List1 as LPrepend<List1, u64>>::Output
+//!
+//! type List3<Index1> = LRemoveAtOutput<List2, u16, Index1>;
+//! // List3<_> ~= TListType! {u64, u8, u32}
+//!
+//! type List4<Index1> = LAppendOutput<List3<Index1>, f32>;
+//! // List4 ~= TListType! {u64, u8, u32, f32}
+//!
+//! type List5<Index1, Index2> = LInsertAtOutput<List4<Index1>, u8, f64, Index2>;
+//! // List5 ~= TListType! {u64, u8, f64, u32, f32}
+//! ```
+//!
+//! As shown in the example, [LInsertAt](crate::list::LInsertAt),
+//! [LRemoveAt](crate::list::LRemoveAt) along with other type operators
+//! have a special `Index` generic type argument. It is necessary for
+//! list traversal. Most of the time we can leave it undetermined.
+//! It can be inferred by compiler when constructing concrete type.
+//!
+//! ```ignore
+//! let _ = List5::<_, _>::new();
+//! ```
+//!
+//! ## Marker traits
+//! The [EmptyTList](crate::list::EmptyTList) and [NonEmptyTList](crate::list::NonEmptyTList)
+//! traits can be used in trait bounds. Suppose you wish to accept a non-empty
+//! [TList](crate::list::TList) type:
+//!
+//! ```ignore
+//! trait ExampleTrait<List: NonEmptytList> { /* ... */ }
+//! ```
+//! ## Numeric type operators
+//! [LReduceMax](crate::list::LReduceMax), [LReduceMin](crate::list::LReduceMin),
+//! [LReduceSum](crate::list::LReduceSum) and [LReduceProduct](crate::list::LReduceProduct)
+//! assume all contained types are [typenum] typed numbers. You may `use typenum::consts::*`
+//! to work with [typenum] constants.
+//!
+//! ```rust
+//! use type_freak::{TListType, list::LReduceSumOutput};
+//! use typenum::consts::*;
+//!
+//! type Value = LReduceSumOutput<TListType! {P3, N5, Z0}>;  // Value ~= P2
+//! ```
+//!
+//! The [LToUsizeVec](crate::list::LToUsizeVec) provides a
+//! [to_usize_vec](crate::list::LToUsizeVec::to_usize_vec) to build concrete
+//! `Vec<usize>` type.
+//!
+//! ```ignore
+//! // Gets vec![3, -5, 0]
+//! let values = <TListType! {P3, N5, Z0} as LToUsizeVec>::to_usize_vec();
+//! ```
+
 mod reduction;
 
 pub use reduction::*;
@@ -11,8 +97,10 @@ use typenum::{Sum, Unsigned, U0, U1};
 
 // list
 
+/// Represents a typed list constructed by [LCons] and [LNil].
 pub trait TList {}
 
+/// Represents an intermediate node.
 pub struct LCons<Head, Tail>
 where
     Tail: TList,
@@ -33,12 +121,14 @@ where
 
 impl<Head, Tail> TList for LCons<Head, Tail> where Tail: TList {}
 
+/// Represents the end of list.
 pub struct LNil;
 
 impl TList for LNil {}
 
 // length of list
 
+/// A type operator that gets the length of [TList].
 pub trait LLength
 where
     Self: TList,
@@ -64,16 +154,19 @@ pub type LLengthOutput<List> = <List as LLength>::Output;
 
 // {,non-}empty list trait
 
+/// Marks an empty [TList].
 pub trait EmptyTList: TList {}
 
 impl EmptyTList for LNil {}
 
+/// Marks a non-empty [TList].
 pub trait NonEmptyTList: TList {}
 
 impl<Head, Tail> NonEmptyTList for LCons<Head, Tail> where Tail: TList {}
 
 // prepend
 
+/// Prepends a new type to [TList].
 pub trait LPrepend<Head>
 where
     Self: TList,
@@ -92,6 +185,7 @@ pub type LPrependOutput<List, Item> = <List as LPrepend<Item>>::Output;
 
 // append
 
+/// Appends a new type to [TList].
 pub trait LAppend<Item>
 where
     Self: TList,
@@ -115,6 +209,11 @@ where
 
 // insert at
 
+/// Inserts a `Item` type to [TList] after `Target` type.
+///
+/// The trait operator has an auxiliary `Index` argument for
+/// list traversal. Usaually it can be left unspecified and
+/// the compiler will figure it out.
 pub trait LInsertAt<Item, Target, Index>
 where
     Index: Counter,
@@ -145,6 +244,11 @@ pub type LInsertAtOutput<List, Item, Target, Index> =
 
 // remove
 
+/// Removes `Target` type from [TList].
+///
+/// The auxiliary `Index` argument is intended for
+/// list traversal. It can be left unspecified and
+/// the compiler will figure it out.
 pub trait LRemoveAt<Target, Index>
 where
     Index: Counter,
@@ -173,6 +277,10 @@ pub type LRemoveAtOutput<List, Target, Index> = <List as LRemoveAt<Target, Index
 
 // remove multiple items
 
+/// Removes a collection of types from [TList].
+///
+/// The `Targets` argument accepts a [TList] of types to be removed.
+/// The `Indexes` argument can be left unspecified.
 pub trait LRemoveMany<Targets, Indexes>
 where
     Targets: TList,
@@ -208,6 +316,10 @@ pub type LRemoveManyOutput<List, Targets, Indexes> =
 
 // index of item
 
+/// Returns the position of `Target` type in [TList].
+///
+/// The returned outcome always implements [Unsigned](typenum::Unsigned)
+/// trait. The `Index` argument can be left unspecified.
 pub trait LIndexOf<Target, Index>
 where
     Self: TList,
@@ -238,6 +350,10 @@ where
 
 // index of many
 
+/// Gets indexes of multiple types from [TList].
+///
+/// The `Targets` argument is a [TList] of queried types.
+/// The `Indexes` can be left unspecified.
 pub trait LIndexOfMany<Targets, Indexes>
 where
     Self: TList,
@@ -303,6 +419,10 @@ pub type LReverseOutput<List> = LReverseWithTailOutput<List, LNil>;
 
 // set equal
 
+/// Compare if a left-hand-side [TList] has the same set of types
+/// with `Rhs` [TList].
+///
+/// The `Indexes` argument can be left unspecified.
 pub trait LSetEqual<Rhs, Indexes>
 where
     Rhs: TList,
@@ -358,6 +478,7 @@ pub type LCombineEqualOutput<Lhs, Rhs> = <Lhs as LCombineEqual<Rhs>>::Output;
 
 // concatenate
 
+/// Concatenates the `Rhs` [TList] to the end of left-hand-side [TList].
 pub trait LConcat<Rhs>
 where
     Self: TList,
@@ -421,6 +542,11 @@ where
 
 // into vector of integers
 
+/// The trait builds a concrete `Vec<usize>` from a [TList]
+///
+/// It provides [to_usize_vec](LToUsizeVec::to_usize_vec) method to
+/// produces a vector of integers. It assumes all contained types implement
+/// [Unsigned](typenum::Unsigned) trait.
 pub trait LToUsizeVec {
     fn to_usize_vec() -> Vec<usize>;
     fn append_usize_vec(values: &mut Vec<usize>);
@@ -486,6 +612,7 @@ where
 
 // macro
 
+/// Builds a type that implements [TList](crate::list::TList).
 #[macro_export]
 macro_rules! TListType {
     () => { $crate::list::LNil };

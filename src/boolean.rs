@@ -1,3 +1,5 @@
+//! Trait level boolean algrbra.
+
 use typenum::{False, True};
 
 // boolean type def
@@ -17,6 +19,7 @@ impl Boolean for True {
 
 // assert true
 
+/// An type operator that outputs `()` if input is [True].
 pub trait AssertTrue
 where
     Self: Boolean,
@@ -32,6 +35,7 @@ impl AssertTrue for True {
 
 // assert false
 
+/// An type operator that outputs `()` if input is [False].
 pub trait AssertFalse
 where
     Self: Boolean,

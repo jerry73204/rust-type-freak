@@ -1,3 +1,5 @@
+//! An counter trait that can be automatically inferred, usually used for traversal.
+
 use std::{marker::PhantomData, ops::Add};
 use typenum::{Sum, Unsigned, U0, U1};
 
