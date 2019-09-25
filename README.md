@@ -15,7 +15,7 @@ So far, the crate ships following features. It's still in alpha stage and I'm gl
 - [TList](src/list/mod.rs): a typed list with arbitrary type as keys.
 - [KVList](src/kvlist.rs): like [TList](src/list/mod.rs), with extra values.
 - [Boolean](src/boolean.rs): typed boolean algebra.
-- [Maybe](src/maybe.rs): a trait analogous to `std::optoin::Option`.
+- [Maybe](src/maybe.rs): a trait analogous to `std::option::Option`.
 - [Trait operators for tuple types](src/tuple.rs)
 - [Counter](src/counter.rs): a convient type to build recursive trait operators.
 - [Control flow](src/control.rs): typed `If`, used to build compile-time guards.
