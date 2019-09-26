@@ -92,6 +92,7 @@ mod misc;
 mod reduction;
 mod remove;
 mod reverse;
+mod zipping;
 
 pub use functional::*;
 pub use indexing::*;
@@ -101,6 +102,7 @@ pub use misc::*;
 pub use reduction::*;
 pub use remove::*;
 pub use reverse::*;
+pub use zipping::*;
 
 use crate::TListType;
 use std::marker::PhantomData;
