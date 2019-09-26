@@ -1,5 +1,32 @@
 //! Type operators for tuple types.
 
+// marker traits for tuples
+
+/// Represents an empty tuple.
+pub trait EmptyTuple {}
+
+impl EmptyTuple for () {}
+
+/// Represents a tuple with single type.
+pub trait SingleTuple {}
+
+impl<A> SingleTuple for (A,) {}
+
+/// Represents a tuple with double types.
+pub trait Pair {}
+
+impl<A, B> Pair for (A, B) {}
+
+/// Represents a tuple with three types.
+pub trait Triple {}
+
+impl<A, B, C> Triple for (A, B, C) {}
+
+/// Represents a tuple with four types.
+pub trait Quadruple {}
+
+impl<A, B, C, D> Quadruple for (A, B, C, D) {}
+
 // first type of pair
 
 /// A type operator that takes first type of tuple.
