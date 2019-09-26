@@ -1,5 +1,5 @@
 use super::{LCons, LNil, LRemoveAt, LRemoveAtOutput, TList};
-use crate::counter::Counter;
+use crate::counter::{Counter, Current, Next};
 use std::ops::Add;
 use typenum::{Sum, Unsigned, U0, U1};
 
@@ -90,6 +90,39 @@ where
 }
 
 pub type LConcatOutput<Lhs, Rhs> = <Lhs as LConcat<Rhs>>::Output;
+
+// split list
+
+pub trait LSplit<Target, Index>
+where
+    Index: Counter,
+    Self: TList,
+    Self::FormerOutput: TList,
+    Self::LatterOutput: TList,
+{
+    type FormerOutput;
+    type LatterOutput;
+}
+
+pub type LSplitFormerOutput<List, Target, Index> = <List as LSplit<Target, Index>>::FormerOutput;
+pub type LSplitLatterOutput<List, Target, Index> = <List as LSplit<Target, Index>>::LatterOutput;
+
+impl<Target, Tail> LSplit<Target, Current> for LCons<Target, Tail>
+where
+    Tail: TList,
+{
+    type FormerOutput = LNil;
+    type LatterOutput = Self;
+}
+
+impl<Target, Index, NonTarget, Tail> LSplit<Target, Next<Index>> for LCons<NonTarget, Tail>
+where
+    Index: Counter,
+    Tail: TList + LSplit<Target, Index>,
+{
+    type FormerOutput = LCons<NonTarget, LSplitFormerOutput<Tail, Target, Index>>;
+    type LatterOutput = LSplitLatterOutput<Tail, Target, Index>;
+}
 
 // into vector of integers
 
