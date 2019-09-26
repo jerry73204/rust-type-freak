@@ -72,3 +72,33 @@ where
 
 pub type LRemoveManyOutput<List, Targets, Indexes> =
     <List as LRemoveMany<Targets, Indexes>>::Output;
+
+// tests
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{control::IfSameOutput, TListType};
+
+    type AssertSame<Lhs, Rhs> = IfSameOutput<(), Lhs, Rhs>;
+
+    struct A;
+    struct B;
+    struct C;
+
+    type SomeList = TListType! {A, B, C};
+
+    // remove multiple items
+    type Assert8<Idx> =
+        AssertSame<LRemoveManyOutput<SomeList, TListType! {A, C}, Idx>, TListType! {B}>;
+
+    // remove until empty
+    type Assert9<Idx> =
+        AssertSame<LRemoveManyOutput<SomeList, TListType! {B, A, C}, Idx>, TListType! {}>;
+
+    #[test]
+    fn tlist_test() {
+        let _: Assert8<_> = ();
+        let _: Assert9<_> = ();
+    }
+}

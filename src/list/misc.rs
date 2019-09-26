@@ -160,3 +160,43 @@ where
         Tail::append_usize_vec(values);
     }
 }
+
+// tests
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{control::IfSameOutput, list::LIndexOfManyIndexes, TListType};
+
+    type AssertSame<Lhs, Rhs> = IfSameOutput<(), Lhs, Rhs>;
+
+    struct A;
+    struct B;
+    struct C;
+    struct D;
+    struct E;
+
+    type SomeList = TListType! {A, B, C};
+    type AnotherList = TListType! {D, E};
+
+    // remove
+    type Assert7<Idx> = AssertSame<LRemoveAtOutput<SomeList, B, Idx>, TListType! {A, C}>;
+
+    // assert identical set of items
+    type Assert11<Idx> = LSetEqualOutput<SomeList, TListType! {C, A, B}, Idx>;
+
+    // concat
+    type Assert12 = AssertSame<LConcatOutput<SomeList, AnotherList>, TListType! {A, B, C, D, E}>;
+
+    // index of multiple items
+    type Indexes<Idx> = LIndexOfManyIndexes<SomeList, TListType! {C, A, B}, Idx>;
+
+    #[test]
+    fn tlist_test() {
+        let _: Assert7<_> = ();
+        let _: Assert11<_> = ();
+        let _: Assert12 = ();
+
+        assert_eq!(<Indexes<_> as LToUsizeVec>::to_usize_vec(), &[2, 0, 1]);
+    }
+}

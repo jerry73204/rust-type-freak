@@ -75,3 +75,37 @@ where
     type Indexes =
         LCons<LIndexOfIndex<Self, Target, Index>, LIndexOfManyIndexes<Self, TRemain, IRemain>>;
 }
+
+// tests
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{control::IfSameOutput, TListType};
+    use typenum::consts::*;
+
+    type AssertSame<Lhs, Rhs> = IfSameOutput<(), Lhs, Rhs>;
+
+    struct A;
+    struct B;
+    struct C;
+
+    type SomeList = TListType! {A, B, C};
+
+    // index of tiem
+    type Assert13<Idx> = AssertSame<LIndexOfIndex<SomeList, A, Idx>, U0>;
+    type Assert14<Idx> = AssertSame<LIndexOfIndex<SomeList, B, Idx>, U1>;
+    type Assert15<Idx> = AssertSame<LIndexOfIndex<SomeList, C, Idx>, U2>;
+
+    // index of multiple items
+    type Indexes<Idx> = LIndexOfManyIndexes<SomeList, TListType! {C, A, B}, Idx>;
+    type Assert16<Idx> = AssertSame<Indexes<Idx>, TListType! {U2, U0, U1}>;
+
+    #[test]
+    fn tlist_test() {
+        let _: Assert13<_> = ();
+        let _: Assert14<_> = ();
+        let _: Assert15<_> = ();
+        let _: Assert16<_> = ();
+    }
+}

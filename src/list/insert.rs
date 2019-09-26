@@ -114,3 +114,49 @@ where
 {
     type Output = LCons<NonTarget, LInsertIfNotExistOutput<Tail, Target, Index>>;
 }
+
+// tests
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{control::IfSameOutput, TListType};
+
+    type AssertSame<Lhs, Rhs> = IfSameOutput<(), Lhs, Rhs>;
+
+    struct A;
+    struct B;
+    struct C;
+    struct D;
+
+    type EmptyList = TListType! {};
+    type SomeList = TListType! {A, B, C};
+
+    // prepend empty list
+    type Assert1 = AssertSame<LPrependOutput<EmptyList, A>, TListType! {A}>;
+
+    // append empty list
+    type Assert2 = AssertSame<LAppendOutput<EmptyList, D>, TListType! {D}>;
+
+    // prepend non-empty list
+    type Assert3 = AssertSame<LPrependOutput<SomeList, D>, TListType! {D, A, B, C}>;
+
+    // append non-empty list
+    type Assert4 = AssertSame<LAppendOutput<SomeList, D>, TListType! {A, B, C, D}>;
+
+    // insert in middle
+    type Assert5<Idx> = AssertSame<LInsertAtOutput<SomeList, D, B, Idx>, TListType! {A, B, D, C}>;
+
+    // insert at end
+    type Assert6<Idx> = AssertSame<LInsertAtOutput<SomeList, D, C, Idx>, TListType! {A, B, C, D}>;
+
+    #[test]
+    fn tlist_test() {
+        let _: Assert1 = ();
+        let _: Assert2 = ();
+        let _: Assert3 = ();
+        let _: Assert4 = ();
+        let _: Assert5<_> = ();
+        let _: Assert6<_> = ();
+    }
+}

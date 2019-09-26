@@ -47,3 +47,27 @@ where
 }
 
 pub type LReverseOutput<List> = <List as LReverse>::Output;
+
+// tests
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{control::IfSameOutput, TListType};
+
+    type AssertSame<Lhs, Rhs> = IfSameOutput<(), Lhs, Rhs>;
+
+    struct A;
+    struct B;
+    struct C;
+
+    type SomeList = TListType! {A, B, C};
+
+    // reverse list
+    type Assert10 = AssertSame<LReverseOutput<SomeList>, TListType! {C, B, A}>;
+
+    #[test]
+    fn tlist_test() {
+        let _: Assert10 = ();
+    }
+}
