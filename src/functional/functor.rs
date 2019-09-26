@@ -1,6 +1,5 @@
 use crate::{
-    boolean::Boolean,
-    boolean::{And, AndOutput, Or, OrOutput},
+    boolean::{And, AndOutput, Boolean, Or, OrOutput},
     control::{IfElsePredicate, IfElsePredicateOutput},
     list::{LCons, TList},
 };
@@ -23,6 +22,15 @@ pub trait FoldFunctor<Acc, Input> {
 }
 
 pub type ApplyFoldFunctor<Func, Acc, Input> = <Func as FoldFunctor<Acc, Input>>::Output;
+
+/// Represents an applicable unit that takes a state and input.
+pub trait ScanFunctor<State, Input> {
+    type Output;
+    type State;
+}
+
+pub type ApplyScanFunctorOutput<Func, State, Input> = <Func as ScanFunctor<State, Input>>::Output;
+pub type ApplyScanFunctorState<Func, State, Input> = <Func as ScanFunctor<State, Input>>::State;
 
 /// A [Functor] type that prepends a type to a [TList].
 pub struct PrependTListFunc<Tail>

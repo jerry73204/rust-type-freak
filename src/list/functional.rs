@@ -1,6 +1,9 @@
 use super::{LCons, LNil, TList};
 use crate::{
-    functional::{ApplyFoldFunctor, ApplyFunctor, FoldFunctor, Functor, PrependTListFunc},
+    functional::{
+        ApplyFoldFunctor, ApplyFunctor, ApplyScanFunctorOutput, ApplyScanFunctorState, FoldFunctor,
+        Functor, PrependTListFunc, ScanFunctor,
+    },
     maybe::{Maybe, MaybeMap, MaybeMapOutput, UnwrapOr, UnwrapOrOutput},
 };
 
@@ -83,6 +86,36 @@ where
     >;
 }
 
+/// Maps the values in [TList] with state.
+pub trait LScan<State, Func>
+where
+    Self: TList,
+    Self::Output: TList,
+{
+    type Output;
+    type State;
+}
+
+pub type LScanOutput<List, State, Func> = <List as LScan<State, Func>>::Output;
+pub type LScanState<List, State, Func> = <List as LScan<State, Func>>::State;
+
+impl<State, Func> LScan<State, Func> for LNil {
+    type Output = LNil;
+    type State = State;
+}
+
+impl<State, Func, Head, Tail> LScan<State, Func> for LCons<Head, Tail>
+where
+    Func: ScanFunctor<State, Head>,
+    Tail: TList + LScan<ApplyScanFunctorState<Func, State, Head>, Func>,
+{
+    type Output = LCons<
+        ApplyScanFunctorOutput<Func, State, Head>,
+        LScanOutput<Tail, ApplyScanFunctorState<Func, State, Head>, Func>,
+    >;
+    type State = ApplyScanFunctorState<Func, State, Head>;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -93,7 +126,7 @@ mod tests {
         TListType,
     };
     use std::ops::Add;
-    use typenum::{consts::*, Add1, IsLess, Le, Sum, Unsigned, B1};
+    use typenum::{consts::*, Add1, Exp, IsLess, Le, Pow, Sum, Unsigned, B1};
 
     // Plus one to typenum unsigned numbers
     struct PlusOne;
@@ -175,6 +208,22 @@ mod tests {
     type ThresholdOutcome = LFilterOutput<List7, ThresholdFunc>;
     type Assert5 = IfSameOutput<(), ThresholdOutcome, TListType! {U4, U0}>;
 
+    // Power of values
+    struct PowerScanFunc;
+
+    impl<State, Input> ScanFunctor<State, Input> for PowerScanFunc
+    where
+        Input: Unsigned + Pow<State>,
+        State: Unsigned + Add<B1>,
+    {
+        type Output = Exp<Input, State>;
+        type State = Add1<State>;
+    }
+
+    type List8 = TListType! {U3, U2, U7, U0, U5};
+    type PowerOutput = LScanOutput<List8, U0, PowerScanFunc>;
+    type Assert6 = IfSameOutput<(), PowerOutput, TListType! {U1, U2, U49, U0, U625}>;
+
     #[test]
     fn list_functional_test() {
         let _: Assert1 = ();
@@ -182,5 +231,6 @@ mod tests {
         let _: Assert3 = ();
         let _: Assert4 = ();
         let _: Assert5 = ();
+        let _: Assert6 = ();
     }
 }
