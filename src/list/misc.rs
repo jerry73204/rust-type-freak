@@ -1,5 +1,8 @@
-use super::{LCons, LNil, LRemoveAt, LRemoveAtOutput, TList};
-use crate::counter::{Counter, Current, Next};
+use super::{LCons, LFold, LFoldOutput, LNil, LRemoveAt, LRemoveAtOutput, TList};
+use crate::{
+    counter::{Counter, Current, Next},
+    functional::CollectReverseTListFoldFunc,
+};
 use std::ops::Add;
 use typenum::{Sum, Unsigned, U0, U1};
 
@@ -124,6 +127,27 @@ where
     type LatterOutput = LSplitLatterOutput<Tail, Target, Index>;
 }
 
+// reverse
+
+/// Reverses a [TList].
+pub trait LReverse
+where
+    Self: TList,
+    Self::Output: TList,
+{
+    type Output;
+}
+
+impl<List> LReverse for List
+where
+    List: LFold<LNil, CollectReverseTListFoldFunc>,
+    LFoldOutput<List, LNil, CollectReverseTListFoldFunc>: TList,
+{
+    type Output = LFoldOutput<List, LNil, CollectReverseTListFoldFunc>;
+}
+
+pub type LReverseOutput<List> = <List as LReverse>::Output;
+
 // into vector of integers
 
 /// The trait builds a concrete `Vec<usize>` from a [TList]
@@ -179,8 +203,8 @@ mod tests {
     type SomeList = TListType! {A, B, C};
     type AnotherList = TListType! {D, E};
 
-    // remove
-    type Assert7<Idx> = AssertSame<LRemoveAtOutput<SomeList, B, Idx>, TListType! {A, C}>;
+    // reverse list
+    type Assert10 = AssertSame<LReverseOutput<SomeList>, TListType! {C, B, A}>;
 
     // assert identical set of items
     type Assert11<Idx> = LSetEqualOutput<SomeList, TListType! {C, A, B}, Idx>;
@@ -192,8 +216,8 @@ mod tests {
     type Indexes<Idx> = LIndexOfManyIndexes<SomeList, TListType! {C, A, B}, Idx>;
 
     #[test]
-    fn tlist_test() {
-        let _: Assert7<_> = ();
+    fn tlist_misc_test() {
+        let _: Assert10 = ();
         let _: Assert11<_> = ();
         let _: Assert12 = ();
 

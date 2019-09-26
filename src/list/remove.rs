@@ -88,6 +88,9 @@ mod tests {
 
     type SomeList = TListType! {A, B, C};
 
+    // remove
+    type Assert7<Idx> = AssertSame<LRemoveAtOutput<SomeList, B, Idx>, TListType! {A, C}>;
+
     // remove multiple items
     type Assert8<Idx> =
         AssertSame<LRemoveManyOutput<SomeList, TListType! {A, C}, Idx>, TListType! {B}>;
@@ -97,7 +100,8 @@ mod tests {
         AssertSame<LRemoveManyOutput<SomeList, TListType! {B, A, C}, Idx>, TListType! {}>;
 
     #[test]
-    fn tlist_test() {
+    fn tlist_remove_test() {
+        let _: Assert7<_> = ();
         let _: Assert8<_> = ();
         let _: Assert9<_> = ();
     }

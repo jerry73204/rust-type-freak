@@ -104,3 +104,13 @@ where
 {
     type Output = OrOutput<Init, Value>;
 }
+
+/// A [FoldFunctor] that reverses a [TList].
+pub struct CollectReverseTListFoldFunc;
+
+impl<Init, Value> FoldFunctor<Init, Value> for CollectReverseTListFoldFunc
+where
+    Init: TList,
+{
+    type Output = LCons<Value, Init>;
+}
