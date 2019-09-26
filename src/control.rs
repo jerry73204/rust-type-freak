@@ -58,13 +58,8 @@
 //!     let _ = guarded_function::<String, u8>();      // Compile error!!!
 //! }
 //! ```
-//!
-//!
 
-use crate::{
-    boolean::{Boolean, Or, OrOutput},
-    tuple::FirstOfOutput,
-};
+use crate::{boolean::Boolean, tuple::FirstOfOutput};
 use typenum::{
     Eq, False, Gr, GrEq, IsEqual, IsGreater, IsGreaterOrEqual, IsLess, IsLessOrEqual, Le, LeEq,
     NonZero, True, B0, U0, Z0,
@@ -88,7 +83,7 @@ impl<Same, Output> IfSame<Same, Same> for Output {
     type Output = Output;
 }
 
-// if predicate
+// if predicate holds
 
 /// A type operator that checks if condition is [True](crate::boolean::True).
 pub trait IfPredicate<Cond>
@@ -104,28 +99,7 @@ impl<Output> IfPredicate<True> for Output {
     type Output = Output;
 }
 
-// if-else predicate
-
-/// A type operator that returns output depending [Boolean](crate::boolean::Boolean) condition.
-pub trait IfElsePredicate<Cond>
-where
-    Cond: Boolean,
-{
-    type Output;
-}
-
-pub type IfElsePredicateOutput<TrueOutput, FalseOutput, Cond> =
-    <(TrueOutput, FalseOutput) as IfElsePredicate<Cond>>::Output;
-
-impl<TrueOutput, FalseOutput> IfElsePredicate<True> for (TrueOutput, FalseOutput) {
-    type Output = TrueOutput;
-}
-
-impl<TrueOutput, FalseOutput> IfElsePredicate<False> for (TrueOutput, FalseOutput) {
-    type Output = FalseOutput;
-}
-
-// if not predicate
+// if predicate is false
 
 /// A type operator that checks if condition is [False](crate::boolean::False).
 pub trait IfNotPredicate<Cond>
@@ -135,10 +109,31 @@ where
     type Output;
 }
 
-pub type IfNotPredicateOutput<Output, Cond> = <Output as IfPredicate<Cond>>::Output;
+pub type IfNotPredicateOutput<Output, Cond> = <Output as IfNotPredicate<Cond>>::Output;
 
 impl<Output> IfNotPredicate<False> for Output {
     type Output = Output;
+}
+
+// if-else predicate
+
+/// A type operator that returns output depending [Boolean](crate::boolean::Boolean) condition.
+pub trait IfElsePredicate<Cond, ElseOutput>
+where
+    Cond: Boolean,
+{
+    type Output;
+}
+
+pub type IfElsePredicateOutput<TrueOutput, Cond, FalseOutput> =
+    <TrueOutput as IfElsePredicate<Cond, FalseOutput>>::Output;
+
+impl<TrueOutput, FalseOutput> IfElsePredicate<True, FalseOutput> for TrueOutput {
+    type Output = TrueOutput;
+}
+
+impl<TrueOutput, FalseOutput> IfElsePredicate<False, FalseOutput> for TrueOutput {
+    type Output = FalseOutput;
 }
 
 // if less than
