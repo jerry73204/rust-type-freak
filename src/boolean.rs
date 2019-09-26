@@ -22,6 +22,7 @@
 //! }
 //! ```
 
+use crate::functional::Functor;
 use typenum::{False, True};
 
 // boolean type def
@@ -206,4 +207,12 @@ impl Iff<False> for True {
 
 impl Iff<False> for False {
     type Output = True;
+}
+
+/// A [Functor] that outputs [Boolean].
+pub trait Predicate<Input>
+where
+    Self: Functor<Input>,
+    Self::Output: Boolean,
+{
 }

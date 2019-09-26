@@ -6,6 +6,7 @@
 pub mod boolean;
 pub mod control;
 pub mod counter;
+pub mod functional;
 pub mod kvlist;
 pub mod list;
 pub mod maybe;
