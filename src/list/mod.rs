@@ -64,7 +64,7 @@
 //! ```
 //! ## Numeric type operators
 //! [LReduceMax](crate::list::LReduceMax), [LReduceMin](crate::list::LReduceMin),
-//! [LReduceSum](crate::list::LReduceSum) and [LReduceProduct](crate::list::LReduceProduct)
+//! [LReduceSum](crate::list::LReduceSum) and [LReduceProd](crate::list::LReduceProd)
 //! assume all contained types are [typenum] typed numbers. You may `use typenum::consts::*`
 //! to work with [typenum] constants.
 //!

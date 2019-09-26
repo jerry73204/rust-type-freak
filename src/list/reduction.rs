@@ -1,6 +1,10 @@
-use super::{LCons, LNil, TList};
-use std::ops::{Add, Mul};
-use typenum::{Max, Maximum, Min, Minimum, Prod, Sum};
+use super::{LCons, LFold, LFoldOutput, TList};
+use crate::{
+    boolean::Boolean,
+    functional::{
+        BooleanAndFoldFunc, BooleanOrFoldFunc, MaxFoldFunc, MinFoldFunc, ProdFoldFunc, SumFoldFunc,
+    },
+};
 
 // reduce max
 
@@ -16,33 +20,9 @@ pub type LReduceMaxOutput<List> = <List as LReduceMax>::Output;
 
 impl<Head, Tail> LReduceMax for LCons<Head, Tail>
 where
-    Tail: TList + LReducingMax<Head>,
+    Tail: TList + LFold<Head, MaxFoldFunc>,
 {
-    type Output = LReducingMaxOutput<Tail, Head>;
-}
-
-/// A type operator that takes the maximum value among an argument and a [TList].
-///
-/// It is an auxiliary trait for [LReduceMax].
-pub trait LReducingMax<Prev>
-where
-    Self: TList,
-{
-    type Output;
-}
-
-pub type LReducingMaxOutput<List, Prev> = <List as LReducingMax<Prev>>::Output;
-
-impl<Prev> LReducingMax<Prev> for LNil {
-    type Output = Prev;
-}
-
-impl<Prev, Head, Tail> LReducingMax<Prev> for LCons<Head, Tail>
-where
-    Prev: Max<Head>,
-    Tail: TList + LReducingMax<Maximum<Prev, Head>>,
-{
-    type Output = LReducingMaxOutput<Tail, Maximum<Prev, Head>>;
+    type Output = LFoldOutput<Tail, Head, MaxFoldFunc>;
 }
 
 // reduce min
@@ -59,33 +39,9 @@ pub type LReduceMinOutput<List> = <List as LReduceMin>::Output;
 
 impl<Head, Tail> LReduceMin for LCons<Head, Tail>
 where
-    Tail: TList + LReducingMin<Head>,
+    Tail: TList + LFold<Head, MinFoldFunc>,
 {
-    type Output = LReducingMinOutput<Tail, Head>;
-}
-
-/// A type operator that takes the minimum value among an argument and a [TList].
-///
-/// It is an auxiliary trait for [LReduceMin].
-pub trait LReducingMin<Prev>
-where
-    Self: TList,
-{
-    type Output;
-}
-
-pub type LReducingMinOutput<List, Prev> = <List as LReducingMin<Prev>>::Output;
-
-impl<Prev> LReducingMin<Prev> for LNil {
-    type Output = Prev;
-}
-
-impl<Prev, Head, Tail> LReducingMin<Prev> for LCons<Head, Tail>
-where
-    Prev: Min<Head>,
-    Tail: TList + LReducingMin<Minimum<Prev, Head>>,
-{
-    type Output = LReducingMinOutput<Tail, Minimum<Prev, Head>>;
+    type Output = LFoldOutput<Tail, Head, MinFoldFunc>;
 }
 
 // reduce sum
@@ -102,82 +58,78 @@ pub type LReduceSumOutput<List> = <List as LReduceSum>::Output;
 
 impl<Head, Tail> LReduceSum for LCons<Head, Tail>
 where
-    Tail: TList + LReducingSum<Head>,
+    Tail: TList + LFold<Head, SumFoldFunc>,
 {
-    type Output = LReducingSumOutput<Tail, Head>;
-}
-
-/// A type operator that takes the summation among an argument and values in [TList].
-///
-/// It is an auxiliary trait for [LReduceSum].
-pub trait LReducingSum<Prev>
-where
-    Self: TList,
-{
-    type Output;
-}
-
-pub type LReducingSumOutput<List, Prev> = <List as LReducingSum<Prev>>::Output;
-
-impl<Prev> LReducingSum<Prev> for LNil {
-    type Output = Prev;
-}
-
-impl<Prev, Head, Tail> LReducingSum<Prev> for LCons<Head, Tail>
-where
-    Prev: Add<Head>,
-    Tail: TList + LReducingSum<Sum<Prev, Head>>,
-{
-    type Output = LReducingSumOutput<Tail, Sum<Prev, Head>>;
+    type Output = LFoldOutput<Tail, Head, SumFoldFunc>;
 }
 
 // reduce product
 
 /// A type operator that takes the product of values in [TList].
-pub trait LReduceProduct
+pub trait LReduceProd
 where
     Self: TList,
 {
     type Output;
 }
 
-pub type LReduceProductOutput<List> = <List as LReduceProduct>::Output;
+pub type LReduceProdOutput<List> = <List as LReduceProd>::Output;
 
-impl<Head, Tail> LReduceProduct for LCons<Head, Tail>
+impl<Head, Tail> LReduceProd for LCons<Head, Tail>
 where
-    Tail: TList + LReducingProduct<Head>,
+    Tail: TList + LFold<Head, ProdFoldFunc>,
 {
-    type Output = LReducingProductOutput<Tail, Head>;
+    type Output = LFoldOutput<Tail, Head, ProdFoldFunc>;
 }
 
-/// A type operator that takes the product value among an argument and values [TList].
-///
-/// It is an auxiliary trait for [LReduceProduct].
-pub trait LReducingProduct<Prev>
+// reduce all
+
+/// A type operator returns [True](crate::boolean::True) if all values in [TList] are [True](crate::boolean::True).
+pub trait LReduceAll
+where
+    Self: TList,
+    Self::Output: Boolean,
+{
+    type Output;
+}
+
+pub type LReduceAllOutput<List> = <List as LReduceAll>::Output;
+
+impl<Head, Tail> LReduceAll for LCons<Head, Tail>
+where
+    Tail: TList + LFold<Head, BooleanAndFoldFunc>,
+    LFoldOutput<Tail, Head, BooleanAndFoldFunc>: Boolean,
+{
+    type Output = LFoldOutput<Tail, Head, BooleanAndFoldFunc>;
+}
+
+// reduce product
+
+/// A type operator returns [True](crate::boolean::True) if any value in [TList] is [True](crate::boolean::True).
+pub trait LReduceAny
 where
     Self: TList,
 {
     type Output;
 }
 
-pub type LReducingProductOutput<List, Prev> = <List as LReducingProduct<Prev>>::Output;
+pub type LReduceAnyOutput<List> = <List as LReduceAny>::Output;
 
-impl<Prev> LReducingProduct<Prev> for LNil {
-    type Output = Prev;
-}
-
-impl<Prev, Head, Tail> LReducingProduct<Prev> for LCons<Head, Tail>
+impl<Head, Tail> LReduceAny for LCons<Head, Tail>
 where
-    Prev: Mul<Head>,
-    Tail: TList + LReducingProduct<Prod<Prev, Head>>,
+    Tail: TList + LFold<Head, BooleanOrFoldFunc>,
+    LFoldOutput<Tail, Head, BooleanOrFoldFunc>: Boolean,
 {
-    type Output = LReducingProductOutput<Tail, Prod<Prev, Head>>;
+    type Output = LFoldOutput<Tail, Head, BooleanOrFoldFunc>;
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{control::IfEqualOutput, TListType};
+    use crate::{
+        control::{IfEqualOutput, IfNotPredicateOutput, IfPredicateOutput},
+        TListType,
+    };
     use typenum::consts::*;
 
     type List1 = TListType! {U2, U5, U3, U0};
@@ -196,9 +148,15 @@ mod tests {
     type Assert8 = IfEqualOutput<(), LReduceSumOutput<List2>, Z0>;
     type Assert9 = IfEqualOutput<(), LReduceSumOutput<List3>, N4>;
 
-    type Assert10 = IfEqualOutput<(), LReduceProductOutput<List1>, U0>;
-    type Assert11 = IfEqualOutput<(), LReduceProductOutput<List2>, Z0>;
-    type Assert12 = IfEqualOutput<(), LReduceProductOutput<List3>, P1008>;
+    type Assert10 = IfEqualOutput<(), LReduceProdOutput<List1>, U0>;
+    type Assert11 = IfEqualOutput<(), LReduceProdOutput<List2>, Z0>;
+    type Assert12 = IfEqualOutput<(), LReduceProdOutput<List3>, P1008>;
+
+    type Assert13 = IfPredicateOutput<(), LReduceAllOutput<TListType! {True, True}>>;
+    type Assert14 = IfNotPredicateOutput<(), LReduceAllOutput<TListType! {True, False, False}>>;
+
+    type Assert15 = IfPredicateOutput<(), LReduceAnyOutput<TListType! {True, False, False}>>;
+    type Assert16 = IfNotPredicateOutput<(), LReduceAllOutput<TListType! {False, False}>>;
 
     #[test]
     fn tlist_reduction_test() {
@@ -214,5 +172,9 @@ mod tests {
         let _: Assert10 = ();
         let _: Assert11 = ();
         let _: Assert12 = ();
+        let _: Assert13 = ();
+        let _: Assert14 = ();
+        let _: Assert15 = ();
+        let _: Assert16 = ();
     }
 }
