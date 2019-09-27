@@ -79,6 +79,7 @@ use typenum::{Sum, Unsigned, U0, U1};
 /// A trait that counts the number of steps.
 pub trait Counter {}
 
+/// Represents one more step of [Counter].
 pub struct Next<Count>
 where
     Count: Counter,
@@ -88,9 +89,26 @@ where
 
 impl<Cnt> Counter for Next<Cnt> where Cnt: Counter {}
 
+/// End of [Counter].
 pub struct Current;
 
 impl Counter for Current {}
+
+/// Duplicates the [Counter].
+pub struct Branch<LeftCount, RightCount>
+where
+    LeftCount: Counter,
+    RightCount: Counter,
+{
+    _phantom: PhantomData<(LeftCount, RightCount)>,
+}
+
+impl<LeftCount, RightCount> Counter for Branch<LeftCount, RightCount>
+where
+    LeftCount: Counter,
+    RightCount: Counter,
+{
+}
 
 // count op
 
