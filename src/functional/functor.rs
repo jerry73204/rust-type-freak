@@ -29,8 +29,28 @@ pub trait ScanFunctor<State, Input> {
     type State;
 }
 
-pub type ApplyScanFunctorOutput<Func, State, Input> = <Func as ScanFunctor<State, Input>>::Output;
-pub type ApplyScanFunctorState<Func, State, Input> = <Func as ScanFunctor<State, Input>>::State;
+pub type ApplyScanFunctor<Func, State, Input> = <Func as ScanFunctor<State, Input>>::Output;
+pub type ScanFunctorState<Func, State, Input> = <Func as ScanFunctor<State, Input>>::State;
+
+/// Composes two functors from right to left.
+pub struct Compose<Lhs, Rhs> {
+    _phantom: PhantomData<(Lhs, Rhs)>,
+}
+
+impl<Input, Lhs, Rhs> Functor<Input> for Compose<Lhs, Rhs>
+where
+    Lhs: Functor<ApplyFunctor<Rhs, Input>>,
+    Rhs: Functor<Input>,
+{
+    type Output = ApplyFunctor<Lhs, ApplyFunctor<Rhs, Input>>;
+}
+
+/// An identity [Functor].
+pub struct IdentityFunc {}
+
+impl<Input> Functor<Input> for IdentityFunc {
+    type Output = Input;
+}
 
 /// A [Functor] type that prepends a type to a [TList].
 pub struct PrependTListFunc<Tail>
@@ -78,7 +98,7 @@ where
     type Output = IfElsePredicateOutput<Value, Le<Value, Init>, Init>;
 }
 
-// /// A [FoldFunctor] type that gets maximum of inputs.
+/// A [FoldFunctor] type that gets maximum of inputs.
 pub struct MaxFoldFunc;
 
 impl<Init, Value> FoldFunctor<Init, Value> for MaxFoldFunc
@@ -113,10 +133,10 @@ where
     type Output = OrOutput<Init, Value>;
 }
 
-/// A [FoldFunctor] that reverses a [TList].
-pub struct CollectReverseTListFoldFunc;
+/// A [FoldFunctor] that prepends a type to a [TList].
+pub struct PrependTListFoldFunc;
 
-impl<Init, Value> FoldFunctor<Init, Value> for CollectReverseTListFoldFunc
+impl<Init, Value> FoldFunctor<Init, Value> for PrependTListFoldFunc
 where
     Init: TList,
 {

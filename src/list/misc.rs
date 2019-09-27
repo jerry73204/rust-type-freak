@@ -1,7 +1,7 @@
 use super::{LCons, LFold, LFoldOutput, LNil, LRemoveAt, LRemoveAtOutput, TList};
 use crate::{
     counter::{Counter, Current, Next},
-    functional::CollectReverseTListFoldFunc,
+    functional::PrependTListFoldFunc,
 };
 use std::ops::Add;
 use typenum::{Sum, Unsigned, U0, U1};
@@ -140,10 +140,10 @@ where
 
 impl<List> LReverse for List
 where
-    List: LFold<LNil, CollectReverseTListFoldFunc>,
-    LFoldOutput<List, LNil, CollectReverseTListFoldFunc>: TList,
+    List: LFold<LNil, PrependTListFoldFunc>,
+    LFoldOutput<List, LNil, PrependTListFoldFunc>: TList,
 {
-    type Output = LFoldOutput<List, LNil, CollectReverseTListFoldFunc>;
+    type Output = LFoldOutput<List, LNil, PrependTListFoldFunc>;
 }
 
 pub type LReverseOutput<List> = <List as LReverse>::Output;

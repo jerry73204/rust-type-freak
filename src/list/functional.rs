@@ -1,8 +1,8 @@
 use super::{LCons, LNil, TList};
 use crate::{
     functional::{
-        ApplyFoldFunctor, ApplyFunctor, ApplyScanFunctorOutput, ApplyScanFunctorState, FoldFunctor,
-        Functor, PrependTListFunc, ScanFunctor,
+        ApplyFoldFunctor, ApplyFunctor, ApplyScanFunctor, FoldFunctor, Functor, PrependTListFunc,
+        ScanFunctor, ScanFunctorState,
     },
     maybe::{Maybe, MaybeMap, MaybeMapOutput, UnwrapOr, UnwrapOrOutput},
 };
