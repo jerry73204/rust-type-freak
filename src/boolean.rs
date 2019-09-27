@@ -209,6 +209,51 @@ impl Iff<False> for False {
     type Output = True;
 }
 
+// imply op
+
+/// A type operator that checks if Lhs implies Rhs.
+pub trait Imply<Rhs>
+where
+    Self: Boolean,
+    Self::Output: Boolean,
+{
+    type Output;
+}
+
+pub type ImplyOutput<Lhs, Rhs> = <Lhs as Imply<Rhs>>::Output;
+
+impl<Lhs, Rhs> Imply<Rhs> for Lhs
+where
+    Lhs: Boolean + Not,
+    Rhs: Boolean + Or<NotOutput<Lhs>>,
+{
+    type Output = OrOutput<Rhs, NotOutput<Lhs>>;
+}
+
+// not imply op
+
+/// A type operator that checks if Lhs does not imply Rhs.
+pub trait NotImply<Rhs>
+where
+    Self: Boolean,
+    Self::Output: Boolean,
+{
+    type Output;
+}
+
+pub type NotImplyOutput<Lhs, Rhs> = <Lhs as NotImply<Rhs>>::Output;
+
+impl<Lhs, Rhs> NotImply<Rhs> for Lhs
+where
+    Lhs: Boolean + Imply<Rhs>,
+    Rhs: Boolean,
+    ImplyOutput<Lhs, Rhs>: Not,
+{
+    type Output = NotOutput<ImplyOutput<Lhs, Rhs>>;
+}
+
+// predicate functor
+
 /// A [Functor] that outputs [Boolean].
 pub trait Predicate<Input>
 where
