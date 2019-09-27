@@ -190,7 +190,11 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{control::IfSameOutput, list::LIndexOfManyIndexes, TListType};
+    use crate::{
+        control::{IfNotPredicateOutput, IfPredicateOutput, IfSameOutput},
+        list::LIndexOfManyIndexes,
+        TListType,
+    };
 
     type AssertSame<Lhs, Rhs> = IfSameOutput<(), Lhs, Rhs>;
 
