@@ -52,6 +52,32 @@ where
     type Output = LFoldOutput<Tail, ApplyFoldFunctor<Func, Init, Head>, Func>;
 }
 
+/// A type operator that accumulates all values in [TList] with finalizer.
+pub trait LFoldFinalize<Init, Func, Finalizer>
+where
+    Self: TList,
+{
+    type Output;
+}
+
+pub type LFoldFinalizeOutput<List, Init, Func, Finalizer> =
+    <List as LFoldFinalize<Init, Func, Finalizer>>::Output;
+
+impl<Init, Func, Finalizer> LFoldFinalize<Init, Func, Finalizer> for LNil
+where
+    Finalizer: Functor<Init>,
+{
+    type Output = ApplyFunctor<Finalizer, Init>;
+}
+
+impl<Init, Func, Finalizer, Head, Tail> LFoldFinalize<Init, Func, Finalizer> for LCons<Head, Tail>
+where
+    Func: FoldFunctor<Init, Head>,
+    Tail: TList + LFoldFinalize<ApplyFoldFunctor<Func, Init, Head>, Func, Finalizer>,
+{
+    type Output = LFoldFinalizeOutput<Tail, ApplyFoldFunctor<Func, Init, Head>, Func, Finalizer>;
+}
+
 /// Filters the values in [TList].
 pub trait LFilter<Func>
 where
@@ -86,7 +112,7 @@ where
     >;
 }
 
-/// Maps the values in [TList] with state.
+/// A [LMap]-like operator that maintains internal state.
 pub trait LScan<State, Func>
 where
     Self: TList,
@@ -107,13 +133,48 @@ impl<State, Func> LScan<State, Func> for LNil {
 impl<State, Func, Head, Tail> LScan<State, Func> for LCons<Head, Tail>
 where
     Func: ScanFunctor<State, Head>,
-    Tail: TList + LScan<ApplyScanFunctorState<Func, State, Head>, Func>,
+    Tail: TList + LScan<ScanFunctorState<Func, State, Head>, Func>,
 {
     type Output = LCons<
-        ApplyScanFunctorOutput<Func, State, Head>,
-        LScanOutput<Tail, ApplyScanFunctorState<Func, State, Head>, Func>,
+        ApplyScanFunctor<Func, State, Head>,
+        LScanOutput<Tail, ScanFunctorState<Func, State, Head>, Func>,
     >;
-    type State = ApplyScanFunctorState<Func, State, Head>;
+    type State = ScanFunctorState<Func, State, Head>;
+}
+
+/// [LScan] with finalizer.
+pub trait LScanFinalize<State, Func, Finalizer>
+where
+    Self: TList,
+    Self::Output: TList,
+{
+    type Output;
+    type State;
+}
+
+pub type LScanFinalizeOutput<List, State, Func, Finalizer> =
+    <List as LScanFinalize<State, Func, Finalizer>>::Output;
+pub type LScanFinalizeState<List, State, Func, Finalizer> =
+    <List as LScanFinalize<State, Func, Finalizer>>::State;
+
+impl<State, Func, Finalizer> LScanFinalize<State, Func, Finalizer> for LNil
+where
+    Finalizer: Functor<State>,
+{
+    type Output = LNil;
+    type State = ApplyFunctor<Finalizer, State>;
+}
+
+impl<State, Func, Finalizer, Head, Tail> LScanFinalize<State, Func, Finalizer> for LCons<Head, Tail>
+where
+    Func: ScanFunctor<State, Head>,
+    Tail: TList + LScanFinalize<ScanFunctorState<Func, State, Head>, Func, Finalizer>,
+{
+    type Output = LCons<
+        ApplyScanFunctor<Func, State, Head>,
+        LScanFinalizeOutput<Tail, ScanFunctorState<Func, State, Head>, Func, Finalizer>,
+    >;
+    type State = ScanFunctorState<Func, State, Head>;
 }
 
 #[cfg(test)]
