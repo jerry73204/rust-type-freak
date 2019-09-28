@@ -64,7 +64,7 @@ impl<Target, Item, Tail> LInsertAt<Item, Target, Current> for LCons<Target, Tail
 where
     Tail: TList,
 {
-    type Output = LCons<Target, LCons<Item, Tail>>;
+    type Output = LCons<Item, LCons<Target, Tail>>;
 }
 
 impl<Item, Target, Index, NonTarget, Tail> LInsertAt<Item, Target, Next<Index>>
@@ -145,10 +145,10 @@ mod tests {
     type Assert4 = AssertSame<LAppendOutput<SomeList, D>, TListType! {A, B, C, D}>;
 
     // insert in middle
-    type Assert5<Idx> = AssertSame<LInsertAtOutput<SomeList, D, B, Idx>, TListType! {A, B, D, C}>;
+    type Assert5<Idx> = AssertSame<LInsertAtOutput<SomeList, D, B, Idx>, TListType! {A, D, B, C}>;
 
     // insert at end
-    type Assert6<Idx> = AssertSame<LInsertAtOutput<SomeList, D, C, Idx>, TListType! {A, B, C, D}>;
+    type Assert6<Idx> = AssertSame<LInsertAtOutput<SomeList, D, C, Idx>, TListType! {A, B, D, C}>;
 
     #[test]
     fn tlist_test() {
