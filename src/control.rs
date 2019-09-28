@@ -59,10 +59,7 @@
 //! }
 //! ```
 
-use crate::{
-    boolean::{Boolean, Or, OrOutput},
-    tuple::FirstOf,
-};
+use crate::{boolean::Boolean, tuple::FirstOf};
 use typenum::{
     Eq, False, Gr, GrEq, IsEqual, IsGreater, IsGreaterOrEqual, IsLess, IsLessOrEqual, Le, LeEq,
     NonZero, True, B0, U0, Z0,

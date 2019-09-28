@@ -89,29 +89,6 @@ where
 
 // filter
 
-// /// Filters a [Maybe] type by a [Functor].
-// pub trait MaybeFilter<Func>
-// where
-//     Self: Maybe,
-//     Self::Output: Maybe,
-// {
-//     type Output;
-// }
-
-// pub type MaybeFilterOutput<MaybeInput, Func> = <MaybeInput as MaybeFilter<Func>>::Output;
-
-// impl<Func> MaybeFilter<Func> for Nothing {
-//     type Output = Nothing;
-// }
-
-// impl<Func, T> MaybeFilter<Func> for Just<T>
-// where
-//     Func: Functor<T>,
-//     Func::Output: Maybe,
-// {
-//     type Output = ApplyFunctor<Func, T>;
-// }
-
 /// A functor filters a [Maybe] type by a [Functor].
 pub struct MaybeFilterFunctor<Func> {
     _phantom: PhantomData<Func>,
