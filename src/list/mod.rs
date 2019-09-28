@@ -55,7 +55,7 @@
 //! ```
 //!
 //! ## Marker traits
-//! The [EmptyTList](crate::list::EmptyTList) and [NonEmptyTList](crate::list::NonEmptyTList)
+//! The [EmptyTList](crate::list::marker::EmptyTList) and [NonEmptyTList](crate::list::marker::NonEmptyTList)
 //! traits can be used in trait bounds. Suppose you wish to accept a non-empty
 //! [TList](crate::list::TList) type:
 //!
@@ -88,6 +88,7 @@ mod functional;
 mod indexing;
 mod insert;
 mod macros;
+pub mod marker;
 mod misc;
 mod reduction;
 mod remove;
@@ -138,15 +139,3 @@ impl<Head, Tail> TList for LCons<Head, Tail> where Tail: TList {}
 pub struct LNil;
 
 impl TList for LNil {}
-
-// {,non-}empty list trait
-
-/// Marks an empty [TList].
-pub trait EmptyTList: TList {}
-
-impl EmptyTList for LNil {}
-
-/// Marks a non-empty [TList].
-pub trait NonEmptyTList: TList {}
-
-impl<Head, Tail> NonEmptyTList for LCons<Head, Tail> where Tail: TList {}

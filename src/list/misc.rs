@@ -38,6 +38,8 @@ pub type LLengthOpOutput<List> = <List as LLengthOp>::Output;
 /// A functor that returns the length of [TList].
 pub struct LLengthFunctor;
 
+pub type LLength<List> = ApplyFunctor<LLengthFunctor, List>;
+
 impl<List> Functor<List> for LLengthFunctor
 where
     List: TList + LLengthOp,
@@ -123,7 +125,7 @@ where
 
 pub type LConcatOpOutput<Lhs, Rhs> = <Lhs as LConcatOp<Rhs>>::Output;
 
-/// A functor that concatenates `Lhs` and `Rhs` [TList]s.
+/// A [Functor] that concatenates input and `Rhs` [TList]s.
 pub struct LConcatFunctor<Rhs>
 where
     Rhs: TList,
@@ -134,6 +136,19 @@ where
 pub type LConcat<Lhs, Rhs> = ApplyFunctor<LConcatFunctor<Rhs>, Lhs>;
 
 impl<Lhs, Rhs> Functor<Lhs> for LConcatFunctor<Rhs>
+where
+    Lhs: TList + LConcatOp<Rhs>,
+    Rhs: TList,
+{
+    type Output = LConcatOpOutput<Lhs, Rhs>;
+}
+
+/// A [Functor] that concatenates the input tuple `(Lhs, Rhs)` of [TList]s.
+pub struct LConcatComposeFunctor;
+
+pub type LConcatCompose<Lhs, Rhs> = ApplyFunctor<LConcatComposeFunctor, (Lhs, Rhs)>;
+
+impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for LConcatComposeFunctor
 where
     Lhs: TList + LConcatOp<Rhs>,
     Rhs: TList,

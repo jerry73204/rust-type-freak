@@ -1,4 +1,4 @@
-use super::{LCons, LNil, NonEmptyTList, TList};
+use super::{marker::NonEmptyTList, LCons, LNil, TList};
 use crate::{
     counter::{Counter, Current, Next},
     functional::{ApplyFunctor, Functor},
