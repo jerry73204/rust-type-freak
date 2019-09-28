@@ -67,8 +67,16 @@ use typenum::{
 
 // if
 
-/// A type alias that checks if type can be constructed.
-pub type IfOutput<Output, Cond> = FirstOf<(Output, Cond)>;
+/// Returns input type if `Cond` can be constructed.
+pub trait If<Cond> {
+    type Output;
+}
+
+pub type IfOutput<Output, Cond> = <Output as If<Cond>>::Output;
+
+impl<Cond, Output> If<Cond> for Output {
+    type Output = FirstOf<(Output, Cond)>;
+}
 
 // if type equivalence
 
