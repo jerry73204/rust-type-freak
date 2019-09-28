@@ -1,4 +1,4 @@
-//! Trait level boolean algrbra.
+//! Trait level boolean algebra.
 //!
 //! This module reuses [True](typenum::True) and [False](typenum::False) types
 //! from [typenum]. It provides common logic arithmetic boolean operators:
@@ -22,7 +22,6 @@
 //! }
 //! ```
 
-use crate::functional::Functor;
 use typenum::{False, True};
 
 // boolean type def
@@ -250,14 +249,4 @@ where
     ImplyOutput<Lhs, Rhs>: Not,
 {
     type Output = NotOutput<ImplyOutput<Lhs, Rhs>>;
-}
-
-// predicate functor
-
-/// A [Functor] that outputs [Boolean].
-pub trait Predicate<Input>
-where
-    Self: Functor<Input>,
-    Self::Output: Boolean,
-{
 }

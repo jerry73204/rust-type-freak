@@ -4,9 +4,11 @@ use crate::{
 };
 use std::{
     marker::PhantomData,
-    ops::{Add, Mul},
+    ops::{Add, Mul, Sub},
 };
-use typenum::{Gr, IsGreater, IsLess, Le, Prod, Sum};
+use typenum::{Add1, Gr, IsGreater, IsLess, Le, Prod, Sub1, Sum, B1};
+
+// functor
 
 /// Represents an applicable unit that takes input and produces output.
 pub trait Functor<Input> {
@@ -15,7 +17,17 @@ pub trait Functor<Input> {
 
 pub type ApplyFunctor<Func, Input> = <Func as Functor<Input>>::Output;
 
-/// Composes two functors from right to left.
+// predicate functor
+
+/// A [Functor] that outputs [Boolean].
+pub trait Predicate<Input>
+where
+    Self: Functor<Input>,
+    Self::Output: Boolean,
+{
+}
+
+/// Composes two functors from `Rhs` to `Lhs`.
 pub struct Compose<Lhs, Rhs> {
     _phantom: PhantomData<(Lhs, Rhs)>,
 }
@@ -29,74 +41,118 @@ where
 }
 
 /// An identity [Functor].
-pub struct IdentityFunc {}
+pub struct IdentityFunctor {}
 
-impl<Input> Functor<Input> for IdentityFunc {
+impl<Input> Functor<Input> for IdentityFunctor {
     type Output = Input;
 }
 
 /// A [Functor] type that computes summation of inputs.
-pub struct SumFoldFunctor;
+pub struct SumComposeFunctor;
 
-impl<Init, Value> Functor<(Init, Value)> for SumFoldFunctor
+impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for SumComposeFunctor
 where
-    Init: Add<Value>,
+    Lhs: Add<Rhs>,
 {
-    type Output = Sum<Init, Value>;
+    type Output = Sum<Lhs, Rhs>;
 }
 
-/// A [Functor] type that computes products of inputs.
-pub struct ProdFoldFunctor;
+/// A [Functor] type that computes product of inputs.
+pub struct ProdComposeFunctor;
 
-impl<Init, Value> Functor<(Init, Value)> for ProdFoldFunctor
+impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for ProdComposeFunctor
 where
-    Init: Mul<Value>,
+    Lhs: Mul<Rhs>,
 {
-    type Output = Prod<Init, Value>;
+    type Output = Prod<Lhs, Rhs>;
 }
 
 /// A [Functor] type that gets minimum of inputs.
-pub struct MinFoldFunctor;
+pub struct MinComposeFunctor;
 
-impl<Init, Value> Functor<(Init, Value)> for MinFoldFunctor
+impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for MinComposeFunctor
 where
-    Value: IsLess<Init> + IfElsePredicate<Le<Value, Init>, Init>,
-    Le<Value, Init>: Boolean,
+    Rhs: IsLess<Lhs> + IfElsePredicate<Le<Rhs, Lhs>, Lhs>,
+    Le<Rhs, Lhs>: Boolean,
 {
-    type Output = IfElsePredicateOutput<Value, Le<Value, Init>, Init>;
+    type Output = IfElsePredicateOutput<Rhs, Le<Rhs, Lhs>, Lhs>;
 }
 
 /// A [Functor] type that gets maximum of inputs.
-pub struct MaxFoldFunctor;
+pub struct MaxComposeFunctor;
 
-impl<Init, Value> Functor<(Init, Value)> for MaxFoldFunctor
+impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for MaxComposeFunctor
 where
-    Value: IsGreater<Init> + IfElsePredicate<Gr<Value, Init>, Init>,
-    Gr<Value, Init>: Boolean,
+    Rhs: IsGreater<Lhs> + IfElsePredicate<Gr<Rhs, Lhs>, Lhs>,
+    Gr<Rhs, Lhs>: Boolean,
 {
-    type Output = IfElsePredicateOutput<Value, Gr<Value, Init>, Init>;
+    type Output = IfElsePredicateOutput<Rhs, Gr<Rhs, Lhs>, Lhs>;
 }
 
-/// A [Functor] type that boolean-ands the inputs.
-pub struct BooleanAndFoldFunctor;
+/// A [Functor] type that meets [Boolean] inputs.
+pub struct BooleanAndComposeFunctor;
 
-impl<Init, Value> Functor<(Init, Value)> for BooleanAndFoldFunctor
+impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for BooleanAndComposeFunctor
 where
-    Value: Boolean,
-    Init: Boolean + And<Value>,
-    AndOutput<Init, Value>: Boolean,
+    Rhs: Boolean,
+    Lhs: Boolean + And<Rhs>,
+    AndOutput<Lhs, Rhs>: Boolean,
 {
-    type Output = AndOutput<Init, Value>;
+    type Output = AndOutput<Lhs, Rhs>;
 }
 
-/// A [Functor] type that boolean-or the inputs.
-pub struct BooleanOrFoldFunctor;
+/// A [Functor] type that joins [Boolean] inputs.
+pub struct BooleanOrComposeFunctor;
 
-impl<Init, Value> Functor<(Init, Value)> for BooleanOrFoldFunctor
+impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for BooleanOrComposeFunctor
 where
-    Value: Boolean,
-    Init: Boolean + Or<Value>,
-    OrOutput<Init, Value>: Boolean,
+    Rhs: Boolean,
+    Lhs: Boolean + Or<Rhs>,
+    OrOutput<Lhs, Rhs>: Boolean,
 {
-    type Output = OrOutput<Init, Value>;
+    type Output = OrOutput<Lhs, Rhs>;
+}
+
+/// A [Functor] that applies `Func` to `(Lhs, input)` type.
+pub struct LeftComposeFunctor<Lhs, Func> {
+    _phantom: PhantomData<(Lhs, Func)>,
+}
+
+impl<Lhs, Rhs, Func> Functor<Rhs> for LeftComposeFunctor<Lhs, Func>
+where
+    Func: Functor<(Lhs, Rhs)>,
+{
+    type Output = ApplyFunctor<Func, (Lhs, Rhs)>;
+}
+
+/// A [Functor] that applies `Func` to `(input, Rhs)` type.
+pub struct RightComposeFunctor<Rhs, Func> {
+    _phantom: PhantomData<(Rhs, Func)>,
+}
+
+impl<Lhs, Rhs, Func> Functor<Lhs> for RightComposeFunctor<Rhs, Func>
+where
+    Func: Functor<(Lhs, Rhs)>,
+{
+    type Output = ApplyFunctor<Func, (Lhs, Rhs)>;
+}
+
+/// A [Functor] that increases input [typenum] integer by one.
+pub struct AddOneFunctor;
+
+impl<Value> Functor<Value> for AddOneFunctor
+where
+    Value: Add<B1>,
+{
+    type Output = Add1<Value>;
+}
+
+/// A [Functor] that decreases input [typenum] integer by one.
+pub struct SubOneFunctor;
+
+impl<Value> Functor<Value> for SubOneFunctor
+where
+    Value: Sub<B1>,
+{
+    type Output = Sub1<Value>;
 }

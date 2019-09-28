@@ -2,65 +2,65 @@ use super::{LCons, LFoldOp, LFoldOpOutput, TList};
 use crate::{
     boolean::Boolean,
     functional::{
-        ApplyFunctor, BooleanAndFoldFunctor, BooleanOrFoldFunctor, Functor, MaxFoldFunctor,
-        MinFoldFunctor, ProdFoldFunctor, SumFoldFunctor,
+        ApplyFunctor, BooleanAndComposeFunctor, BooleanOrComposeFunctor, Functor,
+        MaxComposeFunctor, MinComposeFunctor, ProdComposeFunctor, SumComposeFunctor,
     },
 };
 
 // reduce max
 
 /// A type operator that takes the maximum value among a [TList].
-pub struct LReduceMaxFunctor {}
+pub struct LReduceMaxComposeFunctor {}
 
-pub type LReduceMax<List> = ApplyFunctor<LReduceMaxFunctor, List>;
+pub type LReduceMax<List> = ApplyFunctor<LReduceMaxComposeFunctor, List>;
 
-impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceMaxFunctor
+impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceMaxComposeFunctor
 where
-    Tail: TList + LFoldOp<Head, MaxFoldFunctor>,
+    Tail: TList + LFoldOp<Head, MaxComposeFunctor>,
 {
-    type Output = LFoldOpOutput<Tail, Head, MaxFoldFunctor>;
+    type Output = LFoldOpOutput<Tail, Head, MaxComposeFunctor>;
 }
 
 // reduce min
 
 /// A type operator that takes the minimum value among a [TList].
-pub struct LReduceMinFunctor {}
+pub struct LReduceMinComposeFunctor {}
 
-pub type LReduceMin<List> = ApplyFunctor<LReduceMinFunctor, List>;
+pub type LReduceMin<List> = ApplyFunctor<LReduceMinComposeFunctor, List>;
 
-impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceMinFunctor
+impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceMinComposeFunctor
 where
-    Tail: TList + LFoldOp<Head, MinFoldFunctor>,
+    Tail: TList + LFoldOp<Head, MinComposeFunctor>,
 {
-    type Output = LFoldOpOutput<Tail, Head, MinFoldFunctor>;
+    type Output = LFoldOpOutput<Tail, Head, MinComposeFunctor>;
 }
 
 // reduce sum
 
 /// A type operator that takes the summation of values in [TList].
-pub struct LReduceSumFunctor {}
+pub struct LReduceSumComposeFunctor {}
 
-pub type LReduceSum<List> = ApplyFunctor<LReduceSumFunctor, List>;
+pub type LReduceSum<List> = ApplyFunctor<LReduceSumComposeFunctor, List>;
 
-impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceSumFunctor
+impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceSumComposeFunctor
 where
-    Tail: TList + LFoldOp<Head, SumFoldFunctor>,
+    Tail: TList + LFoldOp<Head, SumComposeFunctor>,
 {
-    type Output = LFoldOpOutput<Tail, Head, SumFoldFunctor>;
+    type Output = LFoldOpOutput<Tail, Head, SumComposeFunctor>;
 }
 
 // reduce product
 
 /// A type operator that takes the product of values in [TList].
-pub struct LReduceProdFunctor {}
+pub struct LReduceProdComposeFunctor {}
 
-pub type LReduceProd<List> = ApplyFunctor<LReduceProdFunctor, List>;
+pub type LReduceProd<List> = ApplyFunctor<LReduceProdComposeFunctor, List>;
 
-impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceProdFunctor
+impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceProdComposeFunctor
 where
-    Tail: TList + LFoldOp<Head, ProdFoldFunctor>,
+    Tail: TList + LFoldOp<Head, ProdComposeFunctor>,
 {
-    type Output = LFoldOpOutput<Tail, Head, ProdFoldFunctor>;
+    type Output = LFoldOpOutput<Tail, Head, ProdComposeFunctor>;
 }
 
 // reduce all
@@ -72,10 +72,10 @@ pub type LReduceAll<List> = ApplyFunctor<LReduceAllFunctor, List>;
 
 impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceAllFunctor
 where
-    Tail: TList + LFoldOp<Head, BooleanAndFoldFunctor>,
-    LFoldOpOutput<Tail, Head, BooleanAndFoldFunctor>: Boolean,
+    Tail: TList + LFoldOp<Head, BooleanAndComposeFunctor>,
+    LFoldOpOutput<Tail, Head, BooleanAndComposeFunctor>: Boolean,
 {
-    type Output = LFoldOpOutput<Tail, Head, BooleanAndFoldFunctor>;
+    type Output = LFoldOpOutput<Tail, Head, BooleanAndComposeFunctor>;
 }
 
 // reduce product
@@ -87,10 +87,10 @@ pub type LReduceAny<List> = ApplyFunctor<LReduceAnyFunctor, List>;
 
 impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceAnyFunctor
 where
-    Tail: TList + LFoldOp<Head, BooleanOrFoldFunctor>,
-    LFoldOpOutput<Tail, Head, BooleanOrFoldFunctor>: Boolean,
+    Tail: TList + LFoldOp<Head, BooleanOrComposeFunctor>,
+    LFoldOpOutput<Tail, Head, BooleanOrComposeFunctor>: Boolean,
 {
-    type Output = LFoldOpOutput<Tail, Head, BooleanOrFoldFunctor>;
+    type Output = LFoldOpOutput<Tail, Head, BooleanOrComposeFunctor>;
 }
 
 #[cfg(test)]
