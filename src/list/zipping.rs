@@ -10,7 +10,7 @@ where
     type Output;
 }
 
-type LZipOutput<Lhs, Rhs> = <Lhs as LZip<Rhs>>::Output;
+pub type LZipOutput<Lhs, Rhs> = <Lhs as LZip<Rhs>>::Output;
 
 impl<LHead, LTail, RHead, RTail> LZip<LCons<RHead, RTail>> for LCons<LHead, LTail>
 where
@@ -49,8 +49,8 @@ where
     type LatterOutput;
 }
 
-type LUnzipFormerOutput<List> = <List as LUnzip>::FormerOutput;
-type LUnzipLatterOutput<List> = <List as LUnzip>::LatterOutput;
+pub type LUnzipFormerOutput<List> = <List as LUnzip>::FormerOutput;
+pub type LUnzipLatterOutput<List> = <List as LUnzip>::LatterOutput;
 
 impl<LHead, RHead, Tail> LUnzip for LCons<(LHead, RHead), Tail>
 where
