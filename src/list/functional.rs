@@ -1,6 +1,6 @@
-use super::{LCons, LNil, LPrependToFunctor, TList};
+use super::{LConcatComposeFunctor, LCons, LNil, LPrependToFunctor, TList};
 use crate::{
-    functional::{ApplyFunctor, Functor},
+    functional::{ApplicativeFunctor, ApplyFunctor, FMapFunctor, Functor},
     maybe::{Maybe, MaybeMap, MaybeMapFunctor, UnwrapOr, UnwrapOrFunctor},
     tuple::{FirstOf, FirstOfFunctor, Pair, SecondOf, SecondOfFunctor},
 };
@@ -173,12 +173,83 @@ where
     type Output = LScanOpOutput<List, Init, Func>;
 }
 
+// impl FMap for TList
+
+impl<Func> Functor<LNil> for FMapFunctor<Func> {
+    type Output = LNil;
+}
+
+impl<Func, Head, Tail> Functor<LCons<Head, Tail>> for FMapFunctor<Func>
+where
+    Tail: TList,
+    LCons<Head, Tail>: LMapOp<Func>,
+{
+    type Output = LMapOpOutput<LCons<Head, Tail>, Func>;
+}
+
+// impl Applicative for TList
+
+impl Functor<LNil> for ApplicativeFunctor<LNil> {
+    type Output = LNil;
+}
+
+impl<LHead, LTail> Functor<LCons<LHead, LTail>> for ApplicativeFunctor<LNil>
+where
+    LTail: TList,
+{
+    type Output = LNil;
+}
+
+impl<RHead, RTail> Functor<LNil> for ApplicativeFunctor<LCons<RHead, RTail>>
+where
+    RTail: TList,
+{
+    type Output = LNil;
+}
+
+impl<LHead, LTail, RHead, RTail> Functor<LCons<LHead, LTail>>
+    for ApplicativeFunctor<LCons<RHead, RTail>>
+where
+    LTail: TList,
+    RTail: TList,
+    LCons<LHead, LTail>: LMapOp<ApplyToTListFunctor<LCons<RHead, RTail>>>,
+    LMapOpOutput<LCons<LHead, LTail>, ApplyToTListFunctor<LCons<RHead, RTail>>>:
+        LFoldOp<LNil, LConcatComposeFunctor>,
+{
+    type Output = LFoldOpOutput<
+        LMapOpOutput<LCons<LHead, LTail>, ApplyToTListFunctor<LCons<RHead, RTail>>>,
+        LNil,
+        LConcatComposeFunctor,
+    >;
+}
+
+// auxiliary functor for Applicative interface
+
+/// A [Functor] that applies input functor to `List`.
+pub struct ApplyToTListFunctor<List>
+where
+    List: TList,
+{
+    _phantom: PhantomData<List>,
+}
+
+pub type ApplyToTList<Func, List> = ApplyFunctor<ApplyToTListFunctor<List>, Func>;
+
+impl<Func, List> Functor<Func> for ApplyToTListFunctor<List>
+where
+    List: TList + LMapOp<Func>,
+    LMapOpOutput<List, Func>: TList,
+{
+    type Output = LMapOpOutput<List, Func>;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::{
         boolean::Boolean,
         control::{IfElsePredicate, IfElsePredicateOutput, IfSameOutput},
+        functional::{AddOneFunctor, Applicative, FMap, SubOneFunctor},
         maybe::{Just, Nothing},
         TListType,
     };
@@ -280,6 +351,20 @@ mod tests {
     type PowerOutput = LScan<List8, U0, PowerScanFunc>;
     type Assert6 = IfSameOutput<(), PowerOutput, TListType! {U1, U2, U49, U0, U625}>;
 
+    // FMap interface
+    type Assert7 =
+        IfSameOutput<(), FMap<TListType! {U1, U2, U3}, AddOneFunctor>, TListType! {U2, U3, U4}>;
+
+    // Applicative interface
+    type List9 = TListType! {AddOneFunctor, SubOneFunctor};
+    type List10 = TListType! {U1, U2, U3};
+
+    type Assert8 = IfSameOutput<(), Applicative<LNil, LNil>, LNil>;
+    type Assert9 = IfSameOutput<(), Applicative<List9, LNil>, LNil>;
+    type Assert10 = IfSameOutput<(), Applicative<LNil, List10>, LNil>;
+    type Assert11 =
+        IfSameOutput<(), Applicative<List9, List10>, TListType! {U2, U3, U4, U0, U1, U2}>;
+
     #[test]
     fn list_functional_test() {
         let _: Assert1 = ();
@@ -288,5 +373,10 @@ mod tests {
         let _: Assert4 = ();
         let _: Assert5 = ();
         let _: Assert6 = ();
+        let _: Assert7 = ();
+        let _: Assert8 = ();
+        let _: Assert9 = ();
+        let _: Assert10 = ();
+        let _: Assert11 = ();
     }
 }
