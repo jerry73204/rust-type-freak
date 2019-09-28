@@ -30,17 +30,17 @@
 //!
 //! type List1 = TListType! {u8, u16, u32};
 //!
-//! type List2 = LPrependOutput<List1, u64>;
+//! type List2 = LPrepend<List1, u64>;
 //! // List2 ~= TListType! {u64, u8, u16, u32}
 //! // is alias of <List1 as LPrepend<List1, u64>>::Output
 //!
-//! type List3<Index1> = LRemoveAtOutput<List2, u16, Index1>;
+//! type List3<Index1> = LRemoveAt<List2, u16, Index1>;
 //! // List3<_> ~= TListType! {u64, u8, u32}
 //!
-//! type List4<Index1> = LAppendOutput<List3<Index1>, f32>;
+//! type List4<Index1> = LAppend<List3<Index1>, f32>;
 //! // List4 ~= TListType! {u64, u8, u32, f32}
 //!
-//! type List5<Index1, Index2> = LInsertAtOutput<List4<Index1>, u8, f64, Index2>;
+//! type List5<Index1, Index2> = LInsertAt<List4<Index1>, u8, f64, Index2>;
 //! // List5 ~= TListType! {u64, u8, f64, u32, f32}
 //! ```
 //!
@@ -69,10 +69,10 @@
 //! to work with [typenum] constants.
 //!
 //! ```rust
-//! use type_freak::{TListType, list::LReduceSumOutput};
+//! use type_freak::{TListType, list::LReduceSum};
 //! use typenum::consts::*;
 //!
-//! type Value = LReduceSumOutput<TListType! {P3, N5, Z0}>;  // Value ~= P2
+//! type Value = LReduceSum<TListType! {P3, N5, Z0}>;  // Value ~= P2
 //! ```
 //!
 //! The [LToUsizeVec](crate::list::LToUsizeVec) provides a
@@ -102,7 +102,6 @@ pub use reduction::*;
 pub use remove::*;
 pub use zipping::*;
 
-use crate::TListType;
 use std::marker::PhantomData;
 
 // list

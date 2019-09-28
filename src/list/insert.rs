@@ -1,29 +1,62 @@
 use super::{LCons, LNil, TList};
-use crate::counter::{Counter, Current, Next};
+use crate::{
+    counter::{Counter, Current, Next},
+    functional::{ApplyFunctor, Functor},
+};
+use std::marker::PhantomData;
 
 // prepend
 
-/// Prepends a new type to [TList].
-pub trait LPrepend<Head>
-where
-    Self: TList,
-{
-    type Output;
+/// A functor that prepends a new type to [TList].
+pub struct LPrependFunctor<Head> {
+    _phantom: PhantomData<Head>,
 }
 
-impl<Item, List> LPrepend<Item> for List
+pub type LPrepend<List, Item> = ApplyFunctor<LPrependFunctor<Item>, List>;
+
+impl<Item, List> Functor<List> for LPrependFunctor<Item>
 where
     List: TList,
 {
     type Output = LCons<Item, List>;
 }
 
-pub type LPrependOutput<List, Item> = <List as LPrepend<Item>>::Output;
+// prepend to
+
+/// A functor that prepends a new type to [TList].
+pub struct LPrependToFunctor<List>
+where
+    List: TList,
+{
+    _phantom: PhantomData<List>,
+}
+
+pub type LPrependTo<Item, List> = ApplyFunctor<LPrependToFunctor<List>, Item>;
+
+impl<Item, List> Functor<Item> for LPrependToFunctor<List>
+where
+    List: TList,
+{
+    type Output = LCons<Item, List>;
+}
+
+// prepend accumulator
+
+pub struct LPrependFoldFunctor;
+
+pub type LPrependFold<List, Item> = ApplyFunctor<LPrependFoldFunctor, (List, Item)>;
+
+impl<List, Item> Functor<(List, Item)> for LPrependFoldFunctor
+where
+    List: TList,
+{
+    type Output = LCons<Item, List>;
+}
 
 // append
 
-/// Appends a new type to [TList].
-pub trait LAppend<Item>
+/// A type operator that appends a new type to [TList].
+pub trait LAppendOp<Item>
 where
     Self: TList,
     Self::Output: TList,
@@ -31,17 +64,30 @@ where
     type Output;
 }
 
-pub type LAppendOutput<List, Item> = <List as LAppend<Item>>::Output;
+pub type LAppendOpOutput<List, Item> = <List as LAppendOp<Item>>::Output;
 
-impl<Item> LAppend<Item> for LNil {
+impl<Item> LAppendOp<Item> for LNil {
     type Output = LCons<Item, LNil>;
 }
 
-impl<Item, Head, Tail> LAppend<Item> for LCons<Head, Tail>
+impl<Item, Head, Tail> LAppendOp<Item> for LCons<Head, Tail>
 where
-    Tail: TList + LAppend<Item>,
+    Tail: TList + LAppendOp<Item>,
 {
-    type Output = LCons<Head, LAppendOutput<Tail, Item>>;
+    type Output = LCons<Head, LAppendOpOutput<Tail, Item>>;
+}
+
+pub struct LAppendFunctor<Item> {
+    _phantom: PhantomData<Item>,
+}
+
+pub type LAppend<List, Item> = ApplyFunctor<LAppendFunctor<Item>, List>;
+
+impl<List, Item> Functor<List> for LAppendFunctor<Item>
+where
+    List: TList + LAppendOp<Item>,
+{
+    type Output = LAppendOpOutput<List, Item>;
 }
 
 // insert at
@@ -51,7 +97,7 @@ where
 /// The trait operator has an auxiliary `Index` argument for
 /// list traversal. Usaually it can be left unspecified and
 /// the compiler will figure it out.
-pub trait LInsertAt<Item, Target, Index>
+pub trait LInsertAtOp<Item, Target, Index>
 where
     Index: Counter,
     Self: TList,
@@ -60,59 +106,42 @@ where
     type Output;
 }
 
-impl<Target, Item, Tail> LInsertAt<Item, Target, Current> for LCons<Target, Tail>
+impl<Target, Item, Tail> LInsertAtOp<Item, Target, Current> for LCons<Target, Tail>
 where
     Tail: TList,
 {
     type Output = LCons<Item, LCons<Target, Tail>>;
 }
 
-impl<Item, Target, Index, NonTarget, Tail> LInsertAt<Item, Target, Next<Index>>
+impl<Item, Target, Index, NonTarget, Tail> LInsertAtOp<Item, Target, Next<Index>>
     for LCons<NonTarget, Tail>
 where
-    Tail: TList + LInsertAt<Item, Target, Index>,
+    Tail: TList + LInsertAtOp<Item, Target, Index>,
     Index: Counter,
 {
-    type Output = LCons<NonTarget, LInsertAtOutput<Tail, Item, Target, Index>>;
+    type Output = LCons<NonTarget, LInsertAtOpOutput<Tail, Item, Target, Index>>;
 }
 
-pub type LInsertAtOutput<List, Item, Target, Index> =
-    <List as LInsertAt<Item, Target, Index>>::Output;
+pub type LInsertAtOpOutput<List, Item, Target, Index> =
+    <List as LInsertAtOp<Item, Target, Index>>::Output;
 
-// insert if not exist
-// TODO test
-
-/// A type operator that inserts a new item if not existing in the list.
-pub trait LInsertIfNotExist<Target, Index>
+/// A functor that inserts `Item` at `Target` to a [TList].
+pub struct LInsertAtFunctor<Item, Target, Index>
 where
     Index: Counter,
-    Self: TList,
-    Self::Output: TList,
 {
-    type Output;
+    _phantom: PhantomData<(Item, Target, Index)>,
 }
 
-pub type LInsertIfNotExistOutput<List, Target, Index> =
-    <List as LInsertIfNotExist<Target, Index>>::Output;
+pub type LInsertAt<List, Item, Target, Index> =
+    ApplyFunctor<LInsertAtFunctor<Item, Target, Index>, List>;
 
-impl<Target> LInsertIfNotExist<Target, Current> for LNil {
-    type Output = LCons<Target, LNil>;
-}
-
-impl<Target, Tail> LInsertIfNotExist<Target, Current> for LCons<Target, Tail>
-where
-    Tail: TList,
-{
-    type Output = Self;
-}
-
-impl<Target, Index, NonTarget, Tail> LInsertIfNotExist<Target, Next<Index>>
-    for LCons<NonTarget, Tail>
+impl<List, Item, Target, Index> Functor<List> for LInsertAtFunctor<Item, Target, Index>
 where
     Index: Counter,
-    Tail: TList + LInsertIfNotExist<Target, Index>,
+    List: LInsertAtOp<Item, Target, Index>,
 {
-    type Output = LCons<NonTarget, LInsertIfNotExistOutput<Tail, Target, Index>>;
+    type Output = LInsertAtOpOutput<List, Item, Target, Index>;
 }
 
 // tests
@@ -133,22 +162,22 @@ mod tests {
     type SomeList = TListType! {A, B, C};
 
     // prepend empty list
-    type Assert1 = AssertSame<LPrependOutput<EmptyList, A>, TListType! {A}>;
+    type Assert1 = AssertSame<LPrepend<EmptyList, A>, TListType! {A}>;
 
     // append empty list
-    type Assert2 = AssertSame<LAppendOutput<EmptyList, D>, TListType! {D}>;
+    type Assert2 = AssertSame<LAppend<EmptyList, D>, TListType! {D}>;
 
     // prepend non-empty list
-    type Assert3 = AssertSame<LPrependOutput<SomeList, D>, TListType! {D, A, B, C}>;
+    type Assert3 = AssertSame<LPrepend<SomeList, D>, TListType! {D, A, B, C}>;
 
     // append non-empty list
-    type Assert4 = AssertSame<LAppendOutput<SomeList, D>, TListType! {A, B, C, D}>;
+    type Assert4 = AssertSame<LAppend<SomeList, D>, TListType! {A, B, C, D}>;
 
     // insert in middle
-    type Assert5<Idx> = AssertSame<LInsertAtOutput<SomeList, D, B, Idx>, TListType! {A, D, B, C}>;
+    type Assert5<Idx> = AssertSame<LInsertAt<SomeList, D, B, Idx>, TListType! {A, D, B, C}>;
 
     // insert at end
-    type Assert6<Idx> = AssertSame<LInsertAtOutput<SomeList, D, C, Idx>, TListType! {A, B, D, C}>;
+    type Assert6<Idx> = AssertSame<LInsertAt<SomeList, D, C, Idx>, TListType! {A, B, D, C}>;
 
     #[test]
     fn tlist_test() {

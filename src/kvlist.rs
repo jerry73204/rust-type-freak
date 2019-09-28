@@ -4,9 +4,10 @@ use crate::{
     counter::{Counter, Current, Next},
     functional::{ApplyFunctor, Functor},
     list::{
-        LAppend, LAppendOutput, LConcat, LConcatOutput, LCons, LIndexOf, LIndexOfIndex,
-        LIndexOfMany, LIndexOfManyIndexes, LLength, LLengthOutput, LNil, LPrependOutput, LReverse,
-        LReverseOutput, LSetEqual, LSetEqualOutput, LUnzip, LUnzipFormerOutput, TList,
+        LAppend, LAppendFunctor, LConcatOp, LConcatOpOutput, LCons, LIndexOfManyOp,
+        LIndexOfManyOpOutput, LIndexOfOp, LIndexOfOpOutput, LLengthOp, LLengthOpOutput, LNil,
+        LPrepend, LReverse, LReverseFunctor, LSetEqualOp, LSetEqualOpOutput, LUnzipOp,
+        LUnzipOpFormerOutput, TList,
     },
     tuple::{SecondOf, SecondOfFunctor},
 };
@@ -49,10 +50,10 @@ pub struct KVLengthFunctor;
 
 impl<List> Functor<List> for KVLengthFunctor
 where
-    List: KVList + LLength,
-    LLengthOutput<List>: Unsigned,
+    List: KVList + LLengthOp,
+    LLengthOpOutput<List>: Unsigned,
 {
-    type Output = LLengthOutput<List>;
+    type Output = LLengthOpOutput<List>;
 }
 
 pub type KVLength<List> = ApplyFunctor<KVLengthFunctor, List>;
@@ -67,9 +68,9 @@ pub struct KVPrependFunctor<Key, Value> {
 impl<List, Key, Value> Functor<List> for KVPrependFunctor<Key, Value>
 where
     List: KVList,
-    LPrependOutput<List, (Key, Value)>: KVList,
+    LAppendFunctor<(Key, Value)>: Functor<List>,
 {
-    type Output = LPrependOutput<List, (Key, Value)>;
+    type Output = LPrepend<List, (Key, Value)>;
 }
 
 pub type KVPrepend<List, Key, Value> = ApplyFunctor<KVPrependFunctor<Key, Value>, List>;
@@ -83,10 +84,10 @@ pub struct KVAppendFunctor<Key, Value> {
 
 impl<List, Key, Value> Functor<List> for KVAppendFunctor<Key, Value>
 where
-    List: KVList + LAppend<(Key, Value)>,
-    LAppendOutput<List, (Key, Value)>: KVList,
+    List: KVList,
+    LAppendFunctor<(Key, Value)>: Functor<List>,
 {
-    type Output = LAppendOutput<List, (Key, Value)>;
+    type Output = LAppend<List, (Key, Value)>;
 }
 
 pub type KVAppend<List, Key, Value> = ApplyFunctor<KVAppendFunctor<Key, Value>, List>;
@@ -255,12 +256,12 @@ pub type KVIndexOf<List, Target, Index> = ApplyFunctor<KVIndexOfFunctor<Target, 
 
 impl<List, Target, Index> Functor<List> for KVIndexOfFunctor<Target, Index>
 where
-    List: KVList + LUnzip,
+    List: KVList + LUnzipOp,
     Index: Counter,
-    LUnzipFormerOutput<List>: LIndexOf<Target, Index>,
-    LIndexOfIndex<LUnzipFormerOutput<List>, Target, Index>: Unsigned,
+    LUnzipOpFormerOutput<List>: LIndexOfOp<Target, Index>,
+    LIndexOfOpOutput<LUnzipOpFormerOutput<List>, Target, Index>: Unsigned,
 {
-    type Output = LIndexOfIndex<LUnzipFormerOutput<List>, Target, Index>;
+    type Output = LIndexOfOpOutput<LUnzipOpFormerOutput<List>, Target, Index>;
 }
 
 // index of many
@@ -272,13 +273,13 @@ pub struct KVIndexOfManyFunctor<Targets, Indexes> {
 
 impl<List, Targets, Indexes> Functor<List> for KVIndexOfManyFunctor<Targets, Indexes>
 where
-    List: KVList + LUnzip,
+    List: KVList + LUnzipOp,
     Targets: TList,
     Indexes: TList,
-    LUnzipFormerOutput<List>: LIndexOfMany<Targets, Indexes>,
-    LIndexOfManyIndexes<LUnzipFormerOutput<List>, Targets, Indexes>: TList,
+    LUnzipOpFormerOutput<List>: LIndexOfManyOp<Targets, Indexes>,
+    LIndexOfManyOpOutput<LUnzipOpFormerOutput<List>, Targets, Indexes>: TList,
 {
-    type Output = LIndexOfManyIndexes<LUnzipFormerOutput<List>, Targets, Indexes>;
+    type Output = LIndexOfManyOpOutput<LUnzipOpFormerOutput<List>, Targets, Indexes>;
 }
 
 pub type KVIndexOfMany<List, Targets, Indexes> =
@@ -292,10 +293,11 @@ pub type KVReverse<List> = ApplyFunctor<KVReverseFuntor, List>;
 
 impl<List> Functor<List> for KVReverseFuntor
 where
-    List: KVList + LReverse,
-    LReverseOutput<List>: KVList,
+    List: KVList,
+    LReverse<List>: TList,
+    LReverseFunctor: Functor<List>,
 {
-    type Output = LReverseOutput<List>;
+    type Output = LReverse<List>;
 }
 
 // set equal
@@ -313,12 +315,12 @@ pub type KVSetEqual<Lhs, Rhs, Indexes> = ApplyFunctor<KVSetEqualFuntor<Rhs, Inde
 
 impl<Lhs, Rhs, Indexes> Functor<Lhs> for KVSetEqualFuntor<Rhs, Indexes>
 where
-    Lhs: KVList + LUnzip,
-    Rhs: KVList + LUnzip,
+    Lhs: KVList + LUnzipOp,
+    Rhs: KVList + LUnzipOp,
     Indexes: TList,
-    LUnzipFormerOutput<Lhs>: LSetEqual<LUnzipFormerOutput<Rhs>, Indexes>,
+    LUnzipOpFormerOutput<Lhs>: LSetEqualOp<LUnzipOpFormerOutput<Rhs>, Indexes>,
 {
-    type Output = LSetEqualOutput<LUnzipFormerOutput<Lhs>, LUnzipFormerOutput<Rhs>, Indexes>;
+    type Output = LSetEqualOpOutput<LUnzipOpFormerOutput<Lhs>, LUnzipOpFormerOutput<Rhs>, Indexes>;
 }
 
 // concatenate
@@ -334,11 +336,11 @@ pub type KVConcat<Lhs, Rhs> = ApplyFunctor<KVConcatFunctor<Rhs>, Lhs>;
 
 impl<Lhs, Rhs> Functor<Lhs> for KVConcatFunctor<Rhs>
 where
-    Lhs: KVList + LConcat<Rhs>,
+    Lhs: KVList + LConcatOp<Rhs>,
     Rhs: KVList,
-    LConcatOutput<Lhs, Rhs>: KVList,
+    LConcatOpOutput<Lhs, Rhs>: KVList,
 {
-    type Output = LConcatOutput<Lhs, Rhs>;
+    type Output = LConcatOpOutput<Lhs, Rhs>;
 }
 
 // get key-value pair

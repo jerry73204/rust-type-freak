@@ -1,126 +1,96 @@
-use super::{LCons, LFold, LFoldOutput, TList};
+use super::{LCons, LFoldOp, LFoldOpOutput, TList};
 use crate::{
     boolean::Boolean,
     functional::{
-        BooleanAndFoldFunc, BooleanOrFoldFunc, MaxFoldFunc, MinFoldFunc, ProdFoldFunc, SumFoldFunc,
+        ApplyFunctor, BooleanAndFoldFunctor, BooleanOrFoldFunctor, Functor, MaxFoldFunctor,
+        MinFoldFunctor, ProdFoldFunctor, SumFoldFunctor,
     },
 };
 
 // reduce max
 
 /// A type operator that takes the maximum value among a [TList].
-pub trait LReduceMax
-where
-    Self: TList,
-{
-    type Output;
-}
+pub struct LReduceMaxFunctor {}
 
-pub type LReduceMaxOutput<List> = <List as LReduceMax>::Output;
+pub type LReduceMax<List> = ApplyFunctor<LReduceMaxFunctor, List>;
 
-impl<Head, Tail> LReduceMax for LCons<Head, Tail>
+impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceMaxFunctor
 where
-    Tail: TList + LFold<Head, MaxFoldFunc>,
+    Tail: TList + LFoldOp<Head, MaxFoldFunctor>,
 {
-    type Output = LFoldOutput<Tail, Head, MaxFoldFunc>;
+    type Output = LFoldOpOutput<Tail, Head, MaxFoldFunctor>;
 }
 
 // reduce min
 
 /// A type operator that takes the minimum value among a [TList].
-pub trait LReduceMin
-where
-    Self: TList,
-{
-    type Output;
-}
+pub struct LReduceMinFunctor {}
 
-pub type LReduceMinOutput<List> = <List as LReduceMin>::Output;
+pub type LReduceMin<List> = ApplyFunctor<LReduceMinFunctor, List>;
 
-impl<Head, Tail> LReduceMin for LCons<Head, Tail>
+impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceMinFunctor
 where
-    Tail: TList + LFold<Head, MinFoldFunc>,
+    Tail: TList + LFoldOp<Head, MinFoldFunctor>,
 {
-    type Output = LFoldOutput<Tail, Head, MinFoldFunc>;
+    type Output = LFoldOpOutput<Tail, Head, MinFoldFunctor>;
 }
 
 // reduce sum
 
 /// A type operator that takes the summation of values in [TList].
-pub trait LReduceSum
-where
-    Self: TList,
-{
-    type Output;
-}
+pub struct LReduceSumFunctor {}
 
-pub type LReduceSumOutput<List> = <List as LReduceSum>::Output;
+pub type LReduceSum<List> = ApplyFunctor<LReduceSumFunctor, List>;
 
-impl<Head, Tail> LReduceSum for LCons<Head, Tail>
+impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceSumFunctor
 where
-    Tail: TList + LFold<Head, SumFoldFunc>,
+    Tail: TList + LFoldOp<Head, SumFoldFunctor>,
 {
-    type Output = LFoldOutput<Tail, Head, SumFoldFunc>;
+    type Output = LFoldOpOutput<Tail, Head, SumFoldFunctor>;
 }
 
 // reduce product
 
 /// A type operator that takes the product of values in [TList].
-pub trait LReduceProd
-where
-    Self: TList,
-{
-    type Output;
-}
+pub struct LReduceProdFunctor {}
 
-pub type LReduceProdOutput<List> = <List as LReduceProd>::Output;
+pub type LReduceProd<List> = ApplyFunctor<LReduceProdFunctor, List>;
 
-impl<Head, Tail> LReduceProd for LCons<Head, Tail>
+impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceProdFunctor
 where
-    Tail: TList + LFold<Head, ProdFoldFunc>,
+    Tail: TList + LFoldOp<Head, ProdFoldFunctor>,
 {
-    type Output = LFoldOutput<Tail, Head, ProdFoldFunc>;
+    type Output = LFoldOpOutput<Tail, Head, ProdFoldFunctor>;
 }
 
 // reduce all
 
 /// A type operator returns [True](crate::boolean::True) if all values in [TList] are [True](crate::boolean::True).
-pub trait LReduceAll
-where
-    Self: TList,
-    Self::Output: Boolean,
-{
-    type Output;
-}
+pub struct LReduceAllFunctor {}
 
-pub type LReduceAllOutput<List> = <List as LReduceAll>::Output;
+pub type LReduceAll<List> = ApplyFunctor<LReduceAllFunctor, List>;
 
-impl<Head, Tail> LReduceAll for LCons<Head, Tail>
+impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceAllFunctor
 where
-    Tail: TList + LFold<Head, BooleanAndFoldFunc>,
-    LFoldOutput<Tail, Head, BooleanAndFoldFunc>: Boolean,
+    Tail: TList + LFoldOp<Head, BooleanAndFoldFunctor>,
+    LFoldOpOutput<Tail, Head, BooleanAndFoldFunctor>: Boolean,
 {
-    type Output = LFoldOutput<Tail, Head, BooleanAndFoldFunc>;
+    type Output = LFoldOpOutput<Tail, Head, BooleanAndFoldFunctor>;
 }
 
 // reduce product
 
 /// A type operator returns [True](crate::boolean::True) if any value in [TList] is [True](crate::boolean::True).
-pub trait LReduceAny
-where
-    Self: TList,
-{
-    type Output;
-}
+pub struct LReduceAnyFunctor {}
 
-pub type LReduceAnyOutput<List> = <List as LReduceAny>::Output;
+pub type LReduceAny<List> = ApplyFunctor<LReduceAnyFunctor, List>;
 
-impl<Head, Tail> LReduceAny for LCons<Head, Tail>
+impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceAnyFunctor
 where
-    Tail: TList + LFold<Head, BooleanOrFoldFunc>,
-    LFoldOutput<Tail, Head, BooleanOrFoldFunc>: Boolean,
+    Tail: TList + LFoldOp<Head, BooleanOrFoldFunctor>,
+    LFoldOpOutput<Tail, Head, BooleanOrFoldFunctor>: Boolean,
 {
-    type Output = LFoldOutput<Tail, Head, BooleanOrFoldFunc>;
+    type Output = LFoldOpOutput<Tail, Head, BooleanOrFoldFunctor>;
 }
 
 #[cfg(test)]
@@ -136,27 +106,27 @@ mod tests {
     type List2 = TListType! {N3, P7, Z0, N4};
     type List3 = TListType! {N7, P9, P2, N8};
 
-    type Assert1 = IfEqualOutput<(), LReduceMaxOutput<List1>, U5>;
-    type Assert2 = IfEqualOutput<(), LReduceMaxOutput<List2>, P7>;
-    type Assert3 = IfEqualOutput<(), LReduceMaxOutput<List3>, P9>;
+    type Assert1 = IfEqualOutput<(), LReduceMax<List1>, U5>;
+    type Assert2 = IfEqualOutput<(), LReduceMax<List2>, P7>;
+    type Assert3 = IfEqualOutput<(), LReduceMax<List3>, P9>;
 
-    type Assert4 = IfEqualOutput<(), LReduceMinOutput<List1>, U0>;
-    type Assert5 = IfEqualOutput<(), LReduceMinOutput<List2>, N4>;
-    type Assert6 = IfEqualOutput<(), LReduceMinOutput<List3>, N8>;
+    type Assert4 = IfEqualOutput<(), LReduceMin<List1>, U0>;
+    type Assert5 = IfEqualOutput<(), LReduceMin<List2>, N4>;
+    type Assert6 = IfEqualOutput<(), LReduceMin<List3>, N8>;
 
-    type Assert7 = IfEqualOutput<(), LReduceSumOutput<List1>, U10>;
-    type Assert8 = IfEqualOutput<(), LReduceSumOutput<List2>, Z0>;
-    type Assert9 = IfEqualOutput<(), LReduceSumOutput<List3>, N4>;
+    type Assert7 = IfEqualOutput<(), LReduceSum<List1>, U10>;
+    type Assert8 = IfEqualOutput<(), LReduceSum<List2>, Z0>;
+    type Assert9 = IfEqualOutput<(), LReduceSum<List3>, N4>;
 
-    type Assert10 = IfEqualOutput<(), LReduceProdOutput<List1>, U0>;
-    type Assert11 = IfEqualOutput<(), LReduceProdOutput<List2>, Z0>;
-    type Assert12 = IfEqualOutput<(), LReduceProdOutput<List3>, P1008>;
+    type Assert10 = IfEqualOutput<(), LReduceProd<List1>, U0>;
+    type Assert11 = IfEqualOutput<(), LReduceProd<List2>, Z0>;
+    type Assert12 = IfEqualOutput<(), LReduceProd<List3>, P1008>;
 
-    type Assert13 = IfPredicateOutput<(), LReduceAllOutput<TListType! {True, True}>>;
-    type Assert14 = IfNotPredicateOutput<(), LReduceAllOutput<TListType! {True, False, False}>>;
+    type Assert13 = IfPredicateOutput<(), LReduceAll<TListType! {True, True}>>;
+    type Assert14 = IfNotPredicateOutput<(), LReduceAll<TListType! {True, False, False}>>;
 
-    type Assert15 = IfPredicateOutput<(), LReduceAnyOutput<TListType! {True, False, False}>>;
-    type Assert16 = IfNotPredicateOutput<(), LReduceAllOutput<TListType! {False, False}>>;
+    type Assert15 = IfPredicateOutput<(), LReduceAny<TListType! {True, False, False}>>;
+    type Assert16 = IfNotPredicateOutput<(), LReduceAll<TListType! {False, False}>>;
 
     #[test]
     fn tlist_reduction_test() {

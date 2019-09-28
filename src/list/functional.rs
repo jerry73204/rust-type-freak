@@ -1,14 +1,13 @@
-use super::{LCons, LNil, TList};
+use super::{LCons, LNil, LPrependToFunctor, TList};
 use crate::{
-    functional::{
-        ApplyFoldFunctor, ApplyFunctor, ApplyScanFunctor, FoldFunctor, Functor, PrependTListFunc,
-        ScanFunctor, ScanFunctorState,
-    },
-    maybe::{Maybe, MaybeMap, MaybeMapOutput, UnwrapOr, UnwrapOrOutput},
+    functional::{ApplyFunctor, Functor},
+    maybe::{Maybe, MaybeMap, MaybeMapFunctor, UnwrapOr, UnwrapOrFunctor},
+    tuple::{FirstOf, FirstOfFunctor, Pair, SecondOf, SecondOfFunctor},
 };
+use std::marker::PhantomData;
 
 /// A type operator that apply a [Functor] to all types in [TList].
-pub trait LMap<Func>
+pub trait LMapOp<Func>
 where
     Self: TList,
     Self::Output: TList,
@@ -16,70 +15,72 @@ where
     type Output;
 }
 
-pub type LMapOutput<List, Func> = <List as LMap<Func>>::Output;
+pub type LMapOpOutput<List, Func> = <List as LMapOp<Func>>::Output;
 
-impl<Func> LMap<Func> for LNil {
+impl<Func> LMapOp<Func> for LNil {
     type Output = LNil;
 }
 
-impl<Func, Head, Tail> LMap<Func> for LCons<Head, Tail>
+impl<Func, Head, Tail> LMapOp<Func> for LCons<Head, Tail>
 where
     Func: Functor<Head>,
-    Tail: TList + LMap<Func>,
+    Tail: TList + LMapOp<Func>,
 {
-    type Output = LCons<ApplyFunctor<Func, Head>, LMapOutput<Tail, Func>>;
+    type Output = LCons<ApplyFunctor<Func, Head>, LMapOpOutput<Tail, Func>>;
+}
+
+/// A functor that maps values in [TList] with `Func`.
+pub struct LMapFunctor<Func> {
+    _phantom: PhantomData<Func>,
+}
+
+pub type LMap<List, Func> = ApplyFunctor<LMapFunctor<Func>, List>;
+
+impl<List, Func> Functor<List> for LMapFunctor<Func>
+where
+    List: TList + LMapOp<Func>,
+{
+    type Output = LMapOpOutput<List, Func>;
 }
 
 /// A type operator that accumulates all values in [TList].
-pub trait LFold<Init, Func>
+pub trait LFoldOp<Init, Func>
 where
     Self: TList,
 {
     type Output;
 }
 
-pub type LFoldOutput<List, Init, Func> = <List as LFold<Init, Func>>::Output;
+pub type LFoldOpOutput<List, Init, Func> = <List as LFoldOp<Init, Func>>::Output;
 
-impl<Init, Func> LFold<Init, Func> for LNil {
+impl<Init, Func> LFoldOp<Init, Func> for LNil {
     type Output = Init;
 }
 
-impl<Init, Func, Head, Tail> LFold<Init, Func> for LCons<Head, Tail>
+impl<Init, Func, Head, Tail> LFoldOp<Init, Func> for LCons<Head, Tail>
 where
-    Func: FoldFunctor<Init, Head>,
-    Tail: TList + LFold<ApplyFoldFunctor<Func, Init, Head>, Func>,
+    Func: Functor<(Init, Head)>,
+    Tail: TList + LFoldOp<ApplyFunctor<Func, (Init, Head)>, Func>,
 {
-    type Output = LFoldOutput<Tail, ApplyFoldFunctor<Func, Init, Head>, Func>;
+    type Output = LFoldOpOutput<Tail, ApplyFunctor<Func, (Init, Head)>, Func>;
 }
 
-/// A type operator that accumulates all values in [TList] with finalizer.
-pub trait LFoldFinalize<Init, Func, Finalizer>
-where
-    Self: TList,
-{
-    type Output;
+/// A functor that maps values in [TList] with `Func`.
+pub struct LFoldFunctor<Init, Func> {
+    _phantom: PhantomData<(Init, Func)>,
 }
 
-pub type LFoldFinalizeOutput<List, Init, Func, Finalizer> =
-    <List as LFoldFinalize<Init, Func, Finalizer>>::Output;
+pub type LFold<List, Init, Func> = ApplyFunctor<LFoldFunctor<Init, Func>, List>;
 
-impl<Init, Func, Finalizer> LFoldFinalize<Init, Func, Finalizer> for LNil
+impl<List, Init, Func> Functor<List> for LFoldFunctor<Init, Func>
 where
-    Finalizer: Functor<Init>,
+    List: TList + LFoldOp<Init, Func>,
 {
-    type Output = ApplyFunctor<Finalizer, Init>;
-}
-
-impl<Init, Func, Finalizer, Head, Tail> LFoldFinalize<Init, Func, Finalizer> for LCons<Head, Tail>
-where
-    Func: FoldFunctor<Init, Head>,
-    Tail: TList + LFoldFinalize<ApplyFoldFunctor<Func, Init, Head>, Func, Finalizer>,
-{
-    type Output = LFoldFinalizeOutput<Tail, ApplyFoldFunctor<Func, Init, Head>, Func, Finalizer>;
+    type Output = LFoldOpOutput<List, Init, Func>;
 }
 
 /// Filters the values in [TList].
-pub trait LFilter<Func>
+pub trait LFilterOp<Func>
 where
     Self: TList,
     Self::Output: TList,
@@ -87,33 +88,48 @@ where
     type Output;
 }
 
-pub type LFilterOutput<List, Func> = <List as LFilter<Func>>::Output;
+pub type LFilterOpOutput<List, Func> = <List as LFilterOp<Func>>::Output;
 
-impl<Func> LFilter<Func> for LNil {
+impl<Func> LFilterOp<Func> for LNil {
     type Output = LNil;
 }
 
-impl<Func, Head, Tail> LFilter<Func> for LCons<Head, Tail>
+impl<Func, Head, Tail> LFilterOp<Func> for LCons<Head, Tail>
 where
     Func: Functor<Head>,
-    Tail: TList + LFilter<Func>,
+    Tail: TList + LFilterOp<Func>,
     Func::Output: Maybe,
-    ApplyFunctor<Func, Head>: MaybeMap<PrependTListFunc<LFilterOutput<Tail, Func>>>,
-    MaybeMapOutput<ApplyFunctor<Func, Head>, PrependTListFunc<LFilterOutput<Tail, Func>>>:
-        UnwrapOr<LFilterOutput<Tail, Func>>,
-    UnwrapOrOutput<
-        MaybeMapOutput<ApplyFunctor<Func, Head>, PrependTListFunc<LFilterOutput<Tail, Func>>>,
-        LFilterOutput<Tail, Func>,
+    MaybeMapFunctor<LPrependToFunctor<LFilterOpOutput<Tail, Func>>>:
+        Functor<ApplyFunctor<Func, Head>>,
+    UnwrapOrFunctor<LFilterOpOutput<Tail, Func>>:
+        Functor<MaybeMap<ApplyFunctor<Func, Head>, LPrependToFunctor<LFilterOpOutput<Tail, Func>>>>,
+    UnwrapOr<
+        MaybeMap<ApplyFunctor<Func, Head>, LPrependToFunctor<LFilterOpOutput<Tail, Func>>>,
+        LFilterOpOutput<Tail, Func>,
     >: TList,
 {
-    type Output = UnwrapOrOutput<
-        MaybeMapOutput<ApplyFunctor<Func, Head>, PrependTListFunc<LFilterOutput<Tail, Func>>>,
-        LFilterOutput<Tail, Func>,
+    type Output = UnwrapOr<
+        MaybeMap<ApplyFunctor<Func, Head>, LPrependToFunctor<LFilterOpOutput<Tail, Func>>>,
+        LFilterOpOutput<Tail, Func>,
     >;
 }
 
+/// A functor that filters values in [TList] with `Func`.
+pub struct LFilterFunctor<Func> {
+    _phantom: PhantomData<Func>,
+}
+
+pub type LFilter<List, Func> = ApplyFunctor<LFilterFunctor<Func>, List>;
+
+impl<List, Func> Functor<List> for LFilterFunctor<Func>
+where
+    List: TList + LFilterOp<Func>,
+{
+    type Output = LFilterOpOutput<List, Func>;
+}
+
 /// A [LMap]-like operator that maintains internal state.
-pub trait LScan<State, Func>
+pub trait LScanOp<State, Func>
 where
     Self: TList,
     Self::Output: TList,
@@ -122,59 +138,39 @@ where
     type State;
 }
 
-pub type LScanOutput<List, State, Func> = <List as LScan<State, Func>>::Output;
-pub type LScanState<List, State, Func> = <List as LScan<State, Func>>::State;
+pub type LScanOpOutput<List, State, Func> = <List as LScanOp<State, Func>>::Output;
+pub type LScanOpState<List, State, Func> = <List as LScanOp<State, Func>>::State;
 
-impl<State, Func> LScan<State, Func> for LNil {
+impl<State, Func> LScanOp<State, Func> for LNil {
     type Output = LNil;
     type State = State;
 }
 
-impl<State, Func, Head, Tail> LScan<State, Func> for LCons<Head, Tail>
+impl<State, Func, Head, Tail> LScanOp<State, Func> for LCons<Head, Tail>
 where
-    Func: ScanFunctor<State, Head>,
-    Tail: TList + LScan<ScanFunctorState<Func, State, Head>, Func>,
+    Func: Functor<(State, Head)>,
+    Tail: TList + LScanOp<SecondOf<ApplyFunctor<Func, (State, Head)>>, Func>,
+    FirstOfFunctor: Functor<ApplyFunctor<Func, (State, Head)>>,
+    SecondOfFunctor: Functor<ApplyFunctor<Func, (State, Head)>>,
+    ApplyFunctor<Func, (State, Head)>: Pair,
 {
-    type Output = LCons<
-        ApplyScanFunctor<Func, State, Head>,
-        LScanOutput<Tail, ScanFunctorState<Func, State, Head>, Func>,
-    >;
-    type State = ScanFunctorState<Func, State, Head>;
+    type Output =
+        LCons<FirstOf<ApplyFunctor<Func, (State, Head)>>, LScanOpOutput<Tail, Self::State, Func>>;
+    type State = SecondOf<ApplyFunctor<Func, (State, Head)>>;
 }
 
-/// [LScan] with finalizer.
-pub trait LScanFinalize<State, Func, Finalizer>
-where
-    Self: TList,
-    Self::Output: TList,
-{
-    type Output;
-    type State;
+/// A functor that maps values in [TList] with `Func` with internal state.
+pub struct LScanFunctor<Init, Func> {
+    _phantom: PhantomData<(Init, Func)>,
 }
 
-pub type LScanFinalizeOutput<List, State, Func, Finalizer> =
-    <List as LScanFinalize<State, Func, Finalizer>>::Output;
-pub type LScanFinalizeState<List, State, Func, Finalizer> =
-    <List as LScanFinalize<State, Func, Finalizer>>::State;
+pub type LScan<List, Init, Func> = ApplyFunctor<LScanFunctor<Init, Func>, List>;
 
-impl<State, Func, Finalizer> LScanFinalize<State, Func, Finalizer> for LNil
+impl<List, Init, Func> Functor<List> for LScanFunctor<Init, Func>
 where
-    Finalizer: Functor<State>,
+    List: TList + LScanOp<Init, Func>,
 {
-    type Output = LNil;
-    type State = ApplyFunctor<Finalizer, State>;
-}
-
-impl<State, Func, Finalizer, Head, Tail> LScanFinalize<State, Func, Finalizer> for LCons<Head, Tail>
-where
-    Func: ScanFunctor<State, Head>,
-    Tail: TList + LScanFinalize<ScanFunctorState<Func, State, Head>, Func, Finalizer>,
-{
-    type Output = LCons<
-        ApplyScanFunctor<Func, State, Head>,
-        LScanFinalizeOutput<Tail, ScanFunctorState<Func, State, Head>, Func, Finalizer>,
-    >;
-    type State = ScanFunctorState<Func, State, Head>;
+    type Output = LScanOpOutput<List, Init, Func>;
 }
 
 #[cfg(test)]
@@ -200,7 +196,7 @@ mod tests {
     }
 
     type List1 = TListType! {U1, U2, U3};
-    type List2 = LMapOutput<List1, PlusOne>;
+    type List2 = LMap<List1, PlusOne>;
     type Assert1 = IfSameOutput<(), List2, TListType! {U2, U3, U4}>;
 
     // Box every type
@@ -211,7 +207,7 @@ mod tests {
     }
 
     type List3 = TListType! {String, [i64; 7], isize, (), (f64, f32)};
-    type List4 = LMapOutput<List3, BoxFunc>;
+    type List4 = LMap<List3, BoxFunc>;
     type Assert2 = IfSameOutput<
         (),
         List4,
@@ -227,7 +223,7 @@ mod tests {
     // Sum of list
     struct SumFunc;
 
-    impl<Init, Input> FoldFunctor<Init, Input> for SumFunc
+    impl<Init, Input> Functor<(Init, Input)> for SumFunc
     where
         Init: Unsigned + Add<Input>,
         Input: Unsigned,
@@ -236,13 +232,13 @@ mod tests {
     }
 
     type List5 = TListType! {U3, U5, U7};
-    type SumOutcome = LFoldOutput<List5, U0, SumFunc>;
+    type SumOutcome = LFold<List5, U0, SumFunc>;
     type Assert3 = IfSameOutput<(), SumOutcome, U15>;
 
     // Count # of elements in list
     struct CountFunc;
 
-    impl<Init, Input> FoldFunctor<Init, Input> for CountFunc
+    impl<Init, Input> Functor<(Init, Input)> for CountFunc
     where
         Init: Unsigned + Add<B1>,
     {
@@ -250,7 +246,7 @@ mod tests {
     }
 
     type List6 = TListType! {u8, u16, u32, u64, i8, i16, i32, i64, f32, f64};
-    type CountOutcome = LFoldOutput<List6, U0, CountFunc>;
+    type CountOutcome = LFold<List6, U0, CountFunc>;
     type Assert4 = IfSameOutput<(), CountOutcome, U10>;
 
     // Filter by threshold
@@ -266,23 +262,22 @@ mod tests {
     }
 
     type List7 = TListType! {U8, U4, U0, U6, U9};
-    type ThresholdOutcome = LFilterOutput<List7, ThresholdFunc>;
+    type ThresholdOutcome = LFilter<List7, ThresholdFunc>;
     type Assert5 = IfSameOutput<(), ThresholdOutcome, TListType! {U4, U0}>;
 
     // Power of values
     struct PowerScanFunc;
 
-    impl<State, Input> ScanFunctor<State, Input> for PowerScanFunc
+    impl<State, Input> Functor<(State, Input)> for PowerScanFunc
     where
         Input: Unsigned + Pow<State>,
         State: Unsigned + Add<B1>,
     {
-        type Output = Exp<Input, State>;
-        type State = Add1<State>;
+        type Output = (Exp<Input, State>, Add1<State>);
     }
 
     type List8 = TListType! {U3, U2, U7, U0, U5};
-    type PowerOutput = LScanOutput<List8, U0, PowerScanFunc>;
+    type PowerOutput = LScan<List8, U0, PowerScanFunc>;
     type Assert6 = IfSameOutput<(), PowerOutput, TListType! {U1, U2, U49, U0, U625}>;
 
     #[test]

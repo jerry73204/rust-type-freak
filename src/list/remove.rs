@@ -1,5 +1,9 @@
 use super::{LCons, LNil, TList};
-use crate::counter::{Counter, Current, Next};
+use crate::{
+    counter::{Counter, Current, Next},
+    functional::{ApplyFunctor, Functor},
+};
+use std::marker::PhantomData;
 
 // remove
 
@@ -8,7 +12,7 @@ use crate::counter::{Counter, Current, Next};
 /// The auxiliary `Index` argument is intended for
 /// list traversal. It can be left unspecified and
 /// the compiler will figure it out.
-pub trait LRemoveAt<Target, Index>
+pub trait LRemoveAtOp<Target, Index>
 where
     Index: Counter,
     Self: TList,
@@ -17,22 +21,37 @@ where
     type Output;
 }
 
-impl<Target, Tail> LRemoveAt<Target, Current> for LCons<Target, Tail>
+impl<Target, Tail> LRemoveAtOp<Target, Current> for LCons<Target, Tail>
 where
     Tail: TList,
 {
     type Output = Tail;
 }
 
-impl<Target, Index, NonTarget, Tail> LRemoveAt<Target, Next<Index>> for LCons<NonTarget, Tail>
+impl<Target, Index, NonTarget, Tail> LRemoveAtOp<Target, Next<Index>> for LCons<NonTarget, Tail>
 where
     Index: Counter,
-    Tail: TList + LRemoveAt<Target, Index>,
+    Tail: TList + LRemoveAtOp<Target, Index>,
 {
-    type Output = LCons<NonTarget, LRemoveAtOutput<Tail, Target, Index>>;
+    type Output = LCons<NonTarget, LRemoveAtOpOutput<Tail, Target, Index>>;
 }
 
-pub type LRemoveAtOutput<List, Target, Index> = <List as LRemoveAt<Target, Index>>::Output;
+pub type LRemoveAtOpOutput<List, Target, Index> = <List as LRemoveAtOp<Target, Index>>::Output;
+
+/// A functor that removes `Target` from [TList].
+pub struct LRemoveAtFunctor<Target, Index> {
+    _phantom: PhantomData<(Target, Index)>,
+}
+
+pub type LRemoveAt<List, Target, Index> = ApplyFunctor<LRemoveAtFunctor<Target, Index>, List>;
+
+impl<List, Target, Index> Functor<List> for LRemoveAtFunctor<Target, Index>
+where
+    List: TList + LRemoveAtOp<Target, Index>,
+    Index: Counter,
+{
+    type Output = LRemoveAtOpOutput<List, Target, Index>;
+}
 
 // remove multiple items
 
@@ -40,7 +59,7 @@ pub type LRemoveAtOutput<List, Target, Index> = <List as LRemoveAt<Target, Index
 ///
 /// The `Targets` argument accepts a [TList] of types to be removed.
 /// The `Indexes` argument can be left unspecified.
-pub trait LRemoveMany<Targets, Indexes>
+pub trait LRemoveManyOp<Targets, Indexes>
 where
     Targets: TList,
     Indexes: TList,
@@ -50,7 +69,7 @@ where
     type Output;
 }
 
-impl<List> LRemoveMany<LNil, LNil> for List
+impl<List> LRemoveManyOp<LNil, LNil> for List
 where
     List: TList,
 {
@@ -58,20 +77,41 @@ where
 }
 
 impl<Index, IRemain, Target, TRemain, Head, Tail>
-    LRemoveMany<LCons<Target, TRemain>, LCons<Index, IRemain>> for LCons<Head, Tail>
+    LRemoveManyOp<LCons<Target, TRemain>, LCons<Index, IRemain>> for LCons<Head, Tail>
 where
     Index: Counter,
     IRemain: TList,
     TRemain: TList,
     Tail: TList,
-    Self: LRemoveAt<Target, Index>,
-    <Self as LRemoveAt<Target, Index>>::Output: LRemoveMany<TRemain, IRemain>,
+    Self: LRemoveAtOp<Target, Index>,
+    LRemoveAtOpOutput<Self, Target, Index>: LRemoveManyOp<TRemain, IRemain>,
 {
-    type Output = LRemoveManyOutput<LRemoveAtOutput<Self, Target, Index>, TRemain, IRemain>;
+    type Output = LRemoveManyOpOutput<LRemoveAtOpOutput<Self, Target, Index>, TRemain, IRemain>;
 }
 
-pub type LRemoveManyOutput<List, Targets, Indexes> =
-    <List as LRemoveMany<Targets, Indexes>>::Output;
+pub type LRemoveManyOpOutput<List, Targets, Indexes> =
+    <List as LRemoveManyOp<Targets, Indexes>>::Output;
+
+/// A functor that removes multiple `Targets` in [TList].
+pub struct LRemoveManyFunctor<Targets, Indexes>
+where
+    Targets: TList,
+    Indexes: TList,
+{
+    _phantom: PhantomData<(Targets, Indexes)>,
+}
+
+pub type LRemoveMany<List, Targets, Indexes> =
+    ApplyFunctor<LRemoveManyFunctor<Targets, Indexes>, List>;
+
+impl<List, Targets, Indexes> Functor<List> for LRemoveManyFunctor<Targets, Indexes>
+where
+    List: TList + LRemoveManyOp<Targets, Indexes>,
+    Targets: TList,
+    Indexes: TList,
+{
+    type Output = LRemoveManyOpOutput<List, Targets, Indexes>;
+}
 
 // tests
 
@@ -89,15 +129,13 @@ mod tests {
     type SomeList = TListType! {A, B, C};
 
     // remove
-    type Assert7<Idx> = AssertSame<LRemoveAtOutput<SomeList, B, Idx>, TListType! {A, C}>;
+    type Assert7<Idx> = AssertSame<LRemoveAt<SomeList, B, Idx>, TListType! {A, C}>;
 
     // remove multiple items
-    type Assert8<Idx> =
-        AssertSame<LRemoveManyOutput<SomeList, TListType! {A, C}, Idx>, TListType! {B}>;
+    type Assert8<Idx> = AssertSame<LRemoveMany<SomeList, TListType! {A, C}, Idx>, TListType! {B}>;
 
     // remove until empty
-    type Assert9<Idx> =
-        AssertSame<LRemoveManyOutput<SomeList, TListType! {B, A, C}, Idx>, TListType! {}>;
+    type Assert9<Idx> = AssertSame<LRemoveMany<SomeList, TListType! {B, A, C}, Idx>, TListType! {}>;
 
     #[test]
     fn tlist_remove_test() {
