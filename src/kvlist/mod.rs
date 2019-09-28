@@ -1,5 +1,7 @@
 //! A typed list of key-value pairs.
 
+pub mod marker;
+
 use crate::{
     counter::{Counter, Current, Next},
     functional::{ApplyFunctor, Functor},
@@ -32,16 +34,6 @@ impl<Key, Value, Tail> KVList for KVCons<Key, Value, Tail> where Tail: KVList {}
 pub type KVNil = LNil;
 
 impl KVList for LNil {}
-
-/// A marker trait that marks the empty [KVList].
-pub trait EmptyKVList: KVList {}
-
-impl EmptyKVList for KVNil {}
-
-/// A marker trait that marks non-empty [KVList].
-pub trait NonEmptyKVList: KVList {}
-
-impl<Key, Value, Tail> NonEmptyKVList for KVCons<Key, Value, Tail> where Tail: KVList {}
 
 // length of list
 
