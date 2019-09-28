@@ -112,24 +112,24 @@ where
 
 // count op
 
-pub trait Count
+pub trait CountOp
 where
     Self::Output: Unsigned,
 {
     type Output;
 }
 
-impl Count for Current {
+impl CountOp for Current {
     type Output = U0;
 }
 
-impl<Cnt> Count for Next<Cnt>
+impl<Cnt> CountOp for Next<Cnt>
 where
-    Cnt: Counter + Count,
+    Cnt: Counter + CountOp,
     CountOutput<Cnt>: Add<U1>,
     Sum<CountOutput<Cnt>, U1>: Unsigned,
 {
     type Output = Sum<CountOutput<Cnt>, U1>;
 }
 
-pub type CountOutput<Cnt> = <Cnt as Count>::Output;
+pub type CountOutput<Cnt> = <Cnt as CountOp>::Output;
