@@ -5,14 +5,14 @@
 //!
 //! ```rust
 //! use typenum::consts::*;
-//! use type_freak::maybe::{Maybe, Just, Nothing, UnwrapOutput, UnwrapOrOutput};
+//! use type_freak::maybe::{Maybe, Just, Nothing, Unwrap, UnwrapOr};
 //!
 //! type Opt1 = Just<U3>;
 //! type Opt2 = Nothing;
 //!
-//! type Val1 = UnwrapOutput<Opt1>;       // U3
-//! type Val2 = UnwrapOrOutput<Opt1, U0>; // U3
-//! type Val3 = UnwrapOrOutput<Opt2, U0>; // U0
+//! type Val1 = Unwrap<Opt1>;       // U3
+//! type Val2 = UnwrapOr<Opt1, U0>; // U3
+//! type Val3 = UnwrapOr<Opt2, U0>; // U0
 //! ```
 
 use crate::functional::{ApplyFunctor, Functor};
@@ -41,81 +41,89 @@ impl Maybe for Nothing {}
 
 // unwrap op
 
-/// A type operator that unwraps [Just<T>](Just).
-pub trait Unwrap
-where
-    Self: Maybe,
-{
-    type Output;
-}
+/// A functor that unwraps [Just<T>](Just).
+pub struct UnwrapFunctor {}
 
-pub type UnwrapOutput<T> = <T as Unwrap>::Output;
+pub type Unwrap<T> = ApplyFunctor<UnwrapFunctor, T>;
 
-impl<T> Unwrap for Just<T> {
+impl<T> Functor<Just<T>> for UnwrapFunctor {
     type Output = T;
 }
 
 // unwrap or default op
 
-/// A type operator that unwraps [Just<T>](Just),
-/// or derives to default type for [Nothing].
-pub trait UnwrapOr<DefaultValue>
-where
-    Self: Maybe,
-{
-    type Output;
+/// A functor that unwraps [Just<T>](Just), or returns `Defaultvalue` if [Nothing].
+pub struct UnwrapOrFunctor<DefaultValue> {
+    _phantom: PhantomData<DefaultValue>,
 }
 
-pub type UnwrapOrOutput<T, DefaultValue> = <T as UnwrapOr<DefaultValue>>::Output;
+pub type UnwrapOr<T, DefaultValue> = ApplyFunctor<UnwrapOrFunctor<DefaultValue>, T>;
 
-impl<T, DefaultValue> UnwrapOr<DefaultValue> for Just<T> {
+impl<T, DefaultValue> Functor<Just<T>> for UnwrapOrFunctor<DefaultValue> {
     type Output = T;
 }
 
-impl<DefaultValue> UnwrapOr<DefaultValue> for Nothing {
+impl<DefaultValue> Functor<Nothing> for UnwrapOrFunctor<DefaultValue> {
     type Output = DefaultValue;
 }
 
 // map the value of maybe
 
-/// Maps a [Maybe] type by a [Functor].
-pub trait MaybeMap<Func>
-where
-    Self: Maybe,
-    Self::Output: Maybe,
-{
-    type Output;
+/// A functor that maps a [Maybe] type by a [Functor].
+pub struct MaybeMapFunctor<Func> {
+    _phantom: PhantomData<Func>,
 }
 
-pub type MaybeMapOutput<MaybeInput, Func> = <MaybeInput as MaybeMap<Func>>::Output;
+pub type MaybeMap<Input, Func> = ApplyFunctor<MaybeMapFunctor<Func>, Input>;
 
-impl<Func> MaybeMap<Func> for Nothing {
+impl<Func> Functor<Nothing> for MaybeMapFunctor<Func> {
     type Output = Nothing;
 }
 
-impl<Func, T> MaybeMap<Func> for Just<T>
+impl<Func, T> Functor<Just<T>> for MaybeMapFunctor<Func>
 where
     Func: Functor<T>,
 {
     type Output = Just<ApplyFunctor<Func, T>>;
 }
 
-/// Filters a [Maybe] type by a [Functor].
-pub trait MaybeFilter<Func>
-where
-    Self: Maybe,
-    Self::Output: Maybe,
-{
-    type Output;
+// filter
+
+// /// Filters a [Maybe] type by a [Functor].
+// pub trait MaybeFilter<Func>
+// where
+//     Self: Maybe,
+//     Self::Output: Maybe,
+// {
+//     type Output;
+// }
+
+// pub type MaybeFilterOutput<MaybeInput, Func> = <MaybeInput as MaybeFilter<Func>>::Output;
+
+// impl<Func> MaybeFilter<Func> for Nothing {
+//     type Output = Nothing;
+// }
+
+// impl<Func, T> MaybeFilter<Func> for Just<T>
+// where
+//     Func: Functor<T>,
+//     Func::Output: Maybe,
+// {
+//     type Output = ApplyFunctor<Func, T>;
+// }
+
+/// A functor filters a [Maybe] type by a [Functor].
+pub struct MaybeFilterFunctor<Func> {
+    _phantom: PhantomData<Func>,
 }
 
-pub type MaybeFilterOutput<MaybeInput, Func> = <MaybeInput as MaybeFilter<Func>>::Output;
+pub type MaybeFilter<Input, Func> = ApplyFunctor<MaybeFilterFunctor<Func>, Input>;
 
-impl<Func> MaybeFilter<Func> for Nothing {
+impl<Func> Functor<Nothing> for MaybeFilterFunctor<Func> {
     type Output = Nothing;
 }
 
-impl<Func, T> MaybeFilter<Func> for Just<T>
+impl<Func, T> Functor<Just<T>> for MaybeFilterFunctor<Func>
 where
     Func: Functor<T>,
     Func::Output: Maybe,
@@ -140,9 +148,9 @@ mod tests {
 
     type AssertSame<Lhs, Rhs> = IfSameOutput<(), Lhs, Rhs>;
 
-    type Assert1 = AssertSame<UnwrapOutput<Opt1>, U3>;
-    type Assert2 = AssertSame<UnwrapOrOutput<Opt1, U0>, U3>;
-    type Assert3 = AssertSame<UnwrapOrOutput<Opt2, U0>, U0>;
+    type Assert1 = AssertSame<Unwrap<Opt1>, U3>;
+    type Assert2 = AssertSame<UnwrapOr<Opt1, U0>, U3>;
+    type Assert3 = AssertSame<UnwrapOr<Opt2, U0>, U0>;
 
     // map
     struct BoxFunc;
@@ -151,8 +159,8 @@ mod tests {
         type Output = Box<Input>;
     }
 
-    type Assert4 = IfSameOutput<(), MaybeMapOutput<Just<i8>, BoxFunc>, Just<Box<i8>>>;
-    type Assert5 = IfSameOutput<(), MaybeMapOutput<Nothing, BoxFunc>, Nothing>;
+    type Assert4 = IfSameOutput<(), MaybeMap<Just<i8>, BoxFunc>, Just<Box<i8>>>;
+    type Assert5 = IfSameOutput<(), MaybeMap<Nothing, BoxFunc>, Nothing>;
 
     // filter
     struct ThresholdFunc;
@@ -166,9 +174,9 @@ mod tests {
         type Output = IfElsePredicateOutput<Just<Input>, GrEq<Input, U4>, Nothing>;
     }
 
-    type Assert6 = IfSameOutput<(), MaybeFilterOutput<Just<U8>, ThresholdFunc>, Just<U8>>;
-    type Assert7 = IfSameOutput<(), MaybeFilterOutput<Just<U2>, ThresholdFunc>, Nothing>;
-    type Assert8 = IfSameOutput<(), MaybeFilterOutput<Nothing, ThresholdFunc>, Nothing>;
+    type Assert6 = IfSameOutput<(), MaybeFilter<Just<U8>, ThresholdFunc>, Just<U8>>;
+    type Assert7 = IfSameOutput<(), MaybeFilter<Just<U2>, ThresholdFunc>, Nothing>;
+    type Assert8 = IfSameOutput<(), MaybeFilter<Nothing, ThresholdFunc>, Nothing>;
 
     #[test]
     fn maybe_test() {
