@@ -61,7 +61,7 @@
 
 use crate::{
     boolean::{Boolean, Or, OrOutput},
-    tuple::FirstOfOutput,
+    tuple::FirstOf,
 };
 use typenum::{
     Eq, False, Gr, GrEq, IsEqual, IsGreater, IsGreaterOrEqual, IsLess, IsLessOrEqual, Le, LeEq,
@@ -71,7 +71,7 @@ use typenum::{
 // if
 
 /// A type alias that checks if type can be constructed.
-pub type IfOutput<Output, Cond> = FirstOfOutput<(Output, Cond)>;
+pub type IfOutput<Output, Cond> = FirstOf<(Output, Cond)>;
 
 // if type equivalence
 

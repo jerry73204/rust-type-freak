@@ -1,5 +1,7 @@
 //! Type operators for tuple types.
 
+use crate::functional::{ApplyFunctor, Functor};
+
 // marker traits for tuples
 
 /// Represents an empty tuple.
@@ -29,99 +31,91 @@ impl<A, B, C, D> Quadruple for (A, B, C, D) {}
 
 // first type of pair
 
-/// A type operator that takes first type of tuple.
-pub trait FirstOf {
-    type Output;
-}
+/// A functor that takes first type of tuple.
+pub struct FirstOfFunctor {}
 
-pub type FirstOfOutput<T> = <T as FirstOf>::Output;
+pub type FirstOf<Tuple> = ApplyFunctor<FirstOfFunctor, Tuple>;
 
-impl<A> FirstOf for (A,) {
+impl<A> Functor<(A,)> for FirstOfFunctor {
     type Output = A;
 }
 
-impl<A, B> FirstOf for (A, B) {
+impl<A, B> Functor<(A, B)> for FirstOfFunctor {
     type Output = A;
 }
 
-impl<A, B, C> FirstOf for (A, B, C) {
+impl<A, B, C> Functor<(A, B, C)> for FirstOfFunctor {
     type Output = A;
 }
 
-impl<A, B, C, D> FirstOf for (A, B, C, D) {
+impl<A, B, C, D> Functor<(A, B, C, D)> for FirstOfFunctor {
     type Output = A;
 }
 
-impl<A, B, C, D, E> FirstOf for (A, B, C, D, E) {
+impl<A, B, C, D, E> Functor<(A, B, C, D, E)> for FirstOfFunctor {
     type Output = A;
 }
 
 // second type of pair
 
-/// A type operator that takes second type of tuple.
-pub trait SecondOf {
-    type Output;
-}
+/// A functor that takes second type of tuple.
+pub struct SecondOfFunctor {}
 
-pub type SecondOfOutput<T> = <T as SecondOf>::Output;
+pub type SecondOf<Tuple> = ApplyFunctor<SecondOfFunctor, Tuple>;
 
-impl<A, B> SecondOf for (A, B) {
+impl<A, B> Functor<(A, B)> for SecondOfFunctor {
     type Output = B;
 }
 
-impl<A, B, C> SecondOf for (A, B, C) {
+impl<A, B, C> Functor<(A, B, C)> for SecondOfFunctor {
     type Output = B;
 }
 
-impl<A, B, C, D> SecondOf for (A, B, C, D) {
+impl<A, B, C, D> Functor<(A, B, C, D)> for SecondOfFunctor {
     type Output = B;
 }
 
-impl<A, B, C, D, E> SecondOf for (A, B, C, D, E) {
+impl<A, B, C, D, E> Functor<(A, B, C, D, E)> for SecondOfFunctor {
     type Output = B;
 }
 
 // thirt type of pair
 
-/// A type operator that takes third type of tuple.
-pub trait ThirdOf {
-    type Output;
-}
+/// A functor that takes third type of tuple.
+pub struct ThirdOfFunctor {}
 
-pub type ThirdOfOutput<T> = <T as ThirdOf>::Output;
+pub type ThirdOf<Tuple> = ApplyFunctor<ThirdOfFunctor, Tuple>;
 
-impl<A, B, C> ThirdOf for (A, B, C) {
+impl<A, B, C> Functor<(A, B, C)> for ThirdOfFunctor {
     type Output = C;
 }
 
-impl<A, B, C, D> ThirdOf for (A, B, C, D) {
+impl<A, B, C, D> Functor<(A, B, C, D)> for ThirdOfFunctor {
     type Output = C;
 }
 
-impl<A, B, C, D, E> ThirdOf for (A, B, C, D, E) {
+impl<A, B, C, D, E> Functor<(A, B, C, D, E)> for ThirdOfFunctor {
     type Output = C;
 }
 
 // left associate
 
-pub trait LeftAssociate {
-    type Output;
-}
+/// A functor that transforms `(A, (B, C))` type to `((A, B), C)`.
+pub struct LeftAssociateFunctor {}
 
-pub type LeftAssociateOutput<T> = <T as LeftAssociate>::Output;
+pub type LeftAssociate<Tuple> = ApplyFunctor<LeftAssociateFunctor, Tuple>;
 
-impl<A, B, C> LeftAssociate for (A, (B, C)) {
+impl<A, B, C> Functor<(A, (B, C))> for LeftAssociateFunctor {
     type Output = ((A, B), C);
 }
 
 // Right associate
 
-pub trait RightAssociate {
-    type Output;
-}
+/// A functor that transforms `((A, B), C)` type to `(A, (B, C))`.
+pub struct RightAssociateFunctor {}
 
-pub type RightAssociateOutput<T> = <T as RightAssociate>::Output;
+pub type RightAssociate<Tuple> = ApplyFunctor<RightAssociateFunctor, Tuple>;
 
-impl<A, B, C> RightAssociate for ((A, B), C) {
+impl<A, B, C> Functor<((A, B), C)> for RightAssociateFunctor {
     type Output = (A, (B, C));
 }
