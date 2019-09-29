@@ -1,6 +1,6 @@
 [package]
 name = "type-freak"
-version = "0.1.2"
+version = "0.2.0"
 authors = ["jerry73204 <jerry73204@gmail.com>"]
 edition = "2018"
 description = "Collection of typed data structures, trait operators and aliases"
