@@ -3,10 +3,10 @@ use crate::{
     counter::{Counter, Current, Next},
     functional::{ApplyFunctor, Functor},
     list::{
-        LIndexOfManyOp, LIndexOfManyOpOutput, LIndexOfOp, LIndexOfOpOutput, LUnzipOp,
-        LUnzipOpFormerOutput, TList,
+        LIndexOfManyOp, LIndexOfManyOpOutput, LIndexOfOp, LIndexOfOpOutput, LUnzip, LUnzipFunctor,
+        LUnzipOp, LUnzipOpFormerOutput, TList,
     },
-    tuple::{SecondOf, SecondOfFunctor},
+    tuple::{FirstOf, FirstOfFunctor, SecondOf, SecondOfFunctor},
 };
 use std::marker::PhantomData;
 use typenum::Unsigned;
@@ -99,6 +99,32 @@ where
     SecondOfFunctor: Functor<KVKeyValueAt<List, Target, Index>>,
 {
     type Output = SecondOf<KVKeyValueAt<List, Target, Index>>;
+}
+
+/// A [Functor] that extracts all keys from [KVList].
+pub struct KVKeysFunctor;
+
+impl<List> Functor<List> for KVKeysFunctor
+where
+    List: KVList,
+    LUnzipFunctor: Functor<List>,
+    FirstOfFunctor: Functor<LUnzip<List>>,
+    FirstOf<LUnzip<List>>: TList,
+{
+    type Output = FirstOf<LUnzip<List>>;
+}
+
+/// A [Functor] that extracts all values from [KVList].
+pub struct KVValuesFunctor;
+
+impl<List> Functor<List> for KVValuesFunctor
+where
+    List: KVList,
+    LUnzipFunctor: Functor<List>,
+    SecondOfFunctor: Functor<LUnzip<List>>,
+    SecondOf<LUnzip<List>>: TList,
+{
+    type Output = SecondOf<LUnzip<List>>;
 }
 
 // tests
