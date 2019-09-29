@@ -13,12 +13,13 @@ we can build non-trivial types like lists and key-value map.
 So far, the crate ships following features. It's still in alpha stage and I'm glad for contributions!
 
 - [TList](src/list/mod.rs): a typed list with arbitrary type as keys.
-- [KVList](src/kvlist.rs): like [TList](src/list/mod.rs), with extra values.
+- [KVList](src/kvlist/mod.rs): like [TList](src/list/mod.rs), with extra values.
 - [Boolean](src/boolean.rs): typed boolean algebra.
 - [Maybe](src/maybe.rs): a trait analogous to `std::option::Option`.
-- [Trait operators for tuple types](src/tuple.rs)
 - [Counter](src/counter.rs): a convient type to build recursive trait operators.
-- [Control flow](src/control.rs): typed `If`, used to build compile-time guards.
+- [Functoinal primitives](src/functional/mod.rs): provides `Functor`, `Compose` and `Applicative`, etc.
+- [Trait operators for tuple types](src/tuple.rs)
+- [Control flow](src/control.rs): typed `If`, `IfLess`, `IfSame` and more for compile-time guards and static assertions.
 
 ## Usage
 
@@ -78,18 +79,49 @@ use type_freak::{TListType, list::*};
 
 type List1 = TListType![u8, u16, u32];
 
-type List2 = LPrependOutput<List1, u64>;
+type List2 = LPrepend<List1, u64>;
 // List2 ~= TListType![u64, u8, u16, u32]
-// is alias of <List1 as LPrepend<List1, u64>>::Output
 
-type List3<Index1> = LRemoveAtOutput<List2, u16, Index1>;
+type List3<Index1> = LRemoveAt<List2, u16, Index1>;
 // List3<_> ~= TListType![u64, u8, u32]
 
-type List4<Index1> = LAppendOutput<List3<Index1>, f32>;
+type List4<Index1> = LAppend<List3<Index1>, f32>;
 // List4 ~= TListType![u64, u8, u32, f32]
 
-type List5<Index1, Index2> = LInsertAtOutput<List4<Index1>, u8, f64, Index2>;
+type List5<Index1, Index2> = LInsertAt<List4<Index1>, u8, f64, Index2>;
 // List5 ~= TListType![u64, u8, f64, u32, f32]
+```
+
+### Functional interface
+
+You can map, filter or scan a `TList` with existing functors in crate.
+Also, it's allowed to roll your own functor to manipulate the data with ease.
+
+```rust
+struct BoxFunctor;
+
+impl<Input> Functor<Input> for BoxFunctor {
+    type Output = Box<Input>;
+}
+
+type ListBefore = TListType![String, [i64; 7], isize, (), (f64, f32)];
+type ListAfter = LMap<List3, BoxFunctor>;
+
+type Assert = IfSameOutput<
+    (),
+    ListAfter,
+    TListType! {
+        Box<String>,
+        Box<[i64; 7]>,
+        Box<isize>,
+        Box<()>,
+        Box<(f64, f32)>
+    },
+>;
+
+fn assert() {
+    let _: Assert = ();  // static assertion
+}
 ```
 
 ### Trait-level `Option`
@@ -98,14 +130,14 @@ The `Maybe` is analogous to std's `Option`.
 
 ```rust
 use typenum::consts::*;
-use type_freak::maybe::{Maybe, Just, Nothing, UnwrapOutput, UnwrapOrOutput};
+use type_freak::maybe::{Maybe, Just, Nothing};
 
 type Opt1 = Just<U3>;
 type Opt2 = Nothing;
 
-type Val1 = UnwrapOutput<Opt1>;       // U3
-type Val2 = UnwrapOrOutput<Opt1, U0>; // U3
-type Val3 = UnwrapOrOutput<Opt2, U0>; // U0
+type Val1 = Unwrap<Opt1>;       // U3
+type Val2 = UnwrapOr<Opt1, U0>; // U3
+type Val3 = UnwrapOr<Opt2, U0>; // U0
 ```
 
 ### Auto-inferred counters
