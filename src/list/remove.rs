@@ -38,7 +38,7 @@ where
 
 pub type LRemoveAtOpOutput<List, Target, Index> = <List as LRemoveAtOp<Target, Index>>::Output;
 
-/// A functor that removes `Target` from [TList].
+/// A [Functor] that removes `Target` from [TList].
 pub struct LRemoveAtFunctor<Target, Index> {
     _phantom: PhantomData<(Target, Index)>,
 }
@@ -92,7 +92,7 @@ where
 pub type LRemoveManyOpOutput<List, Targets, Indexes> =
     <List as LRemoveManyOp<Targets, Indexes>>::Output;
 
-/// A functor that removes multiple `Targets` in [TList].
+/// A [Functor] that removes multiple `Targets` in [TList].
 pub struct LRemoveManyFunctor<Targets, Indexes>
 where
     Targets: TList,

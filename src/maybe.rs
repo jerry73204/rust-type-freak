@@ -41,7 +41,7 @@ impl Maybe for Nothing {}
 
 // unwrap op
 
-/// A functor that unwraps [Just<T>](Just).
+/// A [Functor] that unwraps [Just<T>](Just).
 pub struct UnwrapFunctor {}
 
 pub type Unwrap<T> = ApplyFunctor<UnwrapFunctor, T>;
@@ -52,7 +52,7 @@ impl<T> Functor<Just<T>> for UnwrapFunctor {
 
 // unwrap or default op
 
-/// A functor that unwraps [Just<T>](Just), or returns `Defaultvalue` if [Nothing].
+/// A [Functor] that unwraps [Just<T>](Just), or returns `Defaultvalue` if [Nothing].
 pub struct UnwrapOrFunctor<DefaultValue> {
     _phantom: PhantomData<DefaultValue>,
 }
@@ -69,7 +69,7 @@ impl<DefaultValue> Functor<Nothing> for UnwrapOrFunctor<DefaultValue> {
 
 // map the value of maybe
 
-/// A functor that maps a [Maybe] type by a [Functor].
+/// A [Functor] that maps a [Maybe] type by a [Functor].
 pub struct MaybeMapFunctor<Func> {
     _phantom: PhantomData<Func>,
 }
@@ -89,7 +89,7 @@ where
 
 // filter
 
-/// A functor filters a [Maybe] type by a [Functor].
+/// A [Functor] that filters a [Maybe] type by a [Functor].
 pub struct MaybeFilterFunctor<Func> {
     _phantom: PhantomData<Func>,
 }

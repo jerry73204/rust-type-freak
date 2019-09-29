@@ -29,7 +29,7 @@ where
     type Output = LCons<ApplyFunctor<Func, Head>, LMapOpOutput<Tail, Func>>;
 }
 
-/// A functor that maps values in [TList] with `Func`.
+/// A [Functor] that maps values in [TList] with `Func`.
 pub struct LMapFunctor<Func> {
     _phantom: PhantomData<Func>,
 }
@@ -65,7 +65,7 @@ where
     type Output = LFoldOpOutput<Tail, ApplyFunctor<Func, (Init, Head)>, Func>;
 }
 
-/// A functor that maps values in [TList] with `Func`.
+/// A [Functor] that maps values in [TList] with `Func`.
 pub struct LFoldFunctor<Init, Func> {
     _phantom: PhantomData<(Init, Func)>,
 }
@@ -114,7 +114,7 @@ where
     >;
 }
 
-/// A functor that filters values in [TList] with `Func`.
+/// A [Functor] that filters values in [TList] with `Func`.
 pub struct LFilterFunctor<Func> {
     _phantom: PhantomData<Func>,
 }
@@ -159,7 +159,7 @@ where
     type State = SecondOf<ApplyFunctor<Func, (State, Head)>>;
 }
 
-/// A functor that maps values in [TList] with `Func` with internal state.
+/// A [Functor] that maps values in [TList] with `Func` with internal state.
 pub struct LScanFunctor<Init, Func> {
     _phantom: PhantomData<(Init, Func)>,
 }

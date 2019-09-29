@@ -4,7 +4,7 @@
 //! Most type operators in this module copies the input type to `Self::Output`
 //! when certain conditions are met. We have these categories of operators:
 //!
-//! - [IfOutput<Output, Type>](crate::control::IfOutput):
+//! - [If<Output, Type>](crate::control::IfOutput):
 //!     Asserts `Type` can be constructed.
 //! - [IfPredicate<Output, Predicate>](crate::control::IfPredicate):
 //!     Asserts `Predicate` derives to [True](typenum::True).

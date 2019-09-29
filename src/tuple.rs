@@ -31,7 +31,7 @@ impl<A, B, C, D> Quadruple for (A, B, C, D) {}
 
 // first type of pair
 
-/// A functor that takes first type of tuple.
+/// A [Functor] that takes first type of tuple.
 pub struct FirstOfFunctor {}
 
 pub type FirstOf<Tuple> = ApplyFunctor<FirstOfFunctor, Tuple>;
@@ -58,7 +58,7 @@ impl<A, B, C, D, E> Functor<(A, B, C, D, E)> for FirstOfFunctor {
 
 // second type of pair
 
-/// A functor that takes second type of tuple.
+/// A [Functor] that takes second type of tuple.
 pub struct SecondOfFunctor {}
 
 pub type SecondOf<Tuple> = ApplyFunctor<SecondOfFunctor, Tuple>;
@@ -81,7 +81,7 @@ impl<A, B, C, D, E> Functor<(A, B, C, D, E)> for SecondOfFunctor {
 
 // thirt type of pair
 
-/// A functor that takes third type of tuple.
+/// A [Functor] that takes third type of tuple.
 pub struct ThirdOfFunctor {}
 
 pub type ThirdOf<Tuple> = ApplyFunctor<ThirdOfFunctor, Tuple>;
@@ -100,7 +100,7 @@ impl<A, B, C, D, E> Functor<(A, B, C, D, E)> for ThirdOfFunctor {
 
 // left associate
 
-/// A functor that transforms `(A, (B, C))` type to `((A, B), C)`.
+/// A [Functor] that transforms `(A, (B, C))` type to `((A, B), C)`.
 pub struct LeftAssociateFunctor {}
 
 pub type LeftAssociate<Tuple> = ApplyFunctor<LeftAssociateFunctor, Tuple>;
@@ -111,7 +111,7 @@ impl<A, B, C> Functor<(A, (B, C))> for LeftAssociateFunctor {
 
 // Right associate
 
-/// A functor that transforms `((A, B), C)` type to `(A, (B, C))`.
+/// A [Functor] that transforms `((A, B), C)` type to `(A, (B, C))`.
 pub struct RightAssociateFunctor {}
 
 pub type RightAssociate<Tuple> = ApplyFunctor<RightAssociateFunctor, Tuple>;

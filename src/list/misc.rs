@@ -1,5 +1,6 @@
 use super::{
-    LCons, LFoldOp, LFoldOpOutput, LNil, LPrependFoldFunctor, LRemoveAtOp, LRemoveAtOpOutput, TList,
+    LCons, LFoldOp, LFoldOpOutput, LNil, LPrependComposeFunctor, LRemoveAtOp, LRemoveAtOpOutput,
+    TList,
 };
 use crate::{
     counter::{Counter, Current, Next},
@@ -35,7 +36,7 @@ where
 
 pub type LLengthOpOutput<List> = <List as LLengthOp>::Output;
 
-/// A functor that returns the length of [TList].
+/// A [Functor] that returns the length of [TList].
 pub struct LLengthFunctor;
 
 pub type LLength<List> = ApplyFunctor<LLengthFunctor, List>;
@@ -81,7 +82,7 @@ where
     type Output = LSetEqualOpOutput<LRemoveAtOpOutput<Self, RHead, Index>, RTail, IRemain>;
 }
 
-/// A functor that compares if `Lhs` and `Rhs` [TList]s have same set of values.
+/// A [Functor] that compares if `Lhs` and `Rhs` [TList]s have same set of values.
 pub struct LSetEqualFunctor<Rhs, Indexes> {
     _phantom: PhantomData<(Rhs, Indexes)>,
 }
@@ -192,6 +193,7 @@ where
     type LatterOutput = LSplitOpLatterOutput<Tail, Target, Index>;
 }
 
+/// A [Functor] that splits input [TList] at `Target`.
 pub struct LSplitFunctor<Target, Index>
 where
     Index: Counter,
@@ -214,15 +216,15 @@ where
 
 // reverse
 
-/// A functor that reverses a [TList].
+/// A [Functor] that reverses a [TList].
 pub struct LReverseFunctor {}
 
 impl<List> Functor<List> for LReverseFunctor
 where
-    List: LFoldOp<LNil, LPrependFoldFunctor>,
-    LFoldOpOutput<List, LNil, LPrependFoldFunctor>: TList,
+    List: LFoldOp<LNil, LPrependComposeFunctor>,
+    LFoldOpOutput<List, LNil, LPrependComposeFunctor>: TList,
 {
-    type Output = LFoldOpOutput<List, LNil, LPrependFoldFunctor>;
+    type Output = LFoldOpOutput<List, LNil, LPrependComposeFunctor>;
 }
 
 pub type LReverse<List> = ApplyFunctor<LReverseFunctor, List>;

@@ -9,7 +9,7 @@ use crate::{
 
 // reduce max
 
-/// A type operator that takes the maximum value among a [TList].
+/// A [Functor] that takes the maximum value among a [TList].
 pub struct LReduceMaxComposeFunctor {}
 
 pub type LReduceMax<List> = ApplyFunctor<LReduceMaxComposeFunctor, List>;
@@ -23,7 +23,7 @@ where
 
 // reduce min
 
-/// A type operator that takes the minimum value among a [TList].
+/// A [Functor] that takes the minimum value among a [TList].
 pub struct LReduceMinComposeFunctor {}
 
 pub type LReduceMin<List> = ApplyFunctor<LReduceMinComposeFunctor, List>;
@@ -37,7 +37,7 @@ where
 
 // reduce sum
 
-/// A type operator that takes the summation of values in [TList].
+/// A [Functor] that takes the summation of values in [TList].
 pub struct LReduceSumComposeFunctor {}
 
 pub type LReduceSum<List> = ApplyFunctor<LReduceSumComposeFunctor, List>;
@@ -51,7 +51,7 @@ where
 
 // reduce product
 
-/// A type operator that takes the product of values in [TList].
+/// A [Functor] that takes the product of values in [TList].
 pub struct LReduceProdComposeFunctor {}
 
 pub type LReduceProd<List> = ApplyFunctor<LReduceProdComposeFunctor, List>;
@@ -65,7 +65,7 @@ where
 
 // reduce all
 
-/// A type operator returns [True](crate::boolean::True) if all values in [TList] are [True](crate::boolean::True).
+/// A [Functor] that returns [True](crate::boolean::True) if all values in [TList] are [True](crate::boolean::True).
 pub struct LReduceAllFunctor {}
 
 pub type LReduceAll<List> = ApplyFunctor<LReduceAllFunctor, List>;
@@ -80,7 +80,7 @@ where
 
 // reduce product
 
-/// A type operator returns [True](crate::boolean::True) if any value in [TList] is [True](crate::boolean::True).
+/// A [Functor] that returns [True](crate::boolean::True) if any value in [TList] is [True](crate::boolean::True).
 pub struct LReduceAnyFunctor {}
 
 pub type LReduceAny<List> = ApplyFunctor<LReduceAnyFunctor, List>;

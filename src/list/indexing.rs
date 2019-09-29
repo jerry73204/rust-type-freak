@@ -40,7 +40,7 @@ where
     type Output = Add1<LIndexOfOpOutput<Tail, Target, Index>>;
 }
 
-/// A functor that returns the index of `Target` in [TList].
+/// A [Functor] that returns the index of `Target` in [TList].
 pub struct LIndexOfFunctor<Target, Index>
 where
     Index: Counter,
@@ -97,7 +97,7 @@ where
         LCons<LIndexOfOpOutput<Self, Target, Index>, LIndexOfManyOpOutput<Self, TRemain, IRemain>>;
 }
 
-/// A functor that returns indexes of multiple `Targets`.
+/// A [Functor] that returns indexes of multiple `Targets`.
 pub struct LIndexOfManyFunctor<Targets, Indexes>
 where
     Targets: TList,

@@ -40,7 +40,7 @@ impl LZipOp<LNil> for LNil {
     type Output = LNil;
 }
 
-/// A functor that zips `Lhs` and `Rhs` [TList]s
+/// A [Functor] that zips `Lhs` and `Rhs` [TList]s
 pub struct LZipFunctor<Rhs>
 where
     Rhs: TList,
@@ -85,7 +85,7 @@ impl LUnzipOp for LNil {
     type LatterOutput = LNil;
 }
 
-/// A functor that unzips a [TList] of pairs.
+/// A [Functor] that unzips a [TList] of pairs.
 pub struct LUnzipFunctor;
 
 pub type LUnzip<List> = ApplyFunctor<LUnzipFunctor, List>;

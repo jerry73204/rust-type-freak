@@ -279,6 +279,7 @@ pub type KVIndexOfMany<List, Targets, Indexes> =
 
 // reverse
 
+/// A [Functor] that reverses a [KVList].
 pub struct KVReverseFuntor {}
 
 pub type KVReverse<List> = ApplyFunctor<KVReverseFuntor, List>;
@@ -317,6 +318,7 @@ where
 
 // concatenate
 
+/// A [Functor] that concatenates input and `Rhs` [KVList]s.
 pub struct KVConcatFunctor<Rhs>
 where
     Rhs: KVList,

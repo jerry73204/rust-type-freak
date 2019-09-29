@@ -7,7 +7,7 @@ use std::marker::PhantomData;
 
 // prepend
 
-/// A functor that prepends a new type to [TList].
+/// A [Functor] that prepends a new type to [TList].
 pub struct LPrependFunctor<Head> {
     _phantom: PhantomData<Head>,
 }
@@ -23,7 +23,7 @@ where
 
 // prepend to
 
-/// A functor that prepends a new type to [TList].
+/// A [Functor] that prepends a new type to [TList].
 pub struct LPrependToFunctor<List>
 where
     List: TList,
@@ -42,11 +42,12 @@ where
 
 // prepend accumulator
 
-pub struct LPrependFoldFunctor;
+/// A [Functor] that takes `(List, Item)` input, and prepends `Item` to List of [TList] type.
+pub struct LPrependComposeFunctor;
 
-pub type LPrependFold<List, Item> = ApplyFunctor<LPrependFoldFunctor, (List, Item)>;
+pub type LPrependFold<List, Item> = ApplyFunctor<LPrependComposeFunctor, (List, Item)>;
 
-impl<List, Item> Functor<(List, Item)> for LPrependFoldFunctor
+impl<List, Item> Functor<(List, Item)> for LPrependComposeFunctor
 where
     List: TList,
 {
@@ -77,6 +78,7 @@ where
     type Output = LCons<Head, LAppendOpOutput<Tail, Item>>;
 }
 
+/// A [Functor] that appends `Item` to end of [TList].
 pub struct LAppendFunctor<Item> {
     _phantom: PhantomData<Item>,
 }
@@ -125,7 +127,7 @@ where
 pub type LInsertAtOpOutput<List, Item, Target, Index> =
     <List as LInsertAtOp<Item, Target, Index>>::Output;
 
-/// A functor that inserts `Item` at `Target` to a [TList].
+/// A [Functor] that inserts `Item` at `Target` to a [TList].
 pub struct LInsertAtFunctor<Item, Target, Index>
 where
     Index: Counter,
