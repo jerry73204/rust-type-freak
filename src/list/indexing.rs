@@ -132,7 +132,7 @@ mod tests {
     struct B;
     struct C;
 
-    type SomeList = TListType! {A, B, C};
+    type SomeList = TListType![A, B, C];
 
     // index of tiem
     type Assert13<Idx> = AssertSame<LIndexOf<SomeList, A, Idx>, U0>;
@@ -140,8 +140,8 @@ mod tests {
     type Assert15<Idx> = AssertSame<LIndexOf<SomeList, C, Idx>, U2>;
 
     // index of multiple items
-    type Indexes<Idx> = LIndexOfMany<SomeList, TListType! {C, A, B}, Idx>;
-    type Assert16<Idx> = AssertSame<Indexes<Idx>, TListType! {U2, U0, U1}>;
+    type Indexes<Idx> = LIndexOfMany<SomeList, TListType![C, A, B], Idx>;
+    type Assert16<Idx> = AssertSame<Indexes<Idx>, TListType![U2, U0, U1]>;
 
     #[test]
     fn tlist_test() {

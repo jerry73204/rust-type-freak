@@ -24,13 +24,13 @@
 //! };
 //! use typenum::{True, False, consts::*};
 //!
-//! type List1 = TListType! {String, Option<i8>};         // impl TList trait
+//! type List1 = TListType![String, Option<i8>];         // impl TList trait
 //! type List2 = LCons<String, LCons<Option<i8>, LNil>>;  // same as above
 //! type MaybeJust = Just<f32>;                           // impl Maybe
 //! type MaybeNothing = Nothing;                          // impl Maybe
 //! type BoolTrue = True;                                 // impl Boolean
 //! type BoolFalse = False;                               // impl Boolean
-//! type Kv = KVListType! {(isize, U0), (usize, U1)};     // impl KVList
+//! type Kv = KVListType![(isize, U0), (usize, U1)];     // impl KVList
 //! type Cnt = Next<Next<Next<Current>>>;                 // impl Counter
 //! ```
 //!
@@ -75,8 +75,8 @@
 //! };
 //! use typenum::consts::*;
 //!
-//! type Out1 = LMap<TListType! {U3, U2, U5}, AddOneFunctor>;
-//! // Out1 ~= TListType! {U4. U3. U5}
+//! type Out1 = LMap<TListType![U3, U2, U5], AddOneFunctor>;
+//! // Out1 ~= TListType![U4. U3. U5]
 //!
 //! type Out2 = LMap<Just<U7>, AddOneFunctor>;
 //! // Out2 ~= Just<U8>
@@ -162,14 +162,14 @@
 //! of type transformation. You can obtain the outcome by trait casting. For example,
 //!
 //! ```ignore
-//! type Outcome = <TListType! {i8, i16} as LLengthOp<>>::Output;  // Outcome ~= U2
+//! type Outcome = <TListType![i8, i16] as LLengthOp<>>::Output;  // Outcome ~= U2
 //! ```
 //!
 //! Due to the cumbersome syntax, most type operators have a corresponding type
 //! alias to capture the output. For example,
 //!
 //! ```ignore
-//! type Outcome = LLengthOpOutput<TListType! {i8, i16}>;  // Output ~= U2
+//! type Outcome = LLengthOpOutput<TListType![i8, i16]>;  // Output ~= U2
 //! ```
 //!
 //! ## Traits as _markers_
@@ -188,14 +188,14 @@
 //! type alias to apply a functor on a type. For example,
 //!
 //! ```ignore
-//! type Outcome = ApplyFunctor<LLengthFunctor, TListType! {u8, u16}>;  // Outcome ~= U2
-//! // Same as `LLengthFunctor as Functor<TListType! {u8, u16}>`
+//! type Outcome = ApplyFunctor<LLengthFunctor, TListType![u8, u16]>;  // Outcome ~= U2
+//! // Same as `LLengthFunctor as Functor<TListType![u8, u16]>`
 //! ```
 //!
 //! Also, type aliases are available to save the pen and ink.
 //!
 //! ```ignore
-//! type Outcome = LLength<TListType! {u8, u16}>;  // Outcome ~= U2
+//! type Outcome = LLength<TListType![u8, u16]>;  // Outcome ~= U2
 //! ```
 //!
 //! ## Type aliases as _type operator aliases_

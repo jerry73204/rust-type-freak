@@ -100,9 +100,9 @@ mod tests {
     };
     use typenum::consts::*;
 
-    type List1 = TListType! {U2, U5, U3, U0};
-    type List2 = TListType! {N3, P7, Z0, N4};
-    type List3 = TListType! {N7, P9, P2, N8};
+    type List1 = TListType![U2, U5, U3, U0];
+    type List2 = TListType![N3, P7, Z0, N4];
+    type List3 = TListType![N7, P9, P2, N8];
 
     type Assert1 = IfEqualOutput<(), LReduceMax<List1>, U5>;
     type Assert2 = IfEqualOutput<(), LReduceMax<List2>, P7>;
@@ -120,11 +120,11 @@ mod tests {
     type Assert11 = IfEqualOutput<(), LReduceProd<List2>, Z0>;
     type Assert12 = IfEqualOutput<(), LReduceProd<List3>, P1008>;
 
-    type Assert13 = IfPredicateOutput<(), LReduceAll<TListType! {True, True}>>;
-    type Assert14 = IfNotPredicateOutput<(), LReduceAll<TListType! {True, False, False}>>;
+    type Assert13 = IfPredicateOutput<(), LReduceAll<TListType![True, True]>>;
+    type Assert14 = IfNotPredicateOutput<(), LReduceAll<TListType![True, False, False]>>;
 
-    type Assert15 = IfPredicateOutput<(), LReduceAny<TListType! {True, False, False}>>;
-    type Assert16 = IfNotPredicateOutput<(), LReduceAll<TListType! {False, False}>>;
+    type Assert15 = IfPredicateOutput<(), LReduceAny<TListType![True, False, False]>>;
+    type Assert16 = IfNotPredicateOutput<(), LReduceAll<TListType![False, False]>>;
 
     #[test]
     fn tlist_reduction_test() {

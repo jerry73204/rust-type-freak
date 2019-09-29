@@ -281,21 +281,20 @@ mod tests {
     struct D;
     struct E;
 
-    type SomeList = TListType! {A, B, C};
-    type AnotherList = TListType! {D, E};
+    type SomeList = TListType![A, B, C];
+    type AnotherList = TListType![D, E];
 
     // split
-    type Assert1<Index> =
-        AssertSame<LSplit<SomeList, B, Index>, (TListType! {A}, TListType! {B, C})>;
+    type Assert1<Index> = AssertSame<LSplit<SomeList, B, Index>, (TListType![A], TListType![B, C])>;
 
     // reverse list
-    type Assert10 = AssertSame<LReverse<SomeList>, TListType! {C, B, A}>;
+    type Assert10 = AssertSame<LReverse<SomeList>, TListType![C, B, A]>;
 
     // assert identical set of items
-    type Assert11<Idx> = LSetEqual<SomeList, TListType! {C, A, B}, Idx>;
+    type Assert11<Idx> = LSetEqual<SomeList, TListType![C, A, B], Idx>;
 
     // concat
-    type Assert12 = AssertSame<LConcat<SomeList, AnotherList>, TListType! {A, B, C, D, E}>;
+    type Assert12 = AssertSame<LConcat<SomeList, AnotherList>, TListType![A, B, C, D, E]>;
 
     #[test]
     fn tlist_misc_test() {

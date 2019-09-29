@@ -102,13 +102,13 @@ mod tests {
     use super::*;
     use crate::{control::IfSameOutput, TListType};
 
-    type List1 = TListType! {u8, u16, u32, u64};
-    type List2 = TListType! {f32, f64};
-    type List3 = TListType! {(i8, u8), (i16, u16), (i32, u32)};
+    type List1 = TListType![u8, u16, u32, u64];
+    type List2 = TListType![f32, f64];
+    type List3 = TListType![(i8, u8), (i16, u16), (i32, u32)];
 
-    type Assert1 = IfSameOutput<(), LZip<List1, List2>, TListType! {(u8, f32), (u16, f64)}>;
+    type Assert1 = IfSameOutput<(), LZip<List1, List2>, TListType![(u8, f32), (u16, f64)]>;
     type Assert2 =
-        IfSameOutput<(), LUnzip<List3>, (TListType! {i8, i16, i32}, TListType! {u8, u16, u32})>;
+        IfSameOutput<(), LUnzip<List3>, (TListType![i8, i16, i32], TListType![u8, u16, u32])>;
 
     #[test]
     fn tlist_zipping_test() {

@@ -267,9 +267,9 @@ mod tests {
         type Output = Add1<Input>;
     }
 
-    type List1 = TListType! {U1, U2, U3};
+    type List1 = TListType![U1, U2, U3];
     type List2 = LMap<List1, PlusOne>;
-    type Assert1 = IfSameOutput<(), List2, TListType! {U2, U3, U4}>;
+    type Assert1 = IfSameOutput<(), List2, TListType![U2, U3, U4]>;
 
     // Box every type
     struct BoxFunc;
@@ -278,7 +278,7 @@ mod tests {
         type Output = Box<Input>;
     }
 
-    type List3 = TListType! {String, [i64; 7], isize, (), (f64, f32)};
+    type List3 = TListType![String, [i64; 7], isize, (), (f64, f32)];
     type List4 = LMap<List3, BoxFunc>;
     type Assert2 = IfSameOutput<
         (),
@@ -303,7 +303,7 @@ mod tests {
         type Output = Sum<Init, Input>;
     }
 
-    type List5 = TListType! {U3, U5, U7};
+    type List5 = TListType![U3, U5, U7];
     type SumOutcome = LFold<List5, U0, SumFunc>;
     type Assert3 = IfSameOutput<(), SumOutcome, U15>;
 
@@ -317,7 +317,7 @@ mod tests {
         type Output = Add1<Init>;
     }
 
-    type List6 = TListType! {u8, u16, u32, u64, i8, i16, i32, i64, f32, f64};
+    type List6 = TListType![u8, u16, u32, u64, i8, i16, i32, i64, f32, f64];
     type CountOutcome = LFold<List6, U0, CountFunc>;
     type Assert4 = IfSameOutput<(), CountOutcome, U10>;
 
@@ -333,9 +333,9 @@ mod tests {
         type Output = IfElsePredicateOutput<Just<Input>, Le<Input, U5>, Nothing>;
     }
 
-    type List7 = TListType! {U8, U4, U0, U6, U9};
+    type List7 = TListType![U8, U4, U0, U6, U9];
     type ThresholdOutcome = LFilter<List7, ThresholdFunc>;
-    type Assert5 = IfSameOutput<(), ThresholdOutcome, TListType! {U4, U0}>;
+    type Assert5 = IfSameOutput<(), ThresholdOutcome, TListType![U4, U0]>;
 
     // Power of values
     struct PowerScanFunc;
@@ -348,23 +348,23 @@ mod tests {
         type Output = (Exp<Input, State>, Add1<State>);
     }
 
-    type List8 = TListType! {U3, U2, U7, U0, U5};
+    type List8 = TListType![U3, U2, U7, U0, U5];
     type PowerOutput = LScan<List8, U0, PowerScanFunc>;
-    type Assert6 = IfSameOutput<(), PowerOutput, TListType! {U1, U2, U49, U0, U625}>;
+    type Assert6 = IfSameOutput<(), PowerOutput, TListType![U1, U2, U49, U0, U625]>;
 
     // FMap interface
     type Assert7 =
-        IfSameOutput<(), FMap<TListType! {U1, U2, U3}, AddOneFunctor>, TListType! {U2, U3, U4}>;
+        IfSameOutput<(), FMap<TListType![U1, U2, U3], AddOneFunctor>, TListType![U2, U3, U4]>;
 
     // Applicative interface
-    type List9 = TListType! {AddOneFunctor, SubOneFunctor};
-    type List10 = TListType! {U1, U2, U3};
+    type List9 = TListType![AddOneFunctor, SubOneFunctor];
+    type List10 = TListType![U1, U2, U3];
 
     type Assert8 = IfSameOutput<(), Applicative<LNil, LNil>, LNil>;
     type Assert9 = IfSameOutput<(), Applicative<List9, LNil>, LNil>;
     type Assert10 = IfSameOutput<(), Applicative<LNil, List10>, LNil>;
     type Assert11 =
-        IfSameOutput<(), Applicative<List9, List10>, TListType! {U2, U3, U4, U0, U1, U2}>;
+        IfSameOutput<(), Applicative<List9, List10>, TListType![U2, U3, U4, U0, U1, U2]>;
 
     #[test]
     fn list_functional_test() {

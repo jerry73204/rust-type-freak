@@ -160,26 +160,26 @@ mod tests {
     struct C;
     struct D;
 
-    type EmptyList = TListType! {};
-    type SomeList = TListType! {A, B, C};
+    type EmptyList = TListType![];
+    type SomeList = TListType![A, B, C];
 
     // prepend empty list
-    type Assert1 = AssertSame<LPrepend<EmptyList, A>, TListType! {A}>;
+    type Assert1 = AssertSame<LPrepend<EmptyList, A>, TListType![A]>;
 
     // append empty list
-    type Assert2 = AssertSame<LAppend<EmptyList, D>, TListType! {D}>;
+    type Assert2 = AssertSame<LAppend<EmptyList, D>, TListType![D]>;
 
     // prepend non-empty list
-    type Assert3 = AssertSame<LPrepend<SomeList, D>, TListType! {D, A, B, C}>;
+    type Assert3 = AssertSame<LPrepend<SomeList, D>, TListType![D, A, B, C]>;
 
     // append non-empty list
-    type Assert4 = AssertSame<LAppend<SomeList, D>, TListType! {A, B, C, D}>;
+    type Assert4 = AssertSame<LAppend<SomeList, D>, TListType![A, B, C, D]>;
 
     // insert in middle
-    type Assert5<Idx> = AssertSame<LInsertAt<SomeList, D, B, Idx>, TListType! {A, D, B, C}>;
+    type Assert5<Idx> = AssertSame<LInsertAt<SomeList, D, B, Idx>, TListType![A, D, B, C]>;
 
     // insert at end
-    type Assert6<Idx> = AssertSame<LInsertAt<SomeList, D, C, Idx>, TListType! {A, B, D, C}>;
+    type Assert6<Idx> = AssertSame<LInsertAt<SomeList, D, C, Idx>, TListType![A, B, D, C]>;
 
     #[test]
     fn tlist_test() {

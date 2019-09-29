@@ -14,7 +14,7 @@
 //! The [TListType] macro let you write in more compact syntax. For example,
 //!
 //! ```ignore
-//! TListType! {u8, u16, u32}
+//! TListType![u8, u16, u32]
 //! ```
 //!
 //! ## List manipuation
@@ -28,20 +28,20 @@
 //! ```rust
 //! use type_freak::{TListType, list::*};
 //!
-//! type List1 = TListType! {u8, u16, u32};
+//! type List1 = TListType![u8, u16, u32];
 //!
 //! type List2 = LPrepend<List1, u64>;
-//! // List2 ~= TListType! {u64, u8, u16, u32}
+//! // List2 ~= TListType![u64, u8, u16, u32]
 //! // is alias of <List1 as LPrepend<List1, u64>>::Output
 //!
 //! type List3<Index1> = LRemoveAt<List2, u16, Index1>;
-//! // List3<_> ~= TListType! {u64, u8, u32}
+//! // List3<_> ~= TListType![u64, u8, u32]
 //!
 //! type List4<Index1> = LAppend<List3<Index1>, f32>;
-//! // List4 ~= TListType! {u64, u8, u32, f32}
+//! // List4 ~= TListType![u64, u8, u32, f32]
 //!
 //! type List5<Index1, Index2> = LInsertAt<List4<Index1>, u8, f64, Index2>;
-//! // List5 ~= TListType! {u64, u8, f64, u32, f32}
+//! // List5 ~= TListType![u64, u8, f64, u32, f32]
 //! ```
 //!
 //! As shown in the example, [LInsertAt](crate::list::LInsertAt),
@@ -72,7 +72,7 @@
 //! use type_freak::{TListType, list::LReduceSum};
 //! use typenum::consts::*;
 //!
-//! type Value = LReduceSum<TListType! {P3, N5, Z0}>;  // Value ~= P2
+//! type Value = LReduceSum<TListType![P3, N5, Z0]>;  // Value ~= P2
 //! ```
 //!
 //! The [LToUsizeVec](crate::list::LToUsizeVec) provides a
@@ -81,7 +81,7 @@
 //!
 //! ```ignore
 //! // Gets vec![3, -5, 0]
-//! let values = <TListType! {P3, N5, Z0} as LToUsizeVec>::to_usize_vec();
+//! let values = <TListType![P3, N5, Z0] as LToUsizeVec>::to_usize_vec();
 //! ```
 
 mod functional;

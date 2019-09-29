@@ -76,20 +76,20 @@ manipuate the list structure.
 ```rust
 use type_freak::{TListType, list::*};
 
-type List1 = TListType! {u8, u16, u32};
+type List1 = TListType![u8, u16, u32];
 
 type List2 = LPrependOutput<List1, u64>;
-// List2 ~= TListType! {u64, u8, u16, u32}
+// List2 ~= TListType![u64, u8, u16, u32]
 // is alias of <List1 as LPrepend<List1, u64>>::Output
 
 type List3<Index1> = LRemoveAtOutput<List2, u16, Index1>;
-// List3<_> ~= TListType! {u64, u8, u32}
+// List3<_> ~= TListType![u64, u8, u32]
 
 type List4<Index1> = LAppendOutput<List3<Index1>, f32>;
-// List4 ~= TListType! {u64, u8, u32, f32}
+// List4 ~= TListType![u64, u8, u32, f32]
 
 type List5<Index1, Index2> = LInsertAtOutput<List4<Index1>, u8, f64, Index2>;
-// List5 ~= TListType! {u64, u8, f64, u32, f32}
+// List5 ~= TListType![u64, u8, f64, u32, f32]
 ```
 
 ### Trait-level `Option`
@@ -156,8 +156,8 @@ where
 
 /* Auto-inference example */
 
-// Here SomeList is equivalent to TListType! {u8, u32}
-type SomeList<Index> = <TListType! {u8, u16, u32} as LRemoveAt<u16, Index>>::Output;
+// Here SomeList is equivalent to TListType![u8, u32]
+type SomeList<Index> = <TListType![u8, u16, u32] as LRemoveAt<u16, Index>>::Output;
 
 // The Index argument can be inferred by compiler
 fn auto_inference() {

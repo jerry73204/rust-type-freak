@@ -126,16 +126,16 @@ mod tests {
     struct B;
     struct C;
 
-    type SomeList = TListType! {A, B, C};
+    type SomeList = TListType![A, B, C];
 
     // remove
-    type Assert7<Idx> = AssertSame<LRemoveAt<SomeList, B, Idx>, TListType! {A, C}>;
+    type Assert7<Idx> = AssertSame<LRemoveAt<SomeList, B, Idx>, TListType![A, C]>;
 
     // remove multiple items
-    type Assert8<Idx> = AssertSame<LRemoveMany<SomeList, TListType! {A, C}, Idx>, TListType! {B}>;
+    type Assert8<Idx> = AssertSame<LRemoveMany<SomeList, TListType![A, C], Idx>, TListType![B]>;
 
     // remove until empty
-    type Assert9<Idx> = AssertSame<LRemoveMany<SomeList, TListType! {B, A, C}, Idx>, TListType! {}>;
+    type Assert9<Idx> = AssertSame<LRemoveMany<SomeList, TListType![B, A, C], Idx>, TListType![]>;
 
     #[test]
     fn tlist_remove_test() {

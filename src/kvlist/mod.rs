@@ -1,5 +1,6 @@
 //! A typed list of key-value pairs.
 
+mod macros;
 pub mod marker;
 
 use crate::{
@@ -386,16 +387,6 @@ where
     type Output = SecondOf<KVKeyValueAt<List, Target, Index>>;
 }
 
-// macro
-
-/// Builds a type that implements [KVList](crate::kvlist::KVList).
-#[macro_export]
-macro_rules! KVListType {
-    () => { $crate::kvlist::KVNil };
-    (($name:ty, $value:ty)) => { $crate::kvlist::KVCons<$name, $value, $crate::kvlist::KVNil> };
-    (($name:ty, $value:ty), $(($names:ty, $values:ty)),+) => { $crate::kvlist::KVCons<$name, $value, $crate::KVListType!($(($names, $values)),*)> };
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -416,62 +407,62 @@ mod tests {
     struct Vd;
     struct Ve;
 
-    type EmptyList = KVListType! {};
-    type SomeList = KVListType! {(A, Va), (B, Vb), (C, Vc)};
-    type AnotherList = KVListType! {(D, Vd), (E, Ve)};
+    type EmptyList = KVListType![];
+    type SomeList = KVListType![(A, Va), (B, Vb), (C, Vc)];
+    type AnotherList = KVListType![(D, Vd), (E, Ve)];
 
     // prepend empty list
-    type Assert1 = AssertEqual<KVPrepend<EmptyList, A, Va>, KVListType! {(A, Va)}>;
+    type Assert1 = AssertEqual<KVPrepend<EmptyList, A, Va>, KVListType![(A, Va)]>;
 
     // append empty list
-    type Assert2 = AssertEqual<KVAppend<EmptyList, D, Vd>, KVListType! {(D, Vd)}>;
+    type Assert2 = AssertEqual<KVAppend<EmptyList, D, Vd>, KVListType![(D, Vd)]>;
 
     // prepend non-empty list
     type Assert3 =
-        AssertEqual<KVPrepend<SomeList, D, Vd>, KVListType! {(D, Vd), (A, Va), (B, Vb), (C, Vc)}>;
+        AssertEqual<KVPrepend<SomeList, D, Vd>, KVListType![(D, Vd), (A, Va), (B, Vb), (C, Vc)]>;
 
     // append non-empty list
     type Assert4 =
-        AssertEqual<KVAppend<SomeList, D, Vd>, KVListType! {(A, Va), (B, Vb), (C, Vc), (D, Vd)}>;
+        AssertEqual<KVAppend<SomeList, D, Vd>, KVListType![(A, Va), (B, Vb), (C, Vc), (D, Vd)]>;
 
     // insert in middle
     type Assert5<Idx> = AssertEqual<
         KVInsertAt<SomeList, D, Vd, B, Idx>,
-        KVListType! {(A, Va), (D, Vd), (B, Vb), (C, Vc)},
+        KVListType![(A, Va), (D, Vd), (B, Vb), (C, Vc)],
     >;
 
     // insert at end
     type Assert6<Idx> = AssertEqual<
         KVInsertAt<SomeList, D, Vd, C, Idx>,
-        KVListType! {(A, Va), (B, Vb), (D, Vd), (C, Vc)},
+        KVListType![(A, Va), (B, Vb), (D, Vd), (C, Vc)],
     >;
 
     // remove
-    type Assert7<Idx> = AssertEqual<KVRemoveAt<SomeList, B, Idx>, KVListType! {(A, Va), (C, Vc)}>;
+    type Assert7<Idx> = AssertEqual<KVRemoveAt<SomeList, B, Idx>, KVListType![(A, Va), (C, Vc)]>;
 
     // remove multiple items
     type Assert8<Idx> =
-        AssertEqual<KVRemoveMany<SomeList, TListType! {A, C}, Idx>, KVListType! {(B, Vb)}>;
+        AssertEqual<KVRemoveMany<SomeList, TListType![A, C], Idx>, KVListType![(B, Vb)]>;
 
     // remove until empty
     type Assert9<Idx> =
-        AssertEqual<KVRemoveMany<SomeList, TListType! {B, A, C}, Idx>, KVListType! {}>;
+        AssertEqual<KVRemoveMany<SomeList, TListType![B, A, C], Idx>, KVListType![]>;
 
     // reverse list
-    type Assert10 = AssertEqual<KVReverse<SomeList>, KVListType! {(C, Vc), (B, Vb), (A, Va)}>;
+    type Assert10 = AssertEqual<KVReverse<SomeList>, KVListType![(C, Vc), (B, Vb), (A, Va)]>;
 
     // assert identical set of items
-    type Assert11<Idx> = KVSetEqual<SomeList, KVListType! {(C, Vc), (A, Va), (B, Vb)}, Idx>;
+    type Assert11<Idx> = KVSetEqual<SomeList, KVListType![(C, Vc), (A, Va), (B, Vb)], Idx>;
 
     // concat
     type Assert12 = AssertEqual<
         KVConcat<SomeList, AnotherList>,
-        KVListType! {(A, Va), (B, Vb), (C, Vc), (D, Vd), (E, Ve)},
+        KVListType![(A, Va), (B, Vb), (C, Vc), (D, Vd), (E, Ve)],
     >;
 
     // concat
     type Assert13<Idx> =
-        AssertEqual<KVIndexOfMany<SomeList, TListType! {C, A, B}, Idx>, TListType! {U2, U0, U1}>;
+        AssertEqual<KVIndexOfMany<SomeList, TListType![C, A, B], Idx>, TListType![U2, U0, U1]>;
 
     // index of
     type Assert14<Idx> = AssertEqual<KVIndexOf<SomeList, A, Idx>, U0>;
