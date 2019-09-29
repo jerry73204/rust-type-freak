@@ -114,7 +114,6 @@ where
 mod tests {
     use super::*;
     use crate::{control::IfSameOutput, KVListType, TListType};
-    use typenum::consts::*;
 
     type AssertEqual<Lhs, Rhs> = IfSameOutput<(), Lhs, Rhs>;
 

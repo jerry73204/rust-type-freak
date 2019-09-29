@@ -89,8 +89,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{control::IfSameOutput, KVListType, TListType};
-    use typenum::consts::*;
+    use crate::{control::IfSameOutput, KVListType};
 
     type AssertEqual<Lhs, Rhs> = IfSameOutput<(), Lhs, Rhs>;
 
