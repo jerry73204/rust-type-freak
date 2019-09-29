@@ -73,6 +73,7 @@
 //! }
 //! ```
 
+use crate::functional::{ApplyFunctor, Functor};
 use std::{marker::PhantomData, ops::Add};
 use typenum::{Sum, Unsigned, U0, U1};
 
@@ -112,6 +113,7 @@ where
 
 // count op
 
+/// A type operator that counts the steps of [Counter].
 pub trait CountOp
 where
     Self::Output: Unsigned,
@@ -126,10 +128,22 @@ impl CountOp for Current {
 impl<Cnt> CountOp for Next<Cnt>
 where
     Cnt: Counter + CountOp,
-    CountOutput<Cnt>: Add<U1>,
-    Sum<CountOutput<Cnt>, U1>: Unsigned,
+    CountOpOutput<Cnt>: Add<U1>,
+    Sum<CountOpOutput<Cnt>, U1>: Unsigned,
 {
-    type Output = Sum<CountOutput<Cnt>, U1>;
+    type Output = Sum<CountOpOutput<Cnt>, U1>;
 }
 
-pub type CountOutput<Cnt> = <Cnt as CountOp>::Output;
+pub type CountOpOutput<Cnt> = <Cnt as CountOp>::Output;
+
+/// A [Functor] that counts the number of steps of [Counter].
+pub struct CountFunctor;
+
+pub type Count<Input> = ApplyFunctor<CountFunctor, Input>;
+
+impl<Input> Functor<Input> for CountFunctor
+where
+    Input: Counter + CountOp,
+{
+    type Output = CountOpOutput<Input>;
+}
