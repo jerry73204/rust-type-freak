@@ -150,7 +150,8 @@ mod tests {
     use crate::{
         boolean::Boolean,
         control::{IfElsePredicate, IfElsePredicateOutput, IfSameOutput},
-        functional::{AddOneFunctor, Applicative, FMap},
+        functional::{Applicative, FMap},
+        numeric::AddOneFunctor,
     };
     use typenum::{consts::*, GrEq, IsGreaterOrEqual, Unsigned};
 

@@ -1,10 +1,8 @@
 use super::{LCons, LFoldOp, LFoldOpOutput, TList};
 use crate::{
-    boolean::Boolean,
-    functional::{
-        ApplyFunctor, BooleanAndComposeFunctor, BooleanOrComposeFunctor, Functor,
-        MaxComposeFunctor, MinComposeFunctor, ProdComposeFunctor, SumComposeFunctor,
-    },
+    boolean::{AndComposePredicate, Boolean, OrComposePredicate},
+    functional::{ApplyFunctor, Functor},
+    numeric::{MaxComposeFunctor, MinComposeFunctor, ProdComposeFunctor, SumComposeFunctor},
 };
 
 // reduce max
@@ -72,10 +70,10 @@ pub type LReduceAll<List> = ApplyFunctor<LReduceAllFunctor, List>;
 
 impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceAllFunctor
 where
-    Tail: TList + LFoldOp<Head, BooleanAndComposeFunctor>,
-    LFoldOpOutput<Tail, Head, BooleanAndComposeFunctor>: Boolean,
+    Tail: TList + LFoldOp<Head, AndComposePredicate>,
+    LFoldOpOutput<Tail, Head, AndComposePredicate>: Boolean,
 {
-    type Output = LFoldOpOutput<Tail, Head, BooleanAndComposeFunctor>;
+    type Output = LFoldOpOutput<Tail, Head, AndComposePredicate>;
 }
 
 // reduce product
@@ -87,10 +85,10 @@ pub type LReduceAny<List> = ApplyFunctor<LReduceAnyFunctor, List>;
 
 impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceAnyFunctor
 where
-    Tail: TList + LFoldOp<Head, BooleanOrComposeFunctor>,
-    LFoldOpOutput<Tail, Head, BooleanOrComposeFunctor>: Boolean,
+    Tail: TList + LFoldOp<Head, OrComposePredicate>,
+    LFoldOpOutput<Tail, Head, OrComposePredicate>: Boolean,
 {
-    type Output = LFoldOpOutput<Tail, Head, BooleanOrComposeFunctor>;
+    type Output = LFoldOpOutput<Tail, Head, OrComposePredicate>;
 }
 
 #[cfg(test)]

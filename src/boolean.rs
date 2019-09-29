@@ -11,19 +11,23 @@
 //!
 //! type L = True;
 //! type R = False;
-//! type R1 = NotOutput<L>;     // False
-//! type R2 = AndOutput<L, R>;  // False
-//! type R3 = OrOutput<L, R>;   // True
-//! type R4 = XorOutput<L, R>;  // True
-//! type R5 = IffOutput<L, R>;  // False
+//!
+//! type R1 = Not<L>;          // False
+//! type R2 = And<L, R>;       // False
+//! type R3 = Or<L, R>;        // True
+//! type R4 = Xor<L, R>;       // True
+//! type R5 = Iff<L, R>;       // False
+//! type R6 = Imply<L, R>;     // False
+//! type R7 = NotImply<L, R>;  // True
 //!
 //! fn get_value() -> bool {
 //!     R1::BOOL  // Get constant value
 //! }
 //! ```
 
+use crate::functional::{ApplyFunctor, Functor, Predicate};
+use std::marker::PhantomData;
 use typenum::{False, True};
-
 // boolean type def
 
 /// A trait that provides boolean constant value.
@@ -39,214 +43,331 @@ impl Boolean for True {
     const BOOL: bool = true;
 }
 
-// assert true
-
-/// An type operator that outputs `()` if input is [True].
-pub trait AssertTrue
-where
-    Self: Boolean,
-{
-    type Output;
-}
-
-pub type AssertTrueOutput<Input> = <Input as AssertTrue>::Output;
-
-impl AssertTrue for True {
-    type Output = ();
-}
-
-// assert false
-
-/// An type operator that outputs `()` if input is [False].
-pub trait AssertFalse
-where
-    Self: Boolean,
-{
-    type Output;
-}
-
-pub type AssertFalseOutput<Input> = <Input as AssertFalse>::Output;
-
-impl AssertFalse for False {
-    type Output = ();
-}
-
 // and op
 
-/// A type operator that joins two [Boolean] types.
-pub trait And<Rhs>
+/// A [Predicate] that meets input and `Rhs` with [Boolean] type.
+pub struct AndPredicate<Rhs>
 where
-    Self: Boolean,
-    Self::Output: Boolean,
+    Rhs: Boolean,
 {
-    type Output;
+    _phantom: PhantomData<Rhs>,
 }
 
-pub type AndOutput<Lhs, Rhs> = <Lhs as And<Rhs>>::Output;
+pub type And<Lhs, Rhs> = ApplyFunctor<AndPredicate<Rhs>, Lhs>;
 
-impl And<True> for True {
+impl<Lhs, Rhs> Predicate<Lhs> for AndPredicate<Rhs>
+where
+    Lhs: Boolean,
+    Rhs: Boolean,
+    AndPredicate<Rhs>: Functor<Lhs>,
+    And<Lhs, Rhs>: Boolean,
+{
+}
+
+impl Functor<True> for AndPredicate<True> {
     type Output = True;
 }
 
-impl And<True> for False {
+impl Functor<False> for AndPredicate<True> {
     type Output = False;
 }
 
-impl And<False> for True {
+impl Functor<True> for AndPredicate<False> {
     type Output = False;
 }
 
-impl And<False> for False {
+impl Functor<False> for AndPredicate<False> {
     type Output = False;
+}
+
+/// A [Predicate] that meets input pair `(Lhs, Rhs)` with [Boolean] type.
+pub struct AndComposePredicate;
+
+pub type AndCompose<Lhs, Rhs> = ApplyFunctor<AndComposePredicate, (Lhs, Rhs)>;
+
+impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for AndComposePredicate
+where
+    Lhs: Boolean,
+    Rhs: Boolean,
+    AndPredicate<Rhs>: Functor<Lhs>,
+{
+    type Output = And<Lhs, Rhs>;
 }
 
 // or op
 
-/// A type operator that meets two [Boolean] types.
-pub trait Or<Rhs>
+/// A [Predicate] that joins input and `Rhs` with [Boolean] type.
+pub struct OrPredicate<Rhs>
 where
-    Self: Boolean,
-    Self::Output: Boolean,
+    Rhs: Boolean,
 {
-    type Output;
+    _phantom: PhantomData<Rhs>,
 }
 
-pub type OrOutput<Lhs, Rhs> = <Lhs as Or<Rhs>>::Output;
+pub type Or<Lhs, Rhs> = ApplyFunctor<OrPredicate<Rhs>, Lhs>;
 
-impl Or<True> for True {
+impl<Lhs, Rhs> Predicate<Lhs> for OrPredicate<Rhs>
+where
+    Lhs: Boolean,
+    Rhs: Boolean,
+    OrPredicate<Rhs>: Functor<Lhs>,
+    Or<Lhs, Rhs>: Boolean,
+{
+}
+
+impl Functor<True> for OrPredicate<True> {
     type Output = True;
 }
 
-impl Or<True> for False {
+impl Functor<False> for OrPredicate<True> {
     type Output = True;
 }
 
-impl Or<False> for True {
+impl Functor<True> for OrPredicate<False> {
     type Output = True;
 }
 
-impl Or<False> for False {
+impl Functor<False> for OrPredicate<False> {
     type Output = False;
+}
+
+/// A [Predicate] that joins input pair `(Lhs, Rhs)` with [Boolean] type.
+pub struct OrComposePredicate;
+
+pub type OrCompose<Lhs, Rhs> = ApplyFunctor<OrComposePredicate, (Lhs, Rhs)>;
+
+impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for OrComposePredicate
+where
+    Lhs: Boolean,
+    Rhs: Boolean,
+    OrPredicate<Rhs>: Functor<Lhs>,
+{
+    type Output = Or<Lhs, Rhs>;
 }
 
 // not op
 
-/// A type operator that inverts [Boolean] types.
-pub trait Not
+/// A [Predicate] that inverts [Boolean] types.
+pub struct NotPredicate;
+
+pub type Not<Input> = ApplyFunctor<NotPredicate, Input>;
+
+impl<Input> Predicate<Input> for NotPredicate
 where
-    Self: Boolean,
-    Self::Output: Boolean,
+    Input: Boolean,
+    NotPredicate: Functor<Input>,
+    Not<Input>: Boolean,
 {
-    type Output;
 }
 
-pub type NotOutput<In> = <In as Not>::Output;
-
-impl Not for True {
+impl Functor<True> for NotPredicate {
     type Output = False;
 }
 
-impl Not for False {
+impl Functor<False> for NotPredicate {
     type Output = True;
 }
 
 // xor op
 
-/// A type operator that takes exclusive-or of two [Boolean] types.
-pub trait Xor<Rhs>
+/// A [Predicate] that computes exclusive-or on input and `Rhs` with [Boolean] types.
+pub struct XorPredicate<Rhs>
 where
-    Self: Boolean,
-    Self::Output: Boolean,
+    Rhs: Boolean,
 {
-    type Output;
+    _phantom: PhantomData<Rhs>,
 }
 
-pub type XorOutput<Lhs, Rhs> = <Lhs as Xor<Rhs>>::Output;
+pub type Xor<Lhs, Rhs> = ApplyFunctor<XorPredicate<Rhs>, Lhs>;
 
-impl Xor<True> for True {
+impl<Lhs, Rhs> Predicate<Lhs> for XorPredicate<Rhs>
+where
+    Lhs: Boolean,
+    Rhs: Boolean,
+    XorPredicate<Rhs>: Functor<Lhs>,
+    Xor<Lhs, Rhs>: Boolean,
+{
+}
+
+impl Functor<True> for XorPredicate<True> {
     type Output = False;
 }
 
-impl Xor<True> for False {
+impl Functor<False> for XorPredicate<True> {
     type Output = True;
 }
 
-impl Xor<False> for True {
+impl Functor<True> for XorPredicate<False> {
     type Output = True;
 }
 
-impl Xor<False> for False {
+impl Functor<False> for XorPredicate<False> {
     type Output = False;
+}
+
+/// A [Predicate] that computes exclusive-or on input pair `(Lhs, Rhs)`.
+pub struct XorComposePredicate;
+
+pub type XorCompose<Lhs, Rhs> = ApplyFunctor<XorComposePredicate, (Lhs, Rhs)>;
+
+impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for XorComposePredicate
+where
+    Lhs: Boolean,
+    Rhs: Boolean,
+    XorPredicate<Rhs>: Functor<Lhs>,
+{
+    type Output = Xor<Lhs, Rhs>;
 }
 
 // iff op
 
-/// A type operator that checks if two [Boolean] types are equal.
-pub trait Iff<Rhs>
+/// A [Predicate] that returns of both input and `Rhs` have same [Boolean] values.
+pub struct IffPredicate<Rhs>
 where
-    Self: Boolean,
-    Self::Output: Boolean,
+    Rhs: Boolean,
 {
-    type Output;
+    _phantom: PhantomData<Rhs>,
 }
 
-pub type IffOutput<Lhs, Rhs> = <Lhs as Iff<Rhs>>::Output;
+pub type Iff<Lhs, Rhs> = ApplyFunctor<IffPredicate<Rhs>, Lhs>;
 
-impl Iff<True> for True {
+impl<Lhs, Rhs> Predicate<Lhs> for IffPredicate<Rhs>
+where
+    Lhs: Boolean,
+    Rhs: Boolean,
+    IffPredicate<Rhs>: Functor<Lhs>,
+    Iff<Lhs, Rhs>: Boolean,
+{
+}
+
+impl Functor<True> for IffPredicate<True> {
     type Output = True;
 }
 
-impl Iff<True> for False {
+impl Functor<False> for IffPredicate<True> {
     type Output = False;
 }
 
-impl Iff<False> for True {
+impl Functor<True> for IffPredicate<False> {
     type Output = False;
 }
 
-impl Iff<False> for False {
+impl Functor<False> for IffPredicate<False> {
     type Output = True;
+}
+
+/// A [Predicate] that returns if pair of input types `(Lhs, Rhs)` have same [Boolean] value.
+pub struct IffComposePredicate;
+
+pub type IffCompose<Lhs, Rhs> = ApplyFunctor<IffComposePredicate, (Lhs, Rhs)>;
+
+impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for IffComposePredicate
+where
+    Lhs: Boolean,
+    Rhs: Boolean,
+    IffPredicate<Rhs>: Functor<Lhs>,
+{
+    type Output = Iff<Lhs, Rhs>;
 }
 
 // imply op
 
-/// A type operator that checks if Lhs implies Rhs.
-pub trait Imply<Rhs>
+/// A [Predicate] that returns if input implies to `Rhs`.
+pub struct ImplyPredicate<Rhs>
 where
-    Self: Boolean,
-    Self::Output: Boolean,
+    Rhs: Boolean,
 {
-    type Output;
+    _phantom: PhantomData<Rhs>,
 }
 
-pub type ImplyOutput<Lhs, Rhs> = <Lhs as Imply<Rhs>>::Output;
+pub type Imply<Lhs, Rhs> = ApplyFunctor<ImplyPredicate<Rhs>, Lhs>;
 
-impl<Lhs, Rhs> Imply<Rhs> for Lhs
+impl<Lhs, Rhs> Predicate<Lhs> for ImplyPredicate<Rhs>
 where
-    Lhs: Boolean + Not,
-    Rhs: Boolean + Or<NotOutput<Lhs>>,
+    Lhs: Boolean,
+    Rhs: Boolean,
+    ImplyPredicate<Rhs>: Functor<Lhs>,
+    Imply<Lhs, Rhs>: Boolean,
 {
-    type Output = OrOutput<Rhs, NotOutput<Lhs>>;
+}
+
+impl Functor<True> for ImplyPredicate<True> {
+    type Output = True;
+}
+
+impl Functor<False> for ImplyPredicate<True> {
+    type Output = True;
+}
+
+impl Functor<True> for ImplyPredicate<False> {
+    type Output = False;
+}
+
+impl Functor<False> for ImplyPredicate<False> {
+    type Output = True;
+}
+
+/// A [Predicate] that computes if `Lhs` implies `Rhs` for input pair `(Lhs, Rhs)`.
+pub struct ImplyComposePredicate;
+
+pub type ImplyCompose<Lhs, Rhs> = ApplyFunctor<ImplyComposePredicate, (Lhs, Rhs)>;
+
+impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for ImplyComposePredicate
+where
+    Lhs: Boolean,
+    Rhs: Boolean,
+    ImplyPredicate<Rhs>: Functor<Lhs>,
+{
+    type Output = Imply<Lhs, Rhs>;
 }
 
 // not imply op
 
-/// A type operator that checks if Lhs does not imply Rhs.
-pub trait NotImply<Rhs>
+/// A [Predicate] that returns if input is true while `Rhs` is false.
+pub struct NotImplyPredicate<Rhs>
 where
-    Self: Boolean,
-    Self::Output: Boolean,
+    Rhs: Boolean,
 {
-    type Output;
+    _phantom: PhantomData<Rhs>,
 }
 
-pub type NotImplyOutput<Lhs, Rhs> = <Lhs as NotImply<Rhs>>::Output;
+pub type NotImply<Lhs, Rhs> = ApplyFunctor<NotImplyPredicate<Rhs>, Lhs>;
 
-impl<Lhs, Rhs> NotImply<Rhs> for Lhs
+impl<Lhs, Rhs> Predicate<Lhs> for NotImplyPredicate<Rhs>
 where
-    Lhs: Boolean + Imply<Rhs>,
+    Lhs: Boolean,
     Rhs: Boolean,
-    ImplyOutput<Lhs, Rhs>: Not,
+    NotImplyPredicate<Rhs>: Functor<Lhs>,
+    NotImply<Lhs, Rhs>: Boolean,
 {
-    type Output = NotOutput<ImplyOutput<Lhs, Rhs>>;
+}
+
+impl Functor<True> for NotImplyPredicate<True> {
+    type Output = False;
+}
+
+impl Functor<False> for NotImplyPredicate<True> {
+    type Output = False;
+}
+
+impl Functor<True> for NotImplyPredicate<False> {
+    type Output = True;
+}
+
+impl Functor<False> for NotImplyPredicate<False> {
+    type Output = False;
+}
+
+/// A [Predicate] that computes if `Lhs` is true while `Rhs` is false for input pair `(Lhs, Rhs)`.
+pub struct NotImplyComposePredicate;
+
+pub type NotImplyCompose<Lhs, Rhs> = ApplyFunctor<NotImplyComposePredicate, (Lhs, Rhs)>;
+
+impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for NotImplyComposePredicate
+where
+    Lhs: Boolean,
+    Rhs: Boolean,
+    NotImplyPredicate<Rhs>: Functor<Lhs>,
+{
+    type Output = NotImply<Lhs, Rhs>;
 }

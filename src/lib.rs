@@ -63,7 +63,7 @@
 //! ## Usage
 //! Both [Maybe](crate::maybe::Maybe) and [TList](crate::list::TList) allows you to
 //! pass a functor for data manipulation. In this example, we pass
-//! [AddOneFunctor](crate::functional::AddOneFunctor) that increases input typed integer
+//! [AddOneFunctor](crate::numeric::AddOneFunctor) that increases input typed integer
 //! by one.
 //!
 //! ```rust
@@ -71,7 +71,7 @@
 //!     TListType,
 //!     list::LMap,
 //!     maybe::{Just, Nothing},
-//!     functional::AddOneFunctor,
+//!     numeric::AddOneFunctor,
 //! };
 //! use typenum::consts::*;
 //!
@@ -221,4 +221,5 @@ pub mod functional;
 pub mod kvlist;
 pub mod list;
 pub mod maybe;
+pub mod numeric;
 pub mod tuple;

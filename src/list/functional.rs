@@ -249,8 +249,9 @@ mod tests {
     use crate::{
         boolean::Boolean,
         control::{IfElsePredicate, IfElsePredicateOutput, IfSameOutput},
-        functional::{AddOneFunctor, Applicative, FMap, SubOneFunctor},
+        functional::{Applicative, FMap},
         maybe::{Just, Nothing},
+        numeric::{AddOneFunctor, SubOneFunctor},
         TListType,
     };
     use std::ops::Add;
