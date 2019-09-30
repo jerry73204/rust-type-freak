@@ -55,14 +55,15 @@ pub type KVIndexOfMany<List, Targets, Indexes> =
 // get key-value pair
 
 /// A functor that gets key-value pair from [KVList].
-pub struct KVKeyValueAtFunctor<Target, Index> {
+pub struct KVGetKeyValueAtFunctor<Target, Index> {
     _phantom: PhantomData<(Target, Index)>,
 }
 
-pub type KVKeyValueAt<List, Target, Index> = ApplyFunctor<KVKeyValueAtFunctor<Target, Index>, List>;
+pub type KVGetKeyValueAt<List, Target, Index> =
+    ApplyFunctor<KVGetKeyValueAtFunctor<Target, Index>, List>;
 
 impl<Target, Value, Tail> Functor<KVCons<Target, Value, Tail>>
-    for KVKeyValueAtFunctor<Target, Current>
+    for KVGetKeyValueAtFunctor<Target, Current>
 where
     Tail: KVList,
 {
@@ -70,35 +71,84 @@ where
 }
 
 impl<NonTarget, Value, Tail, Target, Index> Functor<KVCons<NonTarget, Value, Tail>>
-    for KVKeyValueAtFunctor<Target, Next<Index>>
+    for KVGetKeyValueAtFunctor<Target, Next<Index>>
 where
     Tail: KVList,
     Index: Counter,
-    KVKeyValueAtFunctor<Target, Index>: Functor<Tail>,
+    KVGetKeyValueAtFunctor<Target, Index>: Functor<Tail>,
 {
-    type Output = KVKeyValueAt<Tail, Target, Index>;
+    type Output = KVGetKeyValueAt<Tail, Target, Index>;
 }
 
 // get value of key
 
 /// A functor that gets the value at `Target` in [KVList].
-pub struct KVValueAtFunctor<Target, Index>
+pub struct KVGetValueAtFunctor<Target, Index>
 where
     Index: Counter,
 {
     _phantom: PhantomData<(Target, Index)>,
 }
 
-pub type KVValueAt<List, Target, Index> = ApplyFunctor<KVValueAtFunctor<Target, Index>, List>;
+pub type KVGetValueAt<List, Target, Index> = ApplyFunctor<KVGetValueAtFunctor<Target, Index>, List>;
 
-impl<List, Target, Index> Functor<List> for KVValueAtFunctor<Target, Index>
+impl<List, Target, Index> Functor<List> for KVGetValueAtFunctor<Target, Index>
 where
     List: KVList,
     Index: Counter,
-    KVKeyValueAtFunctor<Target, Index>: Functor<List>,
-    SecondOfFunctor: Functor<KVKeyValueAt<List, Target, Index>>,
+    KVGetKeyValueAtFunctor<Target, Index>: Functor<List>,
+    SecondOfFunctor: Functor<KVGetKeyValueAt<List, Target, Index>>,
 {
-    type Output = SecondOf<KVKeyValueAt<List, Target, Index>>;
+    type Output = SecondOf<KVGetKeyValueAt<List, Target, Index>>;
+}
+
+pub trait KVSetValueAtOp<NewValue, Target, Index>
+where
+    Index: Counter,
+    Self: KVList,
+    Self::Output: KVList,
+{
+    type Output;
+}
+
+/// A type operator that sets the value at `Target` in [KVList].
+pub type KVSetValueAtOpOutput<List, NewValue, Target, Index> =
+    <List as KVSetValueAtOp<NewValue, Target, Index>>::Output;
+
+impl<NewValue, Target, OldValue, Tail> KVSetValueAtOp<NewValue, Target, Current>
+    for KVCons<Target, OldValue, Tail>
+where
+    Tail: KVList,
+{
+    type Output = KVCons<Target, NewValue, Tail>;
+}
+
+impl<NewValue, Target, Index, NonTarget, Value, Tail> KVSetValueAtOp<NewValue, Target, Next<Index>>
+    for KVCons<NonTarget, Value, Tail>
+where
+    Tail: KVList + KVSetValueAtOp<NewValue, Target, Index>,
+    Index: Counter,
+{
+    type Output = KVCons<NonTarget, Value, KVSetValueAtOpOutput<Tail, NewValue, Target, Index>>;
+}
+
+/// A [Functor] that sets the value at `Target` in [KVList].
+pub struct KVSetValueAtFunctor<NewValue, Target, Index>
+where
+    Index: Counter,
+{
+    _phantom: PhantomData<(NewValue, Target, Index)>,
+}
+
+pub type KVSetValueAt<List, NewValue, Target, Index> =
+    ApplyFunctor<KVSetValueAtFunctor<NewValue, Target, Index>, List>;
+
+impl<List, NewValue, Target, Index> Functor<List> for KVSetValueAtFunctor<NewValue, Target, Index>
+where
+    List: KVList + KVSetValueAtOp<NewValue, Target, Index>,
+    Index: Counter,
+{
+    type Output = KVSetValueAtOpOutput<List, NewValue, Target, Index>;
 }
 
 /// A [Functor] that extracts all keys from [KVList].
@@ -144,31 +194,37 @@ mod tests {
     struct Va;
     struct Vb;
     struct Vc;
+    struct Vx;
 
     type SomeList = KVListType![(A, Va), (B, Vb), (C, Vc)];
 
     // concat
-    type Assert13<Idx> =
+    type Assert1<Idx> =
         AssertEqual<KVIndexOfMany<SomeList, TListType![C, A, B], Idx>, TListType![U2, U0, U1]>;
 
     // index of
-    type Assert14<Idx> = AssertEqual<KVIndexOf<SomeList, A, Idx>, U0>;
-    type Assert15<Idx> = AssertEqual<KVIndexOf<SomeList, B, Idx>, U1>;
-    type Assert16<Idx> = AssertEqual<KVIndexOf<SomeList, C, Idx>, U2>;
+    type Assert2<Idx> = AssertEqual<KVIndexOf<SomeList, A, Idx>, U0>;
+    type Assert3<Idx> = AssertEqual<KVIndexOf<SomeList, B, Idx>, U1>;
+    type Assert4<Idx> = AssertEqual<KVIndexOf<SomeList, C, Idx>, U2>;
 
     // get key-value pair
-    type Assert17<Idx> = AssertEqual<KVKeyValueAt<SomeList, B, Idx>, (B, Vb)>;
+    type Assert5<Idx> = AssertEqual<KVGetKeyValueAt<SomeList, B, Idx>, (B, Vb)>;
 
     // get value pair
-    type Assert18<Idx> = AssertEqual<KVValueAt<SomeList, B, Idx>, Vb>;
+    type Assert6<Idx> = AssertEqual<KVGetValueAt<SomeList, B, Idx>, Vb>;
+
+    // set value
+    type Assert7<Idx> =
+        AssertEqual<KVSetValueAt<SomeList, Vx, B, Idx>, KVListType![(A, Va), (B, Vx), (C, Vc)]>;
 
     #[test]
     fn kvlist_access_test() {
-        let _: Assert13<_> = ();
-        let _: Assert14<_> = ();
-        let _: Assert15<_> = ();
-        let _: Assert16<_> = ();
-        let _: Assert17<_> = ();
-        let _: Assert18<_> = ();
+        let _: Assert1<_> = ();
+        let _: Assert2<_> = ();
+        let _: Assert3<_> = ();
+        let _: Assert4<_> = ();
+        let _: Assert5<_> = ();
+        let _: Assert6<_> = ();
+        let _: Assert7<_> = ();
     }
 }
