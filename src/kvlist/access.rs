@@ -154,6 +154,8 @@ where
 /// A [Functor] that extracts all keys from [KVList].
 pub struct KVKeysFunctor;
 
+pub type KVKeys<List> = ApplyFunctor<KVKeysFunctor, List>;
+
 impl<List> Functor<List> for KVKeysFunctor
 where
     List: KVList,
@@ -166,6 +168,8 @@ where
 
 /// A [Functor] that extracts all values from [KVList].
 pub struct KVValuesFunctor;
+
+pub type KVValues<List> = ApplyFunctor<KVValuesFunctor, List>;
 
 impl<List> Functor<List> for KVValuesFunctor
 where
@@ -210,12 +214,18 @@ mod tests {
     // get key-value pair
     type Assert5<Idx> = AssertEqual<KVGetKeyValueAt<SomeList, B, Idx>, (B, Vb)>;
 
-    // get value pair
+    // get value
     type Assert6<Idx> = AssertEqual<KVGetValueAt<SomeList, B, Idx>, Vb>;
 
     // set value
     type Assert7<Idx> =
         AssertEqual<KVSetValueAt<SomeList, Vx, B, Idx>, KVListType![(A, Va), (B, Vx), (C, Vc)]>;
+
+    // get keys
+    type Assert8 = AssertEqual<KVKeys<SomeList>, TListType![A, B, C]>;
+
+    // get values
+    type Assert9 = AssertEqual<KVValues<SomeList>, TListType![Va, Vb, Vc]>;
 
     #[test]
     fn kvlist_access_test() {
@@ -226,5 +236,7 @@ mod tests {
         let _: Assert5<_> = ();
         let _: Assert6<_> = ();
         let _: Assert7<_> = ();
+        let _: Assert8 = ();
+        let _: Assert9 = ();
     }
 }
