@@ -111,7 +111,7 @@ mod tests {
     type Assert10 = AssertEqual<KVReverse<SomeList>, KVListType![(C, Vc), (B, Vb), (A, Va)]>;
 
     // assert identical set of items
-    type Assert11<Idx> = KVSetEqual<SomeList, KVListType![(C, Vc), (A, Va), (B, Vb)], Idx>;
+    type Assert11<Idx> = KVSetEqual<SomeList, KVListType![(C, Vd), (A, Ve), (B, Vb)], Idx>;
 
     // concat
     type Assert12 = AssertEqual<
