@@ -1,10 +1,13 @@
-use super::{marker::NonEmptyTList, LCons, LNil, TList};
+use super::{marker::NonEmptyTList, LCons, LNil, LReverse, LReverseFunctor, TList};
 use crate::{
     counter::{Counter, Current, Next},
     functional::{ApplyFunctor, Functor},
 };
-use std::{marker::PhantomData, ops::Add};
-use typenum::{Add1, Unsigned, B1, U0};
+use std::{
+    marker::PhantomData,
+    ops::{Add, Sub},
+};
+use typenum::{Add1, Bit, NonZero, Sub1, UInt, Unsigned, B1, U0};
 
 // index of item
 
@@ -118,12 +121,70 @@ where
     type Output = LIndexOfManyOpOutput<List, Targets, Indexes>;
 }
 
+// get by position
+
+/// A [Functor] that gets element at `Position` in input [TList].
+pub struct LGetByPositionFunctor<Position>
+where
+    Position: Unsigned,
+{
+    _phantom: PhantomData<Position>,
+}
+
+pub type LGetByPosition<List, Position> = ApplyFunctor<LGetByPositionFunctor<Position>, List>;
+
+impl<Head, Tail> Functor<LCons<Head, Tail>> for LGetByPositionFunctor<U0>
+where
+    Tail: TList,
+{
+    type Output = Head;
+}
+
+impl<Head, Tail, U, B> Functor<LCons<Head, Tail>> for LGetByPositionFunctor<UInt<U, B>>
+where
+    Tail: TList,
+    U: Unsigned,
+    B: Bit,
+    UInt<U, B>: Sub<B1>,
+    Sub1<UInt<U, B>>: Unsigned,
+    LGetByPositionFunctor<Sub1<UInt<U, B>>>: Functor<Tail>,
+{
+    type Output = LGetByPosition<Tail, Sub1<UInt<U, B>>>;
+}
+
+// get by backward position
+
+/// A [Functor] that gets element at `Position` in input [TList].
+pub struct LGetByBackwardPositionFunctor<Position>
+where
+    Position: Unsigned + NonZero,
+{
+    _phantom: PhantomData<Position>,
+}
+
+pub type LGetByBackwardPosition<List, Position> =
+    ApplyFunctor<LGetByBackwardPositionFunctor<Position>, List>;
+
+impl<List, Position> Functor<List> for LGetByBackwardPositionFunctor<Position>
+where
+    List: TList,
+    Position: Unsigned + NonZero + Sub<B1>,
+    Sub1<Position>: Unsigned,
+    LReverseFunctor: Functor<List>,
+    LGetByPositionFunctor<Sub1<Position>>: Functor<LReverse<List>>,
+{
+    type Output = LGetByPosition<LReverse<List>, Sub1<Position>>;
+}
+
 // tests
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{control::IfSameOutput, TListType};
+    use crate::{
+        control::{IfOutput, IfSameOutput},
+        TListType,
+    };
     use typenum::consts::*;
 
     type AssertSame<Lhs, Rhs> = IfSameOutput<(), Lhs, Rhs>;
@@ -135,19 +196,41 @@ mod tests {
     type SomeList = TListType![A, B, C];
 
     // index of tiem
-    type Assert13<Idx> = AssertSame<LIndexOf<SomeList, A, Idx>, U0>;
-    type Assert14<Idx> = AssertSame<LIndexOf<SomeList, B, Idx>, U1>;
-    type Assert15<Idx> = AssertSame<LIndexOf<SomeList, C, Idx>, U2>;
+    type Assert1<Idx> = AssertSame<LIndexOf<SomeList, A, Idx>, U0>;
+    type Assert2<Idx> = AssertSame<LIndexOf<SomeList, B, Idx>, U1>;
+    type Assert3<Idx> = AssertSame<LIndexOf<SomeList, C, Idx>, U2>;
 
     // index of multiple items
     type Indexes<Idx> = LIndexOfMany<SomeList, TListType![C, A, B], Idx>;
-    type Assert16<Idx> = AssertSame<Indexes<Idx>, TListType![U2, U0, U1]>;
+    type Assert4<Idx> = AssertSame<Indexes<Idx>, TListType![U2, U0, U1]>;
+
+    // get by position
+    type Assert5 = IfOutput<
+        (),
+        (
+            AssertSame<LGetByPosition<SomeList, U0>, A>,
+            AssertSame<LGetByPosition<SomeList, U1>, B>,
+            AssertSame<LGetByPosition<SomeList, U2>, C>,
+        ),
+    >;
+
+    // get by backward position
+    type Assert6 = IfOutput<
+        (),
+        (
+            AssertSame<LGetByBackwardPosition<SomeList, U1>, C>,
+            AssertSame<LGetByBackwardPosition<SomeList, U2>, B>,
+            AssertSame<LGetByBackwardPosition<SomeList, U3>, A>,
+        ),
+    >;
 
     #[test]
     fn tlist_test() {
-        let _: Assert13<_> = ();
-        let _: Assert14<_> = ();
-        let _: Assert15<_> = ();
-        let _: Assert16<_> = ();
+        let _: Assert1<_> = ();
+        let _: Assert2<_> = ();
+        let _: Assert3<_> = ();
+        let _: Assert4<_> = ();
+        let _: Assert5 = ();
+        let _: Assert6 = ();
     }
 }
