@@ -3,13 +3,14 @@ use crate::{
     counter::{Counter, Current, Next},
     functional::{ApplyFunctor, Functor},
     list::{
-        LIndexOfManyOp, LIndexOfManyOpOutput, LIndexOfOp, LIndexOfOpOutput, LUnzip, LUnzipFunctor,
-        LUnzipOp, LUnzipOpFormerOutput, TList,
+        LGetByBackwardPosition, LGetByBackwardPositionFunctor, LGetByPosition,
+        LGetByPositionFunctor, LIndexOfManyOp, LIndexOfManyOpOutput, LIndexOfOp, LIndexOfOpOutput,
+        LUnzip, LUnzipFunctor, LUnzipOp, LUnzipOpFormerOutput, TList,
     },
     tuple::{FirstOf, FirstOfFunctor, SecondOf, SecondOfFunctor},
 };
 use std::marker::PhantomData;
-use typenum::Unsigned;
+use typenum::{NonZero, Unsigned};
 
 /// A functor that gets index of `Target` in [KVList].
 pub struct KVIndexOfFunctor<Target, Index>
@@ -181,12 +182,105 @@ where
     type Output = SecondOf<LUnzip<List>>;
 }
 
+// get key-value pair by position
+
+/// A [Functor] that gets key-value pair at `Position` in input [KVList].
+pub struct KVGetKeyValueByPositionFunctor<Position>
+where
+    Position: Unsigned,
+{
+    _phantom: PhantomData<Position>,
+}
+
+pub type KVGetKeyValueByPosition<List, Position> =
+    ApplyFunctor<KVGetKeyValueByPositionFunctor<Position>, List>;
+
+impl<List, Position> Functor<List> for KVGetKeyValueByPositionFunctor<Position>
+where
+    List: KVList,
+    Position: Unsigned,
+    LGetByPositionFunctor<Position>: Functor<List>,
+{
+    type Output = LGetByPosition<List, Position>;
+}
+
+// get value by position
+
+/// A [Functor] that gets value at `Position` in input [KVList].
+pub struct KVGetValueByPositionFunctor<Position>
+where
+    Position: Unsigned,
+{
+    _phantom: PhantomData<Position>,
+}
+
+pub type KVGetValueByPosition<List, Position> =
+    ApplyFunctor<KVGetValueByPositionFunctor<Position>, List>;
+
+impl<List, Position> Functor<List> for KVGetValueByPositionFunctor<Position>
+where
+    List: KVList,
+    Position: Unsigned,
+    KVGetKeyValueByPositionFunctor<Position>: Functor<List>,
+    SecondOfFunctor: Functor<KVGetKeyValueByPosition<List, Position>>,
+{
+    type Output = SecondOf<KVGetKeyValueByPosition<List, Position>>;
+}
+
+// get key-value pair by backward position
+
+/// A [Functor] that gets key-value pair at `Position` from the end of input [KVList].
+pub struct KVGetKeyValueByBackwardPositionFunctor<Position>
+where
+    Position: Unsigned + NonZero,
+{
+    _phantom: PhantomData<Position>,
+}
+
+pub type KVGetKeyValueByBackwardPosition<List, Position> =
+    ApplyFunctor<KVGetKeyValueByBackwardPositionFunctor<Position>, List>;
+
+impl<List, Position> Functor<List> for KVGetKeyValueByBackwardPositionFunctor<Position>
+where
+    List: KVList,
+    Position: Unsigned + NonZero,
+    LGetByBackwardPositionFunctor<Position>: Functor<List>,
+{
+    type Output = LGetByBackwardPosition<List, Position>;
+}
+
+// get value by backward position
+
+/// A [Functor] that gets value at `Position` from the end of input [KVList].
+pub struct KVGetValueByBackwardPositionFunctor<Position>
+where
+    Position: Unsigned + NonZero,
+{
+    _phantom: PhantomData<Position>,
+}
+
+pub type KVGetValueByBackwardPosition<List, Position> =
+    ApplyFunctor<KVGetValueByBackwardPositionFunctor<Position>, List>;
+
+impl<List, Position> Functor<List> for KVGetValueByBackwardPositionFunctor<Position>
+where
+    List: KVList,
+    Position: Unsigned + NonZero,
+    KVGetKeyValueByBackwardPositionFunctor<Position>: Functor<List>,
+    SecondOfFunctor: Functor<KVGetKeyValueByBackwardPosition<List, Position>>,
+{
+    type Output = SecondOf<KVGetKeyValueByBackwardPosition<List, Position>>;
+}
+
 // tests
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{control::IfSameOutput, KVListType, TListType};
+    use crate::{
+        control::{IfOutput, IfSameOutput},
+        KVListType, TListType,
+    };
     use typenum::consts::*;
 
     type AssertEqual<Lhs, Rhs> = IfSameOutput<(), Lhs, Rhs>;
@@ -227,6 +321,46 @@ mod tests {
     // get values
     type Assert9 = AssertEqual<KVValues<SomeList>, TListType![Va, Vb, Vc]>;
 
+    // get key-value pair by position
+    type Assert10 = IfOutput<
+        (),
+        (
+            AssertEqual<KVGetKeyValueByPosition<SomeList, U0>, (A, Va)>,
+            AssertEqual<KVGetKeyValueByPosition<SomeList, U1>, (B, Vb)>,
+            AssertEqual<KVGetKeyValueByPosition<SomeList, U2>, (C, Vc)>,
+        ),
+    >;
+
+    // get value pair by position
+    type Assert11 = IfOutput<
+        (),
+        (
+            AssertEqual<KVGetValueByPosition<SomeList, U0>, Va>,
+            AssertEqual<KVGetValueByPosition<SomeList, U1>, Vb>,
+            AssertEqual<KVGetValueByPosition<SomeList, U2>, Vc>,
+        ),
+    >;
+
+    // get key-value pair by backward position
+    type Assert12 = IfOutput<
+        (),
+        (
+            AssertEqual<KVGetKeyValueByBackwardPosition<SomeList, U1>, (C, Vc)>,
+            AssertEqual<KVGetKeyValueByBackwardPosition<SomeList, U2>, (B, Vb)>,
+            AssertEqual<KVGetKeyValueByBackwardPosition<SomeList, U3>, (A, Va)>,
+        ),
+    >;
+
+    // get value pair by backward position
+    type Assert13 = IfOutput<
+        (),
+        (
+            AssertEqual<KVGetValueByBackwardPosition<SomeList, U1>, Vc>,
+            AssertEqual<KVGetValueByBackwardPosition<SomeList, U2>, Vb>,
+            AssertEqual<KVGetValueByBackwardPosition<SomeList, U3>, Va>,
+        ),
+    >;
+
     #[test]
     fn kvlist_access_test() {
         let _: Assert1<_> = ();
@@ -238,5 +372,9 @@ mod tests {
         let _: Assert7<_> = ();
         let _: Assert8 = ();
         let _: Assert9 = ();
+        let _: Assert10 = ();
+        let _: Assert11 = ();
+        let _: Assert12 = ();
+        let _: Assert13 = ();
     }
 }
