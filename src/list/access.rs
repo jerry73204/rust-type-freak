@@ -225,7 +225,7 @@ mod tests {
     >;
 
     #[test]
-    fn tlist_test() {
+    fn tlist_access_test() {
         let _: Assert1<_> = ();
         let _: Assert2<_> = ();
         let _: Assert3<_> = ();

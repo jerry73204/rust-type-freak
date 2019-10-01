@@ -85,7 +85,7 @@
 //! ```
 
 mod functional;
-mod indexing;
+mod access;
 mod insert;
 mod macros;
 pub mod marker;
@@ -95,7 +95,7 @@ mod remove;
 mod zipping;
 
 pub use functional::*;
-pub use indexing::*;
+pub use access::*;
 pub use insert::*;
 pub use macros::*;
 pub use misc::*;
