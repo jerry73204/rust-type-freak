@@ -1,9 +1,12 @@
-use super::KVList;
+use super::{
+    KVCons, KVGetValueAt, KVGetValueAtFunctor, KVList, KVNil, KVRemoveAt, KVRemoveAtFunctor,
+};
 use crate::{
+    counter::Counter,
     functional::{ApplyFunctor, Functor},
     list::{
-        LConcatOp, LConcatOpOutput, LLengthOp, LLengthOpOutput, LReverse, LReverseFunctor,
-        LSetEqualOp, LSetEqualOpOutput, LUnzipOp, LUnzipOpFormerOutput, TList,
+        LConcatOp, LConcatOpOutput, LCons, LLengthOp, LLengthOpOutput, LNil, LReverse,
+        LReverseFunctor, LSetEqualOp, LSetEqualOpOutput, LUnzipOp, LUnzipOpFormerOutput, TList,
     },
 };
 use std::marker::PhantomData;
@@ -84,12 +87,71 @@ where
     type Output = LConcatOpOutput<Lhs, Rhs>;
 }
 
+// permute
+
+/// A trait that permutes the input [KVList] to the order of `Targets`.
+pub trait KVPermuteOp<Targets, Indexes>
+where
+    Targets: TList,
+    Indexes: TList,
+    Self: KVList,
+    Self::Output: KVList,
+{
+    type Output;
+}
+
+pub type KVPermuteOpOutput<List, Targets, Indexes> =
+    <List as KVPermuteOp<Targets, Indexes>>::Output;
+
+impl KVPermuteOp<LNil, LNil> for KVNil {
+    type Output = KVNil;
+}
+
+impl<List, Target, TargetTail, Index, IndexTail>
+    KVPermuteOp<LCons<Target, TargetTail>, LCons<Index, IndexTail>> for List
+where
+    List: KVList,
+    TargetTail: TList,
+    Index: Counter,
+    IndexTail: TList,
+    KVGetValueAtFunctor<Target, Index>: Functor<List>,
+    KVRemoveAtFunctor<Target, Index>: Functor<List>,
+    KVPermuteFunctor<TargetTail, IndexTail>: Functor<KVRemoveAt<List, Target, Index>>,
+    KVPermute<KVRemoveAt<List, Target, Index>, TargetTail, IndexTail>: KVList,
+{
+    type Output = KVCons<
+        Target,
+        KVGetValueAt<List, Target, Index>,
+        KVPermute<KVRemoveAt<List, Target, Index>, TargetTail, IndexTail>,
+    >;
+}
+
+/// A [Functor] that permutes the input [KVList] to the order of `Targets`.
+pub struct KVPermuteFunctor<Targets, Indexes>
+where
+    Targets: TList,
+    Indexes: TList,
+{
+    _phantom: PhantomData<(Targets, Indexes)>,
+}
+
+pub type KVPermute<List, Targets, Indexes> = ApplyFunctor<KVPermuteFunctor<Targets, Indexes>, List>;
+
+impl<List, Targets, Indexes> Functor<List> for KVPermuteFunctor<Targets, Indexes>
+where
+    List: KVList + KVPermuteOp<Targets, Indexes>,
+    Targets: TList,
+    Indexes: TList,
+{
+    type Output = KVPermuteOpOutput<List, Targets, Indexes>;
+}
+
 // tests
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{control::IfSameOutput, KVListType};
+    use crate::{control::IfSameOutput, KVListType, TListType};
 
     type AssertEqual<Lhs, Rhs> = IfSameOutput<(), Lhs, Rhs>;
 
@@ -108,21 +170,28 @@ mod tests {
     type SomeList = KVListType![(A, Va), (B, Vb), (C, Vc)];
     type AnotherList = KVListType![(D, Vd), (E, Ve)];
     // reverse list
-    type Assert10 = AssertEqual<KVReverse<SomeList>, KVListType![(C, Vc), (B, Vb), (A, Va)]>;
+    type Assert1 = AssertEqual<KVReverse<SomeList>, KVListType![(C, Vc), (B, Vb), (A, Va)]>;
 
     // assert identical set of items
-    type Assert11<Idx> = KVSetEqual<SomeList, KVListType![(C, Vd), (A, Ve), (B, Vb)], Idx>;
+    type Assert2<Idx> = KVSetEqual<SomeList, KVListType![(C, Vd), (A, Ve), (B, Vb)], Idx>;
 
     // concat
-    type Assert12 = AssertEqual<
+    type Assert3 = AssertEqual<
         KVConcat<SomeList, AnotherList>,
         KVListType![(A, Va), (B, Vb), (C, Vc), (D, Vd), (E, Ve)],
     >;
 
+    // permute
+    type Assert4<Idx> = AssertEqual<
+        KVPermute<SomeList, TListType![B, C, A], Idx>,
+        KVListType![(B, Vb), (C, Vc), (A, Va)],
+    >;
+
     #[test]
     fn kvlist_misc_test() {
-        let _: Assert10 = ();
-        let _: Assert11<_> = ();
-        let _: Assert12 = ();
+        let _: Assert1 = ();
+        let _: Assert2<_> = ();
+        let _: Assert3 = ();
+        let _: Assert4<_> = ();
     }
 }
