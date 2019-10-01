@@ -3,6 +3,7 @@ use super::{
     TList,
 };
 use crate::{
+    control::IfEqual,
     counter::{Counter, Current, Next},
     functional::{ApplyFunctor, Functor},
 };
@@ -266,6 +267,31 @@ where
     }
 }
 
+// permute
+
+/// A [Functor] that permutes the input [TList] to the order of `Targets`.
+pub struct LPermuteFunctor<Targets, Indexes>
+where
+    Targets: TList,
+    Indexes: TList,
+{
+    _phantom: PhantomData<(Targets, Indexes)>,
+}
+
+pub type LPermute<List, Targets, Indexes> = ApplyFunctor<LPermuteFunctor<Targets, Indexes>, List>;
+
+impl<List, Targets, Indexes> Functor<List> for LPermuteFunctor<Targets, Indexes>
+where
+    List: TList
+        + LLengthOp
+        + LSetEqualOp<Targets, Indexes>
+        + IfEqual<LLengthOpOutput<List>, LLengthOpOutput<Targets>>,
+    Targets: TList + LLengthOp,
+    Indexes: TList,
+{
+    type Output = Targets;
+}
+
 // tests
 
 #[cfg(test)]
@@ -288,19 +314,19 @@ mod tests {
     type Assert1<Index> = AssertSame<LSplit<SomeList, B, Index>, (TListType![A], TListType![B, C])>;
 
     // reverse list
-    type Assert10 = AssertSame<LReverse<SomeList>, TListType![C, B, A]>;
+    type Assert2 = AssertSame<LReverse<SomeList>, TListType![C, B, A]>;
 
     // assert identical set of items
-    type Assert11<Idx> = LSetEqual<SomeList, TListType![C, A, B], Idx>;
+    type Assert3<Idx> = LSetEqual<SomeList, TListType![C, A, B], Idx>;
 
     // concat
-    type Assert12 = AssertSame<LConcat<SomeList, AnotherList>, TListType![A, B, C, D, E]>;
+    type Assert4 = AssertSame<LConcat<SomeList, AnotherList>, TListType![A, B, C, D, E]>;
 
     #[test]
     fn tlist_misc_test() {
         let _: Assert1<_> = ();
-        let _: Assert10 = ();
-        let _: Assert11<_> = ();
-        let _: Assert12 = ();
+        let _: Assert2 = ();
+        let _: Assert3<_> = ();
+        let _: Assert4 = ();
     }
 }

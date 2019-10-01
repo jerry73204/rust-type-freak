@@ -84,8 +84,8 @@
 //! let values = <TListType![P3, N5, Z0] as LToUsizeVec>::to_usize_vec();
 //! ```
 
-mod functional;
 mod access;
+mod functional;
 mod insert;
 mod macros;
 pub mod marker;
@@ -94,8 +94,8 @@ mod reduction;
 mod remove;
 mod zipping;
 
-pub use functional::*;
 pub use access::*;
+pub use functional::*;
 pub use insert::*;
 pub use macros::*;
 pub use misc::*;
