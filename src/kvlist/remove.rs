@@ -1,7 +1,7 @@
 use super::{KVCons, KVList};
 use crate::{
     counter::{Counter, Current, Next},
-    functional::{ApplyFunctor, Functor},
+    functional::{ApplyMap, Map},
     list::{LCons, LNil, TList},
 };
 use std::marker::PhantomData;
@@ -36,14 +36,14 @@ where
 
 pub type KVRemoveAtOpOutput<KVist, Target, Index> = <KVist as KVRemoveAtOp<Target, Index>>::Output;
 
-/// A functor that removes `Target` from `KVList`.
-pub struct KVRemoveAtFunctor<Target, Index> {
+/// A map that removes `Target` from `KVList`.
+pub struct KVRemoveAtMap<Target, Index> {
     _phantom: PhantomData<(Target, Index)>,
 }
 
-pub type KVRemoveAt<List, Target, Index> = ApplyFunctor<KVRemoveAtFunctor<Target, Index>, List>;
+pub type KVRemoveAt<List, Target, Index> = ApplyMap<KVRemoveAtMap<Target, Index>, List>;
 
-impl<List, Target, Index> Functor<List> for KVRemoveAtFunctor<Target, Index>
+impl<List, Target, Index> Map<List> for KVRemoveAtMap<Target, Index>
 where
     List: KVList + KVRemoveAtOp<Target, Index>,
     Index: Counter,
@@ -87,8 +87,8 @@ where
 pub type KVRemoveManyOpOutput<KVist, Targets, Indexes> =
     <KVist as KVRemoveManyOp<Targets, Indexes>>::Output;
 
-/// A functor that removes multiple `Targets` from [KVList].
-pub struct KVRemoveManyFunctor<Targets, Indexes>
+/// A map that removes multiple `Targets` from [KVList].
+pub struct KVRemoveManyMap<Targets, Indexes>
 where
     Targets: TList,
     Indexes: TList,
@@ -96,10 +96,9 @@ where
     _phantom: PhantomData<(Targets, Indexes)>,
 }
 
-pub type KVRemoveMany<List, Targets, Indexes> =
-    ApplyFunctor<KVRemoveManyFunctor<Targets, Indexes>, List>;
+pub type KVRemoveMany<List, Targets, Indexes> = ApplyMap<KVRemoveManyMap<Targets, Indexes>, List>;
 
-impl<List, Targets, Indexes> Functor<List> for KVRemoveManyFunctor<Targets, Indexes>
+impl<List, Targets, Indexes> Map<List> for KVRemoveManyMap<Targets, Indexes>
 where
     List: KVList + KVRemoveManyOp<Targets, Indexes>,
     Targets: TList,

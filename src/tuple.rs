@@ -1,6 +1,6 @@
 //! Type operators for tuple types.
 
-use crate::functional::{ApplyFunctor, Functor};
+use crate::functional::{ApplyMap, Map};
 
 // marker traits for tuples
 
@@ -31,91 +31,91 @@ impl<A, B, C, D> Quadruple for (A, B, C, D) {}
 
 // first type of pair
 
-/// A [Functor] that takes first type of tuple.
-pub struct FirstOfFunctor {}
+/// A [Map] that takes first type of tuple.
+pub struct FirstOfMap {}
 
-pub type FirstOf<Tuple> = ApplyFunctor<FirstOfFunctor, Tuple>;
+pub type FirstOf<Tuple> = ApplyMap<FirstOfMap, Tuple>;
 
-impl<A> Functor<(A,)> for FirstOfFunctor {
+impl<A> Map<(A,)> for FirstOfMap {
     type Output = A;
 }
 
-impl<A, B> Functor<(A, B)> for FirstOfFunctor {
+impl<A, B> Map<(A, B)> for FirstOfMap {
     type Output = A;
 }
 
-impl<A, B, C> Functor<(A, B, C)> for FirstOfFunctor {
+impl<A, B, C> Map<(A, B, C)> for FirstOfMap {
     type Output = A;
 }
 
-impl<A, B, C, D> Functor<(A, B, C, D)> for FirstOfFunctor {
+impl<A, B, C, D> Map<(A, B, C, D)> for FirstOfMap {
     type Output = A;
 }
 
-impl<A, B, C, D, E> Functor<(A, B, C, D, E)> for FirstOfFunctor {
+impl<A, B, C, D, E> Map<(A, B, C, D, E)> for FirstOfMap {
     type Output = A;
 }
 
 // second type of pair
 
-/// A [Functor] that takes second type of tuple.
-pub struct SecondOfFunctor {}
+/// A [Map] that takes second type of tuple.
+pub struct SecondOfMap {}
 
-pub type SecondOf<Tuple> = ApplyFunctor<SecondOfFunctor, Tuple>;
+pub type SecondOf<Tuple> = ApplyMap<SecondOfMap, Tuple>;
 
-impl<A, B> Functor<(A, B)> for SecondOfFunctor {
+impl<A, B> Map<(A, B)> for SecondOfMap {
     type Output = B;
 }
 
-impl<A, B, C> Functor<(A, B, C)> for SecondOfFunctor {
+impl<A, B, C> Map<(A, B, C)> for SecondOfMap {
     type Output = B;
 }
 
-impl<A, B, C, D> Functor<(A, B, C, D)> for SecondOfFunctor {
+impl<A, B, C, D> Map<(A, B, C, D)> for SecondOfMap {
     type Output = B;
 }
 
-impl<A, B, C, D, E> Functor<(A, B, C, D, E)> for SecondOfFunctor {
+impl<A, B, C, D, E> Map<(A, B, C, D, E)> for SecondOfMap {
     type Output = B;
 }
 
 // thirt type of pair
 
-/// A [Functor] that takes third type of tuple.
-pub struct ThirdOfFunctor {}
+/// A [Map] that takes third type of tuple.
+pub struct ThirdOfMap {}
 
-pub type ThirdOf<Tuple> = ApplyFunctor<ThirdOfFunctor, Tuple>;
+pub type ThirdOf<Tuple> = ApplyMap<ThirdOfMap, Tuple>;
 
-impl<A, B, C> Functor<(A, B, C)> for ThirdOfFunctor {
+impl<A, B, C> Map<(A, B, C)> for ThirdOfMap {
     type Output = C;
 }
 
-impl<A, B, C, D> Functor<(A, B, C, D)> for ThirdOfFunctor {
+impl<A, B, C, D> Map<(A, B, C, D)> for ThirdOfMap {
     type Output = C;
 }
 
-impl<A, B, C, D, E> Functor<(A, B, C, D, E)> for ThirdOfFunctor {
+impl<A, B, C, D, E> Map<(A, B, C, D, E)> for ThirdOfMap {
     type Output = C;
 }
 
 // left associate
 
-/// A [Functor] that transforms `(A, (B, C))` type to `((A, B), C)`.
-pub struct LeftAssociateFunctor {}
+/// A [Map] that transforms `(A, (B, C))` type to `((A, B), C)`.
+pub struct LeftAssociateMap {}
 
-pub type LeftAssociate<Tuple> = ApplyFunctor<LeftAssociateFunctor, Tuple>;
+pub type LeftAssociate<Tuple> = ApplyMap<LeftAssociateMap, Tuple>;
 
-impl<A, B, C> Functor<(A, (B, C))> for LeftAssociateFunctor {
+impl<A, B, C> Map<(A, (B, C))> for LeftAssociateMap {
     type Output = ((A, B), C);
 }
 
 // Right associate
 
-/// A [Functor] that transforms `((A, B), C)` type to `(A, (B, C))`.
-pub struct RightAssociateFunctor {}
+/// A [Map] that transforms `((A, B), C)` type to `(A, (B, C))`.
+pub struct RightAssociateMap {}
 
-pub type RightAssociate<Tuple> = ApplyFunctor<RightAssociateFunctor, Tuple>;
+pub type RightAssociate<Tuple> = ApplyMap<RightAssociateMap, Tuple>;
 
-impl<A, B, C> Functor<((A, B), C)> for RightAssociateFunctor {
+impl<A, B, C> Map<((A, B), C)> for RightAssociateMap {
     type Output = (A, (B, C));
 }

@@ -1,7 +1,7 @@
 use super::{LCons, LNil, TList};
 use crate::{
     counter::{Counter, Current, Next},
-    functional::{ApplyFunctor, Functor},
+    functional::{ApplyMap, Map},
 };
 use std::marker::PhantomData;
 
@@ -38,14 +38,14 @@ where
 
 pub type LRemoveAtOpOutput<List, Target, Index> = <List as LRemoveAtOp<Target, Index>>::Output;
 
-/// A [Functor] that removes `Target` from [TList].
-pub struct LRemoveAtFunctor<Target, Index> {
+/// A [Map] that removes `Target` from [TList].
+pub struct LRemoveAtMap<Target, Index> {
     _phantom: PhantomData<(Target, Index)>,
 }
 
-pub type LRemoveAt<List, Target, Index> = ApplyFunctor<LRemoveAtFunctor<Target, Index>, List>;
+pub type LRemoveAt<List, Target, Index> = ApplyMap<LRemoveAtMap<Target, Index>, List>;
 
-impl<List, Target, Index> Functor<List> for LRemoveAtFunctor<Target, Index>
+impl<List, Target, Index> Map<List> for LRemoveAtMap<Target, Index>
 where
     List: TList + LRemoveAtOp<Target, Index>,
     Index: Counter,
@@ -92,8 +92,8 @@ where
 pub type LRemoveManyOpOutput<List, Targets, Indexes> =
     <List as LRemoveManyOp<Targets, Indexes>>::Output;
 
-/// A [Functor] that removes multiple `Targets` in [TList].
-pub struct LRemoveManyFunctor<Targets, Indexes>
+/// A [Map] that removes multiple `Targets` in [TList].
+pub struct LRemoveManyMap<Targets, Indexes>
 where
     Targets: TList,
     Indexes: TList,
@@ -101,10 +101,9 @@ where
     _phantom: PhantomData<(Targets, Indexes)>,
 }
 
-pub type LRemoveMany<List, Targets, Indexes> =
-    ApplyFunctor<LRemoveManyFunctor<Targets, Indexes>, List>;
+pub type LRemoveMany<List, Targets, Indexes> = ApplyMap<LRemoveManyMap<Targets, Indexes>, List>;
 
-impl<List, Targets, Indexes> Functor<List> for LRemoveManyFunctor<Targets, Indexes>
+impl<List, Targets, Indexes> Map<List> for LRemoveManyMap<Targets, Indexes>
 where
     List: TList + LRemoveManyOp<Targets, Indexes>,
     Targets: TList,

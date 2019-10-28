@@ -1,12 +1,10 @@
-use super::{
-    KVCons, KVGetValueAt, KVGetValueAtFunctor, KVList, KVNil, KVRemoveAt, KVRemoveAtFunctor,
-};
+use super::{KVCons, KVGetValueAt, KVGetValueAtMap, KVList, KVNil, KVRemoveAt, KVRemoveAtMap};
 use crate::{
     counter::Counter,
-    functional::{ApplyFunctor, Functor},
+    functional::{ApplyMap, Map},
     list::{
-        LConcatOp, LConcatOpOutput, LCons, LLengthOp, LLengthOpOutput, LNil, LReverse,
-        LReverseFunctor, LSetEqualOp, LSetEqualOpOutput, LUnzipOp, LUnzipOpFormerOutput, TList,
+        LConcatOp, LConcatOpOutput, LCons, LLengthOp, LLengthOpOutput, LNil, LReverse, LReverseMap,
+        LSetEqualOp, LSetEqualOpOutput, LUnzipOp, LUnzipOpFormerOutput, TList,
     },
 };
 use std::marker::PhantomData;
@@ -14,10 +12,10 @@ use typenum::Unsigned;
 
 // length of list
 
-/// A functor that gets length of [KVList].
-pub struct KVLengthFunctor;
+/// A map that gets length of [KVList].
+pub struct KVLengthMap;
 
-impl<List> Functor<List> for KVLengthFunctor
+impl<List> Map<List> for KVLengthMap
 where
     List: KVList + LLengthOp,
     LLengthOpOutput<List>: Unsigned,
@@ -25,27 +23,27 @@ where
     type Output = LLengthOpOutput<List>;
 }
 
-pub type KVLength<List> = ApplyFunctor<KVLengthFunctor, List>;
+pub type KVLength<List> = ApplyMap<KVLengthMap, List>;
 
 // reverse
 
-/// A [Functor] that reverses a [KVList].
+/// A [Map] that reverses a [KVList].
 pub struct KVReverseFuntor {}
 
-pub type KVReverse<List> = ApplyFunctor<KVReverseFuntor, List>;
+pub type KVReverse<List> = ApplyMap<KVReverseFuntor, List>;
 
-impl<List> Functor<List> for KVReverseFuntor
+impl<List> Map<List> for KVReverseFuntor
 where
     List: KVList,
     LReverse<List>: TList,
-    LReverseFunctor: Functor<List>,
+    LReverseMap: Map<List>,
 {
     type Output = LReverse<List>;
 }
 
 // set equal
 
-/// A functor that compares if two [KVList]s have same set of keys.
+/// A map that compares if two [KVList]s have same set of keys.
 pub struct KVSetEqualFuntor<Rhs, Indexes>
 where
     Rhs: KVList,
@@ -54,9 +52,9 @@ where
     _phantom: PhantomData<(Rhs, Indexes)>,
 }
 
-pub type KVSetEqual<Lhs, Rhs, Indexes> = ApplyFunctor<KVSetEqualFuntor<Rhs, Indexes>, Lhs>;
+pub type KVSetEqual<Lhs, Rhs, Indexes> = ApplyMap<KVSetEqualFuntor<Rhs, Indexes>, Lhs>;
 
-impl<Lhs, Rhs, Indexes> Functor<Lhs> for KVSetEqualFuntor<Rhs, Indexes>
+impl<Lhs, Rhs, Indexes> Map<Lhs> for KVSetEqualFuntor<Rhs, Indexes>
 where
     Lhs: KVList + LUnzipOp,
     Rhs: KVList + LUnzipOp,
@@ -68,17 +66,17 @@ where
 
 // concatenate
 
-/// A [Functor] that concatenates input and `Rhs` [KVList]s.
-pub struct KVConcatFunctor<Rhs>
+/// A [Map] that concatenates input and `Rhs` [KVList]s.
+pub struct KVConcatMap<Rhs>
 where
     Rhs: KVList,
 {
     _phantom: PhantomData<Rhs>,
 }
 
-pub type KVConcat<Lhs, Rhs> = ApplyFunctor<KVConcatFunctor<Rhs>, Lhs>;
+pub type KVConcat<Lhs, Rhs> = ApplyMap<KVConcatMap<Rhs>, Lhs>;
 
-impl<Lhs, Rhs> Functor<Lhs> for KVConcatFunctor<Rhs>
+impl<Lhs, Rhs> Map<Lhs> for KVConcatMap<Rhs>
 where
     Lhs: KVList + LConcatOp<Rhs>,
     Rhs: KVList,
@@ -114,9 +112,9 @@ where
     TargetTail: TList,
     Index: Counter,
     IndexTail: TList,
-    KVGetValueAtFunctor<Target, Index>: Functor<List>,
-    KVRemoveAtFunctor<Target, Index>: Functor<List>,
-    KVPermuteFunctor<TargetTail, IndexTail>: Functor<KVRemoveAt<List, Target, Index>>,
+    KVGetValueAtMap<Target, Index>: Map<List>,
+    KVRemoveAtMap<Target, Index>: Map<List>,
+    KVPermuteMap<TargetTail, IndexTail>: Map<KVRemoveAt<List, Target, Index>>,
     KVPermute<KVRemoveAt<List, Target, Index>, TargetTail, IndexTail>: KVList,
 {
     type Output = KVCons<
@@ -126,8 +124,8 @@ where
     >;
 }
 
-/// A [Functor] that permutes the input [KVList] to the order of `Targets`.
-pub struct KVPermuteFunctor<Targets, Indexes>
+/// A [Map] that permutes the input [KVList] to the order of `Targets`.
+pub struct KVPermuteMap<Targets, Indexes>
 where
     Targets: TList,
     Indexes: TList,
@@ -135,9 +133,9 @@ where
     _phantom: PhantomData<(Targets, Indexes)>,
 }
 
-pub type KVPermute<List, Targets, Indexes> = ApplyFunctor<KVPermuteFunctor<Targets, Indexes>, List>;
+pub type KVPermute<List, Targets, Indexes> = ApplyMap<KVPermuteMap<Targets, Indexes>, List>;
 
-impl<List, Targets, Indexes> Functor<List> for KVPermuteFunctor<Targets, Indexes>
+impl<List, Targets, Indexes> Map<List> for KVPermuteMap<Targets, Indexes>
 where
     List: KVList + KVPermuteOp<Targets, Indexes>,
     Targets: TList,

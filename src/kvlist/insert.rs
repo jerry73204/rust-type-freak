@@ -1,44 +1,44 @@
 use super::{KVCons, KVList};
 use crate::{
     counter::{Counter, Current, Next},
-    functional::{ApplyFunctor, Functor},
-    list::{LAppend, LAppendFunctor, LPrepend},
+    functional::{ApplyMap, Map},
+    list::{LAppend, LAppendMap, LPrepend},
 };
 use std::marker::PhantomData;
 
 // prepend
 
-/// A functor that prepends a key-value pair to [KVList].
-pub struct KVPrependFunctor<Key, Value> {
+/// A map that prepends a key-value pair to [KVList].
+pub struct KVPrependMap<Key, Value> {
     _phantom: PhantomData<(Key, Value)>,
 }
 
-impl<List, Key, Value> Functor<List> for KVPrependFunctor<Key, Value>
+impl<List, Key, Value> Map<List> for KVPrependMap<Key, Value>
 where
     List: KVList,
-    LAppendFunctor<(Key, Value)>: Functor<List>,
+    LAppendMap<(Key, Value)>: Map<List>,
 {
     type Output = LPrepend<List, (Key, Value)>;
 }
 
-pub type KVPrepend<List, Key, Value> = ApplyFunctor<KVPrependFunctor<Key, Value>, List>;
+pub type KVPrepend<List, Key, Value> = ApplyMap<KVPrependMap<Key, Value>, List>;
 
 // append
 
-/// A functor that appends a key-value pair to [KVList].
-pub struct KVAppendFunctor<Key, Value> {
+/// A map that appends a key-value pair to [KVList].
+pub struct KVAppendMap<Key, Value> {
     _phantom: PhantomData<(Key, Value)>,
 }
 
-impl<List, Key, Value> Functor<List> for KVAppendFunctor<Key, Value>
+impl<List, Key, Value> Map<List> for KVAppendMap<Key, Value>
 where
     List: KVList,
-    LAppendFunctor<(Key, Value)>: Functor<List>,
+    LAppendMap<(Key, Value)>: Map<List>,
 {
     type Output = LAppend<List, (Key, Value)>;
 }
 
-pub type KVAppend<List, Key, Value> = ApplyFunctor<KVAppendFunctor<Key, Value>, List>;
+pub type KVAppend<List, Key, Value> = ApplyMap<KVAppendMap<Key, Value>, List>;
 
 // insert at
 
@@ -72,15 +72,15 @@ where
         KVCons<NonTarget, NonTargetValue, KVInsertAtOpOutput<Tail, Key, Value, Target, Index>>;
 }
 
-/// A functor that inserts `Key`-`Value` pair into [KVList] at `Target`.
-pub struct KVInsertAtFunctor<Key, Value, Target, Index> {
+/// A map that inserts `Key`-`Value` pair into [KVList] at `Target`.
+pub struct KVInsertAtMap<Key, Value, Target, Index> {
     _phantom: PhantomData<(Key, Value, Target, Index)>,
 }
 
 pub type KVInsertAt<List, Key, Value, Target, Index> =
-    ApplyFunctor<KVInsertAtFunctor<Key, Value, Target, Index>, List>;
+    ApplyMap<KVInsertAtMap<Key, Value, Target, Index>, List>;
 
-impl<List, Key, Value, Target, Index> Functor<List> for KVInsertAtFunctor<Key, Value, Target, Index>
+impl<List, Key, Value, Target, Index> Map<List> for KVInsertAtMap<Key, Value, Target, Index>
 where
     List: KVList + KVInsertAtOp<Key, Value, Target, Index>,
     Index: Counter,

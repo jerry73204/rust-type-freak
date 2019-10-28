@@ -34,9 +34,9 @@
 //! type Cnt = Next<Next<Next<Current>>>;                 // impl Counter
 //! ```
 //!
-//! Each data structure is manipuated either by _functors_
+//! Each data structure is manipuated either by _maps_
 //! or _type operators_. The distinction is due to implementation contraints, and it
-//! is encourage to use functors at first.
+//! is encourage to use maps at first.
 //! For example, you can [UnwrapOr](crate::maybe::UnwrapOr) a type that implements
 //! [Maybe](crate::maybe::Maybe).
 //!
@@ -47,23 +47,23 @@
 //! ```
 //!
 //! Actually, [UnwrapOr](crate::maybe::UnwrapOr) is an alias to apply
-//! [UnwrapOrFunctor](crate::maybe::UnwrapOrFunctor) on a type. Hence, these statements
+//! [UnwrapOrMap](crate::maybe::UnwrapOrMap) on a type. Hence, these statements
 //! are equivalent but have longer syntax.
 //!
 //! ```rust
 //! use type_freak::{
-//!     maybe::{UnwrapOrFunctor, Just, Nothing},
-//!     functional::ApplyFunctor,
+//!     maybe::{UnwrapOrMap, Just, Nothing},
+//!     functional::ApplyMap,
 //! };
-//! type Outcome1 = ApplyFunctor<UnwrapOrFunctor<u8>, Just<i8>>;  // Outcome1 ~= i8
-//! type Outcome2 = ApplyFunctor<UnwrapOrFunctor<u8>, Nothing>;   // Outcome1 ~= u8
+//! type Outcome1 = ApplyMap<UnwrapOrMap<u8>, Just<i8>>;  // Outcome1 ~= i8
+//! type Outcome2 = ApplyMap<UnwrapOrMap<u8>, Nothing>;   // Outcome1 ~= u8
 //! ```
 //!
 //! # Functoinal interface
 //! ## Usage
 //! Both [Maybe](crate::maybe::Maybe) and [TList](crate::list::TList) allows you to
-//! pass a functor for data manipulation. In this example, we pass
-//! [AddOneFunctor](crate::numeric::AddOneFunctor) that increases input typed integer
+//! pass a map for data manipulation. In this example, we pass
+//! [AddOneMap](crate::numeric::AddOneMap) that increases input typed integer
 //! by one.
 //!
 //! ```rust
@@ -71,17 +71,17 @@
 //!     TListType,
 //!     list::LMap,
 //!     maybe::{Just, Nothing},
-//!     numeric::AddOneFunctor,
+//!     numeric::AddOneMap,
 //! };
 //! use typenum::consts::*;
 //!
-//! type Out1 = LMap<TListType![U3, U2, U5], AddOneFunctor>;
+//! type Out1 = LMap<TListType![U3, U2, U5], AddOneMap>;
 //! // Out1 ~= TListType![U4. U3. U5]
 //!
-//! type Out2 = LMap<Just<U7>, AddOneFunctor>;
+//! type Out2 = LMap<Just<U7>, AddOneMap>;
 //! // Out2 ~= Just<U8>
 //!
-//! type Out3 = LMap<Nothing, AddOneFunctor>;
+//! type Out3 = LMap<Nothing, AddOneMap>;
 //! // Out3 ~= Nothing
 //! ```
 //!
@@ -90,24 +90,24 @@
 //! [filter](std::iter::Iterator::filter) and [scan](std::iter::Iterator::scan).
 //! Their detailed usage is out of scope here.
 //!
-//! ## Roll your own [Functor](crate::functional::Functor)
-//! You can define your own functor by implementing [Functor](crate::functional::Functor)
-//! trait on your type. Here we make a functor that boxes the input type.
+//! ## Roll your own [Map](crate::functional::Map)
+//! You can define your own map by implementing [Map](crate::functional::Map)
+//! trait on your type. Here we make a map that boxes the input type.
 //!
 //! ```rust
-//! use type_freak::functional::Functor;
-//! struct BoxFunctor;
+//! use type_freak::functional::Map;
+//! struct BoxMap;
 //!
-//! impl<Input> Functor<Input> for BoxFunctor {
+//! impl<Input> Map<Input> for BoxMap {
 //!     type Output = Box<Input>;
 //! }
 //!
 //! ```
 //!
-//! Use [ApplyFunctor](crate::functional::ApplyFunctor) to apply your functor on a type.
+//! Use [ApplyMap](crate::functional::ApplyMap) to apply your map on a type.
 //!
 //! ```ignore
-//! type Out = ApplyFunctor<BoxFunctor, String>;  // Out ~= Box<String>
+//! type Out = ApplyMap<BoxMap, String>;  // Out ~= Box<String>
 //! ```
 //!
 //! To make sure it works as expected, the crate has a special operator
@@ -116,17 +116,17 @@
 //!
 //! ```rust
 //! use type_freak::{
-//!     functional::{Functor, ApplyFunctor},
+//!     functional::{Map, ApplyMap},
 //!     control::IfSameOutput
 //! };
 //!
-//! struct BoxFunctor;
+//! struct BoxMap;
 //!
-//! impl<Input> Functor<Input> for BoxFunctor {
+//! impl<Input> Map<Input> for BoxMap {
 //!     type Output = Box<Input>;
 //! }
 //!
-//! type Out = ApplyFunctor<BoxFunctor, String>;  // Out ~= Box<String>
+//! type Out = ApplyMap<BoxMap, String>;  // Out ~= Box<String>
 //! type Assert = IfSameOutput<(), Out, Box<String>>;
 //!
 //! fn assert() {
@@ -135,22 +135,22 @@
 //!
 //! ```
 //!
-//! # Functors vs type operators
-//! Most operations in this crate are in by [Functor](crate::functional::Functor)s,
+//! # Maps vs type operators
+//! Most operations in this crate are in by [Map](crate::functional::Map)s,
 //! while a handful of them are _type operators_. To be exact,
 //!
-//! - Functors are structs that implements [Functor](crate::functional::Functor) trait.
+//! - Maps are structs that implements [Map](crate::functional::Map) trait.
 //! - Type operators are traits that has `Output` associated type.
 //!
 //! They serves for the same purpose. Since recursive associated types only works on
-//! trait type operators, some of the operators have both a trait and a functor.
+//! trait type operators, some of the operators have both a trait and a map.
 //!
 //! For example,
 //! [LInsertAtOp](crate::list::LInsertAtOp) is a trait that inserts a new type to
 //! [TList](crate::list::TList). [LInsertAtOpOutput](crate::list::LInsertAtOpOutput)
 //! is type alias to its `Output` associated type.
-//! [LInsertAtFunctor](crate::list::LInsertAtFunctor) is the functor wrapping around
-//! above trait, and [LInsertAt](crate::list::LInsertAt) is an alias to apply the functor.
+//! [LInsertAtMap](crate::list::LInsertAtMap) is the map wrapping around
+//! above trait, and [LInsertAt](crate::list::LInsertAt) is an alias to apply the map.
 //!
 //! # Naming conventions
 //! Each traits, structs and type aliases serves their own purpose. The naming of
@@ -177,19 +177,19 @@
 //! [type_freak::list::marker::EmptyTList](crate::list::marker::EmptyTList).
 //! These traits are mostly shown in trait bounds.
 //!
-//! ## Structs as _functors_
-//! A functor is a special struct that implements [Functor](crate::functional::Functor).
-//! The name ends in `*Functor`, such as [LLengthFunctor](crate::list::LLengthFunctor).
+//! ## Structs as _maps_
+//! A map is a special struct that implements [Map](crate::functional::Map).
+//! The name ends in `*Map`, such as [LLengthMap](crate::list::LLengthMap).
 //! It works like _type operators_, and it can be applied to [Maybe](crate::maybe::Maybe)
-//! and [TList](crate::list::TList). Most type operations have a functor interface,
+//! and [TList](crate::list::TList). Most type operations have a map interface,
 //! either by wrapping around a _type operator_ trait or by standalone definition.
 //!
-//! The crate provides [ApplyFunctor\<Func, Input\>](crate::functional::ApplyFunctor)
-//! type alias to apply a functor on a type. For example,
+//! The crate provides [ApplyMap\<Func, Input\>](crate::functional::ApplyMap)
+//! type alias to apply a map on a type. For example,
 //!
 //! ```ignore
-//! type Outcome = ApplyFunctor<LLengthFunctor, TListType![u8, u16]>;  // Outcome ~= U2
-//! // Same as `LLengthFunctor as Functor<TListType![u8, u16]>`
+//! type Outcome = ApplyMap<LLengthMap, TListType![u8, u16]>;  // Outcome ~= U2
+//! // Same as `LLengthMap as Map<TListType![u8, u16]>`
 //! ```
 //!
 //! Also, type aliases are available to save the pen and ink.
@@ -204,10 +204,10 @@
 //! [LLengthOpOutput\<List\>](crate::list::LLengthOpOutput) is the alias of
 //! `<List as LLengthOp>::Output`.
 //!
-//! ## Type aliases as _functor aliases_
-//! It is a short hand syntax to apply a functor on a type. The name has no
+//! ## Type aliases as _map aliases_
+//! It is a short hand syntax to apply a map on a type. The name has no
 //! special suffix. For example, [LLength\<List\>](crate::list::LLength)
-//! is alias of `ApplyFunctor<LLengthFunctor, List>`.
+//! is alias of `ApplyMap<LLengthMap, List>`.
 //!
 //!
 //!

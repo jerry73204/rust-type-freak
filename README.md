@@ -17,7 +17,7 @@ So far, the crate ships following features. It's still in alpha stage and I'm gl
 - [Boolean](src/boolean.rs): typed boolean algebra.
 - [Maybe](src/maybe.rs): a trait analogous to `std::option::Option`.
 - [Counter](src/counter.rs): a convient type to build recursive trait operators.
-- [Functoinal primitives](src/functional/mod.rs): provides `Functor`, `Compose` and `Applicative`, etc.
+- [Functoinal primitives](src/functional/mod.rs): provides `Map`, `Compose` and `Applicative`, etc.
 - [Trait operators for tuple types](src/tuple.rs)
 - [Control flow](src/control.rs): typed `If`, `IfLess`, `IfSame` and more for compile-time guards and static assertions.
 
@@ -94,18 +94,18 @@ type List5<Index1, Index2> = LInsertAt<List4<Index1>, u8, f64, Index2>;
 
 ### Functional interface
 
-You can map, filter or scan a `TList` with existing functors in crate.
-Also, it's allowed to roll your own functor to manipulate the data with ease.
+You can map, filter or scan a `TList` with existing maps in crate.
+Also, it's allowed to roll your own map to manipulate the data with ease.
 
 ```rust
-struct BoxFunctor;
+struct BoxMap;
 
-impl<Input> Functor<Input> for BoxFunctor {
+impl<Input> Map<Input> for BoxMap {
     type Output = Box<Input>;
 }
 
 type ListBefore = TListType![String, [i64; 7], isize, (), (f64, f32)];
-type ListAfter = LMap<List3, BoxFunctor>;
+type ListAfter = LMap<List3, BoxMap>;
 
 type Assert = IfSameOutput<
     (),

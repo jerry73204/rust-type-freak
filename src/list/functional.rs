@@ -1,12 +1,12 @@
-use super::{LConcatComposeFunctor, LCons, LNil, LPrependToFunctor, TList};
+use super::{LConcatComposeMap, LCons, LNil, LPrependToMap, TList};
 use crate::{
-    functional::{ApplicativeFunctor, ApplyFunctor, FMapFunctor, Functor},
-    maybe::{Maybe, MaybeMap, MaybeMapFunctor, UnwrapOr, UnwrapOrFunctor},
-    tuple::{FirstOf, FirstOfFunctor, Pair, SecondOf, SecondOfFunctor},
+    functional::{ApplicativeMap, ApplyMap, FMapMap, Map},
+    maybe::{Maybe, MaybeMap, MaybeMapMap, UnwrapOr, UnwrapOrMap},
+    tuple::{FirstOf, FirstOfMap, Pair, SecondOf, SecondOfMap},
 };
 use std::marker::PhantomData;
 
-/// A type operator that apply a [Functor] to all types in [TList].
+/// A type operator that apply a [Map] to all types in [TList].
 pub trait LMapOp<Func>
 where
     Self: TList,
@@ -23,20 +23,20 @@ impl<Func> LMapOp<Func> for LNil {
 
 impl<Func, Head, Tail> LMapOp<Func> for LCons<Head, Tail>
 where
-    Func: Functor<Head>,
+    Func: Map<Head>,
     Tail: TList + LMapOp<Func>,
 {
-    type Output = LCons<ApplyFunctor<Func, Head>, LMapOpOutput<Tail, Func>>;
+    type Output = LCons<ApplyMap<Func, Head>, LMapOpOutput<Tail, Func>>;
 }
 
-/// A [Functor] that maps values in [TList] with `Func`.
-pub struct LMapFunctor<Func> {
+/// A [Map] that maps values in [TList] with `Func`.
+pub struct LMapMap<Func> {
     _phantom: PhantomData<Func>,
 }
 
-pub type LMap<List, Func> = ApplyFunctor<LMapFunctor<Func>, List>;
+pub type LMap<List, Func> = ApplyMap<LMapMap<Func>, List>;
 
-impl<List, Func> Functor<List> for LMapFunctor<Func>
+impl<List, Func> Map<List> for LMapMap<Func>
 where
     List: TList + LMapOp<Func>,
 {
@@ -59,20 +59,20 @@ impl<Init, Func> LFoldOp<Init, Func> for LNil {
 
 impl<Init, Func, Head, Tail> LFoldOp<Init, Func> for LCons<Head, Tail>
 where
-    Func: Functor<(Init, Head)>,
-    Tail: TList + LFoldOp<ApplyFunctor<Func, (Init, Head)>, Func>,
+    Func: Map<(Init, Head)>,
+    Tail: TList + LFoldOp<ApplyMap<Func, (Init, Head)>, Func>,
 {
-    type Output = LFoldOpOutput<Tail, ApplyFunctor<Func, (Init, Head)>, Func>;
+    type Output = LFoldOpOutput<Tail, ApplyMap<Func, (Init, Head)>, Func>;
 }
 
-/// A [Functor] that maps values in [TList] with `Func`.
-pub struct LFoldFunctor<Init, Func> {
+/// A [Map] that maps values in [TList] with `Func`.
+pub struct LFoldMap<Init, Func> {
     _phantom: PhantomData<(Init, Func)>,
 }
 
-pub type LFold<List, Init, Func> = ApplyFunctor<LFoldFunctor<Init, Func>, List>;
+pub type LFold<List, Init, Func> = ApplyMap<LFoldMap<Init, Func>, List>;
 
-impl<List, Init, Func> Functor<List> for LFoldFunctor<Init, Func>
+impl<List, Init, Func> Map<List> for LFoldMap<Init, Func>
 where
     List: TList + LFoldOp<Init, Func>,
 {
@@ -96,32 +96,31 @@ impl<Func> LFilterOp<Func> for LNil {
 
 impl<Func, Head, Tail> LFilterOp<Func> for LCons<Head, Tail>
 where
-    Func: Functor<Head>,
+    Func: Map<Head>,
     Tail: TList + LFilterOp<Func>,
     Func::Output: Maybe,
-    MaybeMapFunctor<LPrependToFunctor<LFilterOpOutput<Tail, Func>>>:
-        Functor<ApplyFunctor<Func, Head>>,
-    UnwrapOrFunctor<LFilterOpOutput<Tail, Func>>:
-        Functor<MaybeMap<ApplyFunctor<Func, Head>, LPrependToFunctor<LFilterOpOutput<Tail, Func>>>>,
+    MaybeMapMap<LPrependToMap<LFilterOpOutput<Tail, Func>>>: Map<ApplyMap<Func, Head>>,
+    UnwrapOrMap<LFilterOpOutput<Tail, Func>>:
+        Map<MaybeMap<ApplyMap<Func, Head>, LPrependToMap<LFilterOpOutput<Tail, Func>>>>,
     UnwrapOr<
-        MaybeMap<ApplyFunctor<Func, Head>, LPrependToFunctor<LFilterOpOutput<Tail, Func>>>,
+        MaybeMap<ApplyMap<Func, Head>, LPrependToMap<LFilterOpOutput<Tail, Func>>>,
         LFilterOpOutput<Tail, Func>,
     >: TList,
 {
     type Output = UnwrapOr<
-        MaybeMap<ApplyFunctor<Func, Head>, LPrependToFunctor<LFilterOpOutput<Tail, Func>>>,
+        MaybeMap<ApplyMap<Func, Head>, LPrependToMap<LFilterOpOutput<Tail, Func>>>,
         LFilterOpOutput<Tail, Func>,
     >;
 }
 
-/// A [Functor] that filters values in [TList] with `Func`.
-pub struct LFilterFunctor<Func> {
+/// A [Map] that filters values in [TList] with `Func`.
+pub struct LFilterMap<Func> {
     _phantom: PhantomData<Func>,
 }
 
-pub type LFilter<List, Func> = ApplyFunctor<LFilterFunctor<Func>, List>;
+pub type LFilter<List, Func> = ApplyMap<LFilterMap<Func>, List>;
 
-impl<List, Func> Functor<List> for LFilterFunctor<Func>
+impl<List, Func> Map<List> for LFilterMap<Func>
 where
     List: TList + LFilterOp<Func>,
 {
@@ -148,25 +147,25 @@ impl<State, Func> LScanOp<State, Func> for LNil {
 
 impl<State, Func, Head, Tail> LScanOp<State, Func> for LCons<Head, Tail>
 where
-    Func: Functor<(State, Head)>,
-    Tail: TList + LScanOp<SecondOf<ApplyFunctor<Func, (State, Head)>>, Func>,
-    FirstOfFunctor: Functor<ApplyFunctor<Func, (State, Head)>>,
-    SecondOfFunctor: Functor<ApplyFunctor<Func, (State, Head)>>,
-    ApplyFunctor<Func, (State, Head)>: Pair,
+    Func: Map<(State, Head)>,
+    Tail: TList + LScanOp<SecondOf<ApplyMap<Func, (State, Head)>>, Func>,
+    FirstOfMap: Map<ApplyMap<Func, (State, Head)>>,
+    SecondOfMap: Map<ApplyMap<Func, (State, Head)>>,
+    ApplyMap<Func, (State, Head)>: Pair,
 {
     type Output =
-        LCons<FirstOf<ApplyFunctor<Func, (State, Head)>>, LScanOpOutput<Tail, Self::State, Func>>;
-    type State = SecondOf<ApplyFunctor<Func, (State, Head)>>;
+        LCons<FirstOf<ApplyMap<Func, (State, Head)>>, LScanOpOutput<Tail, Self::State, Func>>;
+    type State = SecondOf<ApplyMap<Func, (State, Head)>>;
 }
 
-/// A [Functor] that maps values in [TList] with `Func` with internal state.
-pub struct LScanFunctor<Init, Func> {
+/// A [Map] that maps values in [TList] with `Func` with internal state.
+pub struct LScanMap<Init, Func> {
     _phantom: PhantomData<(Init, Func)>,
 }
 
-pub type LScan<List, Init, Func> = ApplyFunctor<LScanFunctor<Init, Func>, List>;
+pub type LScan<List, Init, Func> = ApplyMap<LScanMap<Init, Func>, List>;
 
-impl<List, Init, Func> Functor<List> for LScanFunctor<Init, Func>
+impl<List, Init, Func> Map<List> for LScanMap<Init, Func>
 where
     List: TList + LScanOp<Init, Func>,
 {
@@ -175,11 +174,11 @@ where
 
 // impl FMap for TList
 
-impl<Func> Functor<LNil> for FMapFunctor<Func> {
+impl<Func> Map<LNil> for FMapMap<Func> {
     type Output = LNil;
 }
 
-impl<Func, Head, Tail> Functor<LCons<Head, Tail>> for FMapFunctor<Func>
+impl<Func, Head, Tail> Map<LCons<Head, Tail>> for FMapMap<Func>
 where
     Tail: TList,
     LCons<Head, Tail>: LMapOp<Func>,
@@ -189,53 +188,52 @@ where
 
 // impl Applicative for TList
 
-impl Functor<LNil> for ApplicativeFunctor<LNil> {
+impl Map<LNil> for ApplicativeMap<LNil> {
     type Output = LNil;
 }
 
-impl<LHead, LTail> Functor<LCons<LHead, LTail>> for ApplicativeFunctor<LNil>
+impl<LHead, LTail> Map<LCons<LHead, LTail>> for ApplicativeMap<LNil>
 where
     LTail: TList,
 {
     type Output = LNil;
 }
 
-impl<RHead, RTail> Functor<LNil> for ApplicativeFunctor<LCons<RHead, RTail>>
+impl<RHead, RTail> Map<LNil> for ApplicativeMap<LCons<RHead, RTail>>
 where
     RTail: TList,
 {
     type Output = LNil;
 }
 
-impl<LHead, LTail, RHead, RTail> Functor<LCons<LHead, LTail>>
-    for ApplicativeFunctor<LCons<RHead, RTail>>
+impl<LHead, LTail, RHead, RTail> Map<LCons<LHead, LTail>> for ApplicativeMap<LCons<RHead, RTail>>
 where
     LTail: TList,
     RTail: TList,
-    LCons<LHead, LTail>: LMapOp<ApplyToTListFunctor<LCons<RHead, RTail>>>,
-    LMapOpOutput<LCons<LHead, LTail>, ApplyToTListFunctor<LCons<RHead, RTail>>>:
-        LFoldOp<LNil, LConcatComposeFunctor>,
+    LCons<LHead, LTail>: LMapOp<ApplyToTListMap<LCons<RHead, RTail>>>,
+    LMapOpOutput<LCons<LHead, LTail>, ApplyToTListMap<LCons<RHead, RTail>>>:
+        LFoldOp<LNil, LConcatComposeMap>,
 {
     type Output = LFoldOpOutput<
-        LMapOpOutput<LCons<LHead, LTail>, ApplyToTListFunctor<LCons<RHead, RTail>>>,
+        LMapOpOutput<LCons<LHead, LTail>, ApplyToTListMap<LCons<RHead, RTail>>>,
         LNil,
-        LConcatComposeFunctor,
+        LConcatComposeMap,
     >;
 }
 
-// auxiliary functor for Applicative interface
+// auxiliary map for Applicative interface
 
-/// A [Functor] that applies input functor to `List`.
-pub struct ApplyToTListFunctor<List>
+/// A [Map] that applies input map to `List`.
+pub struct ApplyToTListMap<List>
 where
     List: TList,
 {
     _phantom: PhantomData<List>,
 }
 
-pub type ApplyToTList<Func, List> = ApplyFunctor<ApplyToTListFunctor<List>, Func>;
+pub type ApplyToTList<Func, List> = ApplyMap<ApplyToTListMap<List>, Func>;
 
-impl<Func, List> Functor<Func> for ApplyToTListFunctor<List>
+impl<Func, List> Map<Func> for ApplyToTListMap<List>
 where
     List: TList + LMapOp<Func>,
     LMapOpOutput<List, Func>: TList,
@@ -251,7 +249,7 @@ mod tests {
         control::{IfElsePredicate, IfElsePredicateOutput, IfSameOutput},
         functional::{Applicative, FMap},
         maybe::{Just, Nothing},
-        numeric::{AddOneFunctor, SubOneFunctor},
+        numeric::{AddOneMap, SubOneMap},
         TListType,
     };
     use std::ops::Add;
@@ -260,7 +258,7 @@ mod tests {
     // Plus one to typenum unsigned numbers
     struct PlusOne;
 
-    impl<Input> Functor<Input> for PlusOne
+    impl<Input> Map<Input> for PlusOne
     where
         Input: Unsigned + Add<B1>,
     {
@@ -274,7 +272,7 @@ mod tests {
     // Box every type
     struct BoxFunc;
 
-    impl<Input> Functor<Input> for BoxFunc {
+    impl<Input> Map<Input> for BoxFunc {
         type Output = Box<Input>;
     }
 
@@ -295,7 +293,7 @@ mod tests {
     // Sum of list
     struct SumFunc;
 
-    impl<Init, Input> Functor<(Init, Input)> for SumFunc
+    impl<Init, Input> Map<(Init, Input)> for SumFunc
     where
         Init: Unsigned + Add<Input>,
         Input: Unsigned,
@@ -310,7 +308,7 @@ mod tests {
     // Count # of elements in list
     struct CountFunc;
 
-    impl<Init, Input> Functor<(Init, Input)> for CountFunc
+    impl<Init, Input> Map<(Init, Input)> for CountFunc
     where
         Init: Unsigned + Add<B1>,
     {
@@ -324,7 +322,7 @@ mod tests {
     // Filter by threshold
     struct ThresholdFunc;
 
-    impl<Input> Functor<Input> for ThresholdFunc
+    impl<Input> Map<Input> for ThresholdFunc
     where
         Input: Unsigned + IsLess<U5>,
         Le<Input, U5>: Boolean,
@@ -340,7 +338,7 @@ mod tests {
     // Power of values
     struct PowerScanFunc;
 
-    impl<State, Input> Functor<(State, Input)> for PowerScanFunc
+    impl<State, Input> Map<(State, Input)> for PowerScanFunc
     where
         Input: Unsigned + Pow<State>,
         State: Unsigned + Add<B1>,
@@ -354,10 +352,10 @@ mod tests {
 
     // FMap interface
     type Assert7 =
-        IfSameOutput<(), FMap<TListType![U1, U2, U3], AddOneFunctor>, TListType![U2, U3, U4]>;
+        IfSameOutput<(), FMap<TListType![U1, U2, U3], AddOneMap>, TListType![U2, U3, U4]>;
 
     // Applicative interface
-    type List9 = TListType![AddOneFunctor, SubOneFunctor];
+    type List9 = TListType![AddOneMap, SubOneMap];
     type List10 = TListType![U1, U2, U3];
 
     type Assert8 = IfSameOutput<(), Applicative<LNil, LNil>, LNil>;

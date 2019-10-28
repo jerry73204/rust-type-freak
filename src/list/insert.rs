@@ -1,20 +1,20 @@
 use super::{LCons, LNil, TList};
 use crate::{
     counter::{Counter, Current, Next},
-    functional::{ApplyFunctor, Functor},
+    functional::{ApplyMap, Map},
 };
 use std::marker::PhantomData;
 
 // prepend
 
-/// A [Functor] that prepends a new type to [TList].
-pub struct LPrependFunctor<Head> {
+/// A [Map] that prepends a new type to [TList].
+pub struct LPrependMap<Head> {
     _phantom: PhantomData<Head>,
 }
 
-pub type LPrepend<List, Item> = ApplyFunctor<LPrependFunctor<Item>, List>;
+pub type LPrepend<List, Item> = ApplyMap<LPrependMap<Item>, List>;
 
-impl<Item, List> Functor<List> for LPrependFunctor<Item>
+impl<Item, List> Map<List> for LPrependMap<Item>
 where
     List: TList,
 {
@@ -23,17 +23,17 @@ where
 
 // prepend to
 
-/// A [Functor] that prepends a new type to [TList].
-pub struct LPrependToFunctor<List>
+/// A [Map] that prepends a new type to [TList].
+pub struct LPrependToMap<List>
 where
     List: TList,
 {
     _phantom: PhantomData<List>,
 }
 
-pub type LPrependTo<Item, List> = ApplyFunctor<LPrependToFunctor<List>, Item>;
+pub type LPrependTo<Item, List> = ApplyMap<LPrependToMap<List>, Item>;
 
-impl<Item, List> Functor<Item> for LPrependToFunctor<List>
+impl<Item, List> Map<Item> for LPrependToMap<List>
 where
     List: TList,
 {
@@ -42,12 +42,12 @@ where
 
 // prepend accumulator
 
-/// A [Functor] that takes `(List, Item)` input, and prepends `Item` to List of [TList] type.
-pub struct LPrependComposeFunctor;
+/// A [Map] that takes `(List, Item)` input, and prepends `Item` to List of [TList] type.
+pub struct LPrependComposeMap;
 
-pub type LPrependFold<List, Item> = ApplyFunctor<LPrependComposeFunctor, (List, Item)>;
+pub type LPrependFold<List, Item> = ApplyMap<LPrependComposeMap, (List, Item)>;
 
-impl<List, Item> Functor<(List, Item)> for LPrependComposeFunctor
+impl<List, Item> Map<(List, Item)> for LPrependComposeMap
 where
     List: TList,
 {
@@ -78,14 +78,14 @@ where
     type Output = LCons<Head, LAppendOpOutput<Tail, Item>>;
 }
 
-/// A [Functor] that appends `Item` to end of [TList].
-pub struct LAppendFunctor<Item> {
+/// A [Map] that appends `Item` to end of [TList].
+pub struct LAppendMap<Item> {
     _phantom: PhantomData<Item>,
 }
 
-pub type LAppend<List, Item> = ApplyFunctor<LAppendFunctor<Item>, List>;
+pub type LAppend<List, Item> = ApplyMap<LAppendMap<Item>, List>;
 
-impl<List, Item> Functor<List> for LAppendFunctor<Item>
+impl<List, Item> Map<List> for LAppendMap<Item>
 where
     List: TList + LAppendOp<Item>,
 {
@@ -127,18 +127,17 @@ where
 pub type LInsertAtOpOutput<List, Item, Target, Index> =
     <List as LInsertAtOp<Item, Target, Index>>::Output;
 
-/// A [Functor] that inserts `Item` at `Target` to a [TList].
-pub struct LInsertAtFunctor<Item, Target, Index>
+/// A [Map] that inserts `Item` at `Target` to a [TList].
+pub struct LInsertAtMap<Item, Target, Index>
 where
     Index: Counter,
 {
     _phantom: PhantomData<(Item, Target, Index)>,
 }
 
-pub type LInsertAt<List, Item, Target, Index> =
-    ApplyFunctor<LInsertAtFunctor<Item, Target, Index>, List>;
+pub type LInsertAt<List, Item, Target, Index> = ApplyMap<LInsertAtMap<Item, Target, Index>, List>;
 
-impl<List, Item, Target, Index> Functor<List> for LInsertAtFunctor<Item, Target, Index>
+impl<List, Item, Target, Index> Map<List> for LInsertAtMap<Item, Target, Index>
 where
     Index: Counter,
     List: LInsertAtOp<Item, Target, Index>,

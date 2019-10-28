@@ -3,35 +3,35 @@
 use crate::{
     boolean::Boolean,
     control::{IfElsePredicate, IfElsePredicateOutput},
-    functional::Functor,
+    functional::Map,
 };
 use std::ops::{Add, Mul, Sub};
 use typenum::{Add1, Gr, IsGreater, IsLess, Le, Prod, Sub1, Sum, B1};
 
-/// A [Functor] type that computes summation of inputs.
-pub struct SumComposeFunctor;
+/// A [Map] type that computes summation of inputs.
+pub struct SumComposeMap;
 
-impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for SumComposeFunctor
+impl<Lhs, Rhs> Map<(Lhs, Rhs)> for SumComposeMap
 where
     Lhs: Add<Rhs>,
 {
     type Output = Sum<Lhs, Rhs>;
 }
 
-/// A [Functor] type that computes product of inputs.
-pub struct ProdComposeFunctor;
+/// A [Map] type that computes product of inputs.
+pub struct ProdComposeMap;
 
-impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for ProdComposeFunctor
+impl<Lhs, Rhs> Map<(Lhs, Rhs)> for ProdComposeMap
 where
     Lhs: Mul<Rhs>,
 {
     type Output = Prod<Lhs, Rhs>;
 }
 
-/// A [Functor] type that gets minimum of inputs.
-pub struct MinComposeFunctor;
+/// A [Map] type that gets minimum of inputs.
+pub struct MinComposeMap;
 
-impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for MinComposeFunctor
+impl<Lhs, Rhs> Map<(Lhs, Rhs)> for MinComposeMap
 where
     Rhs: IsLess<Lhs> + IfElsePredicate<Le<Rhs, Lhs>, Lhs>,
     Le<Rhs, Lhs>: Boolean,
@@ -39,10 +39,10 @@ where
     type Output = IfElsePredicateOutput<Rhs, Le<Rhs, Lhs>, Lhs>;
 }
 
-/// A [Functor] type that gets maximum of inputs.
-pub struct MaxComposeFunctor;
+/// A [Map] type that gets maximum of inputs.
+pub struct MaxComposeMap;
 
-impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for MaxComposeFunctor
+impl<Lhs, Rhs> Map<(Lhs, Rhs)> for MaxComposeMap
 where
     Rhs: IsGreater<Lhs> + IfElsePredicate<Gr<Rhs, Lhs>, Lhs>,
     Gr<Rhs, Lhs>: Boolean,
@@ -50,20 +50,20 @@ where
     type Output = IfElsePredicateOutput<Rhs, Gr<Rhs, Lhs>, Lhs>;
 }
 
-/// A [Functor] that increases input [typenum] integer by one.
-pub struct AddOneFunctor;
+/// A [Map] that increases input [typenum] integer by one.
+pub struct AddOneMap;
 
-impl<Value> Functor<Value> for AddOneFunctor
+impl<Value> Map<Value> for AddOneMap
 where
     Value: Add<B1>,
 {
     type Output = Add1<Value>;
 }
 
-/// A [Functor] that decreases input [typenum] integer by one.
-pub struct SubOneFunctor;
+/// A [Map] that decreases input [typenum] integer by one.
+pub struct SubOneMap;
 
-impl<Value> Functor<Value> for SubOneFunctor
+impl<Value> Map<Value> for SubOneMap
 where
     Value: Sub<B1>,
 {

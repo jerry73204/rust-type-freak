@@ -1,74 +1,74 @@
 use super::{LCons, LFoldOp, LFoldOpOutput, TList};
 use crate::{
     boolean::{AndComposePredicate, Boolean, OrComposePredicate},
-    functional::{ApplyFunctor, Functor},
-    numeric::{MaxComposeFunctor, MinComposeFunctor, ProdComposeFunctor, SumComposeFunctor},
+    functional::{ApplyMap, Map},
+    numeric::{MaxComposeMap, MinComposeMap, ProdComposeMap, SumComposeMap},
 };
 
 // reduce max
 
-/// A [Functor] that takes the maximum value among a [TList].
-pub struct LReduceMaxComposeFunctor {}
+/// A [Map] that takes the maximum value among a [TList].
+pub struct LReduceMaxComposeMap {}
 
-pub type LReduceMax<List> = ApplyFunctor<LReduceMaxComposeFunctor, List>;
+pub type LReduceMax<List> = ApplyMap<LReduceMaxComposeMap, List>;
 
-impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceMaxComposeFunctor
+impl<Head, Tail> Map<LCons<Head, Tail>> for LReduceMaxComposeMap
 where
-    Tail: TList + LFoldOp<Head, MaxComposeFunctor>,
+    Tail: TList + LFoldOp<Head, MaxComposeMap>,
 {
-    type Output = LFoldOpOutput<Tail, Head, MaxComposeFunctor>;
+    type Output = LFoldOpOutput<Tail, Head, MaxComposeMap>;
 }
 
 // reduce min
 
-/// A [Functor] that takes the minimum value among a [TList].
-pub struct LReduceMinComposeFunctor {}
+/// A [Map] that takes the minimum value among a [TList].
+pub struct LReduceMinComposeMap {}
 
-pub type LReduceMin<List> = ApplyFunctor<LReduceMinComposeFunctor, List>;
+pub type LReduceMin<List> = ApplyMap<LReduceMinComposeMap, List>;
 
-impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceMinComposeFunctor
+impl<Head, Tail> Map<LCons<Head, Tail>> for LReduceMinComposeMap
 where
-    Tail: TList + LFoldOp<Head, MinComposeFunctor>,
+    Tail: TList + LFoldOp<Head, MinComposeMap>,
 {
-    type Output = LFoldOpOutput<Tail, Head, MinComposeFunctor>;
+    type Output = LFoldOpOutput<Tail, Head, MinComposeMap>;
 }
 
 // reduce sum
 
-/// A [Functor] that takes the summation of values in [TList].
-pub struct LReduceSumComposeFunctor {}
+/// A [Map] that takes the summation of values in [TList].
+pub struct LReduceSumComposeMap {}
 
-pub type LReduceSum<List> = ApplyFunctor<LReduceSumComposeFunctor, List>;
+pub type LReduceSum<List> = ApplyMap<LReduceSumComposeMap, List>;
 
-impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceSumComposeFunctor
+impl<Head, Tail> Map<LCons<Head, Tail>> for LReduceSumComposeMap
 where
-    Tail: TList + LFoldOp<Head, SumComposeFunctor>,
+    Tail: TList + LFoldOp<Head, SumComposeMap>,
 {
-    type Output = LFoldOpOutput<Tail, Head, SumComposeFunctor>;
+    type Output = LFoldOpOutput<Tail, Head, SumComposeMap>;
 }
 
 // reduce product
 
-/// A [Functor] that takes the product of values in [TList].
-pub struct LReduceProdComposeFunctor {}
+/// A [Map] that takes the product of values in [TList].
+pub struct LReduceProdComposeMap {}
 
-pub type LReduceProd<List> = ApplyFunctor<LReduceProdComposeFunctor, List>;
+pub type LReduceProd<List> = ApplyMap<LReduceProdComposeMap, List>;
 
-impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceProdComposeFunctor
+impl<Head, Tail> Map<LCons<Head, Tail>> for LReduceProdComposeMap
 where
-    Tail: TList + LFoldOp<Head, ProdComposeFunctor>,
+    Tail: TList + LFoldOp<Head, ProdComposeMap>,
 {
-    type Output = LFoldOpOutput<Tail, Head, ProdComposeFunctor>;
+    type Output = LFoldOpOutput<Tail, Head, ProdComposeMap>;
 }
 
 // reduce all
 
-/// A [Functor] that returns [True](crate::boolean::True) if all values in [TList] are [True](crate::boolean::True).
-pub struct LReduceAllFunctor {}
+/// A [Map] that returns [True](crate::boolean::True) if all values in [TList] are [True](crate::boolean::True).
+pub struct LReduceAllMap {}
 
-pub type LReduceAll<List> = ApplyFunctor<LReduceAllFunctor, List>;
+pub type LReduceAll<List> = ApplyMap<LReduceAllMap, List>;
 
-impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceAllFunctor
+impl<Head, Tail> Map<LCons<Head, Tail>> for LReduceAllMap
 where
     Tail: TList + LFoldOp<Head, AndComposePredicate>,
     LFoldOpOutput<Tail, Head, AndComposePredicate>: Boolean,
@@ -78,12 +78,12 @@ where
 
 // reduce product
 
-/// A [Functor] that returns [True](crate::boolean::True) if any value in [TList] is [True](crate::boolean::True).
-pub struct LReduceAnyFunctor {}
+/// A [Map] that returns [True](crate::boolean::True) if any value in [TList] is [True](crate::boolean::True).
+pub struct LReduceAnyMap {}
 
-pub type LReduceAny<List> = ApplyFunctor<LReduceAnyFunctor, List>;
+pub type LReduceAny<List> = ApplyMap<LReduceAnyMap, List>;
 
-impl<Head, Tail> Functor<LCons<Head, Tail>> for LReduceAnyFunctor
+impl<Head, Tail> Map<LCons<Head, Tail>> for LReduceAnyMap
 where
     Tail: TList + LFoldOp<Head, OrComposePredicate>,
     LFoldOpOutput<Tail, Head, OrComposePredicate>: Boolean,

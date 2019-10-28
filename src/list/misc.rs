@@ -1,11 +1,10 @@
 use super::{
-    LCons, LFoldOp, LFoldOpOutput, LNil, LPrependComposeFunctor, LRemoveAtOp, LRemoveAtOpOutput,
-    TList,
+    LCons, LFoldOp, LFoldOpOutput, LNil, LPrependComposeMap, LRemoveAtOp, LRemoveAtOpOutput, TList,
 };
 use crate::{
     control::IfEqual,
     counter::{Counter, Current, Next},
-    functional::{ApplyFunctor, Functor},
+    functional::{ApplyMap, Map},
 };
 use std::marker::PhantomData;
 use std::ops::Add;
@@ -37,12 +36,12 @@ where
 
 pub type LLengthOpOutput<List> = <List as LLengthOp>::Output;
 
-/// A [Functor] that returns the length of [TList].
-pub struct LLengthFunctor;
+/// A [Map] that returns the length of [TList].
+pub struct LLengthMap;
 
-pub type LLength<List> = ApplyFunctor<LLengthFunctor, List>;
+pub type LLength<List> = ApplyMap<LLengthMap, List>;
 
-impl<List> Functor<List> for LLengthFunctor
+impl<List> Map<List> for LLengthMap
 where
     List: TList + LLengthOp,
 {
@@ -83,14 +82,14 @@ where
     type Output = LSetEqualOpOutput<LRemoveAtOpOutput<Self, RHead, Index>, RTail, IRemain>;
 }
 
-/// A [Functor] that compares if `Lhs` and `Rhs` [TList]s have same set of values.
-pub struct LSetEqualFunctor<Rhs, Indexes> {
+/// A [Map] that compares if `Lhs` and `Rhs` [TList]s have same set of values.
+pub struct LSetEqualMap<Rhs, Indexes> {
     _phantom: PhantomData<(Rhs, Indexes)>,
 }
 
-pub type LSetEqual<Lhs, Rhs, Indexes> = ApplyFunctor<LSetEqualFunctor<Rhs, Indexes>, Lhs>;
+pub type LSetEqual<Lhs, Rhs, Indexes> = ApplyMap<LSetEqualMap<Rhs, Indexes>, Lhs>;
 
-impl<Lhs, Rhs, Indexes> Functor<Lhs> for LSetEqualFunctor<Rhs, Indexes>
+impl<Lhs, Rhs, Indexes> Map<Lhs> for LSetEqualMap<Rhs, Indexes>
 where
     Lhs: TList + LSetEqualOp<Rhs, Indexes>,
     Rhs: TList,
@@ -127,17 +126,17 @@ where
 
 pub type LConcatOpOutput<Lhs, Rhs> = <Lhs as LConcatOp<Rhs>>::Output;
 
-/// A [Functor] that concatenates input and `Rhs` [TList]s.
-pub struct LConcatFunctor<Rhs>
+/// A [Map] that concatenates input and `Rhs` [TList]s.
+pub struct LConcatMap<Rhs>
 where
     Rhs: TList,
 {
     _phantom: PhantomData<Rhs>,
 }
 
-pub type LConcat<Lhs, Rhs> = ApplyFunctor<LConcatFunctor<Rhs>, Lhs>;
+pub type LConcat<Lhs, Rhs> = ApplyMap<LConcatMap<Rhs>, Lhs>;
 
-impl<Lhs, Rhs> Functor<Lhs> for LConcatFunctor<Rhs>
+impl<Lhs, Rhs> Map<Lhs> for LConcatMap<Rhs>
 where
     Lhs: TList + LConcatOp<Rhs>,
     Rhs: TList,
@@ -145,12 +144,12 @@ where
     type Output = LConcatOpOutput<Lhs, Rhs>;
 }
 
-/// A [Functor] that concatenates the input tuple `(Lhs, Rhs)` of [TList]s.
-pub struct LConcatComposeFunctor;
+/// A [Map] that concatenates the input tuple `(Lhs, Rhs)` of [TList]s.
+pub struct LConcatComposeMap;
 
-pub type LConcatCompose<Lhs, Rhs> = ApplyFunctor<LConcatComposeFunctor, (Lhs, Rhs)>;
+pub type LConcatCompose<Lhs, Rhs> = ApplyMap<LConcatComposeMap, (Lhs, Rhs)>;
 
-impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for LConcatComposeFunctor
+impl<Lhs, Rhs> Map<(Lhs, Rhs)> for LConcatComposeMap
 where
     Lhs: TList + LConcatOp<Rhs>,
     Rhs: TList,
@@ -194,17 +193,17 @@ where
     type LatterOutput = LSplitOpLatterOutput<Tail, Target, Index>;
 }
 
-/// A [Functor] that splits input [TList] at `Target`.
-pub struct LSplitFunctor<Target, Index>
+/// A [Map] that splits input [TList] at `Target`.
+pub struct LSplitMap<Target, Index>
 where
     Index: Counter,
 {
     _phantom: PhantomData<(Target, Index)>,
 }
 
-pub type LSplit<List, Target, Index> = ApplyFunctor<LSplitFunctor<Target, Index>, List>;
+pub type LSplit<List, Target, Index> = ApplyMap<LSplitMap<Target, Index>, List>;
 
-impl<List, Target, Index> Functor<List> for LSplitFunctor<Target, Index>
+impl<List, Target, Index> Map<List> for LSplitMap<Target, Index>
 where
     List: TList + LSplitOp<Target, Index>,
     Index: Counter,
@@ -217,18 +216,18 @@ where
 
 // reverse
 
-/// A [Functor] that reverses a [TList].
-pub struct LReverseFunctor {}
+/// A [Map] that reverses a [TList].
+pub struct LReverseMap {}
 
-impl<List> Functor<List> for LReverseFunctor
+impl<List> Map<List> for LReverseMap
 where
-    List: LFoldOp<LNil, LPrependComposeFunctor>,
-    LFoldOpOutput<List, LNil, LPrependComposeFunctor>: TList,
+    List: LFoldOp<LNil, LPrependComposeMap>,
+    LFoldOpOutput<List, LNil, LPrependComposeMap>: TList,
 {
-    type Output = LFoldOpOutput<List, LNil, LPrependComposeFunctor>;
+    type Output = LFoldOpOutput<List, LNil, LPrependComposeMap>;
 }
 
-pub type LReverse<List> = ApplyFunctor<LReverseFunctor, List>;
+pub type LReverse<List> = ApplyMap<LReverseMap, List>;
 
 // into vector of integers
 
@@ -269,8 +268,8 @@ where
 
 // permute
 
-/// A [Functor] that permutes the input [TList] to the order of `Targets`.
-pub struct LPermuteFunctor<Targets, Indexes>
+/// A [Map] that permutes the input [TList] to the order of `Targets`.
+pub struct LPermuteMap<Targets, Indexes>
 where
     Targets: TList,
     Indexes: TList,
@@ -278,9 +277,9 @@ where
     _phantom: PhantomData<(Targets, Indexes)>,
 }
 
-pub type LPermute<List, Targets, Indexes> = ApplyFunctor<LPermuteFunctor<Targets, Indexes>, List>;
+pub type LPermute<List, Targets, Indexes> = ApplyMap<LPermuteMap<Targets, Indexes>, List>;
 
-impl<List, Targets, Indexes> Functor<List> for LPermuteFunctor<Targets, Indexes>
+impl<List, Targets, Indexes> Map<List> for LPermuteMap<Targets, Indexes>
 where
     List: TList
         + LLengthOp

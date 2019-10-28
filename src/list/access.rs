@@ -1,7 +1,7 @@
-use super::{marker::NonEmptyTList, LCons, LNil, LReverse, LReverseFunctor, TList};
+use super::{marker::NonEmptyTList, LCons, LNil, LReverse, LReverseMap, TList};
 use crate::{
     counter::{Counter, Current, Next},
-    functional::{ApplyFunctor, Functor},
+    functional::{ApplyMap, Map},
 };
 use std::{
     marker::PhantomData,
@@ -43,17 +43,17 @@ where
     type Output = Add1<LIndexOfOpOutput<Tail, Target, Index>>;
 }
 
-/// A [Functor] that returns the index of `Target` in [TList].
-pub struct LIndexOfFunctor<Target, Index>
+/// A [Map] that returns the index of `Target` in [TList].
+pub struct LIndexOfMap<Target, Index>
 where
     Index: Counter,
 {
     _phantom: PhantomData<(Target, Index)>,
 }
 
-pub type LIndexOf<List, Target, Index> = ApplyFunctor<LIndexOfFunctor<Target, Index>, List>;
+pub type LIndexOf<List, Target, Index> = ApplyMap<LIndexOfMap<Target, Index>, List>;
 
-impl<List, Target, Index> Functor<List> for LIndexOfFunctor<Target, Index>
+impl<List, Target, Index> Map<List> for LIndexOfMap<Target, Index>
 where
     List: TList + LIndexOfOp<Target, Index>,
     Index: Counter,
@@ -100,8 +100,8 @@ where
         LCons<LIndexOfOpOutput<Self, Target, Index>, LIndexOfManyOpOutput<Self, TRemain, IRemain>>;
 }
 
-/// A [Functor] that returns indexes of multiple `Targets`.
-pub struct LIndexOfManyFunctor<Targets, Indexes>
+/// A [Map] that returns indexes of multiple `Targets`.
+pub struct LIndexOfManyMap<Targets, Indexes>
 where
     Targets: TList,
     Indexes: TList,
@@ -109,10 +109,9 @@ where
     _phantom: PhantomData<(Targets, Indexes)>,
 }
 
-pub type LIndexOfMany<List, Targets, Indexes> =
-    ApplyFunctor<LIndexOfManyFunctor<Targets, Indexes>, List>;
+pub type LIndexOfMany<List, Targets, Indexes> = ApplyMap<LIndexOfManyMap<Targets, Indexes>, List>;
 
-impl<List, Targets, Indexes> Functor<List> for LIndexOfManyFunctor<Targets, Indexes>
+impl<List, Targets, Indexes> Map<List> for LIndexOfManyMap<Targets, Indexes>
 where
     List: TList + LIndexOfManyOp<Targets, Indexes>,
     Targets: TList,
@@ -123,39 +122,39 @@ where
 
 // get by position
 
-/// A [Functor] that gets element at `Position` in input [TList].
-pub struct LGetByPositionFunctor<Position>
+/// A [Map] that gets element at `Position` in input [TList].
+pub struct LGetByPositionMap<Position>
 where
     Position: Unsigned,
 {
     _phantom: PhantomData<Position>,
 }
 
-pub type LGetByPosition<List, Position> = ApplyFunctor<LGetByPositionFunctor<Position>, List>;
+pub type LGetByPosition<List, Position> = ApplyMap<LGetByPositionMap<Position>, List>;
 
-impl<Head, Tail> Functor<LCons<Head, Tail>> for LGetByPositionFunctor<U0>
+impl<Head, Tail> Map<LCons<Head, Tail>> for LGetByPositionMap<U0>
 where
     Tail: TList,
 {
     type Output = Head;
 }
 
-impl<Head, Tail, U, B> Functor<LCons<Head, Tail>> for LGetByPositionFunctor<UInt<U, B>>
+impl<Head, Tail, U, B> Map<LCons<Head, Tail>> for LGetByPositionMap<UInt<U, B>>
 where
     Tail: TList,
     U: Unsigned,
     B: Bit,
     UInt<U, B>: Sub<B1>,
     Sub1<UInt<U, B>>: Unsigned,
-    LGetByPositionFunctor<Sub1<UInt<U, B>>>: Functor<Tail>,
+    LGetByPositionMap<Sub1<UInt<U, B>>>: Map<Tail>,
 {
     type Output = LGetByPosition<Tail, Sub1<UInt<U, B>>>;
 }
 
 // get by backward position
 
-/// A [Functor] that gets element at `Position` in input [TList].
-pub struct LGetByBackwardPositionFunctor<Position>
+/// A [Map] that gets element at `Position` in input [TList].
+pub struct LGetByBackwardPositionMap<Position>
 where
     Position: Unsigned + NonZero,
 {
@@ -163,15 +162,15 @@ where
 }
 
 pub type LGetByBackwardPosition<List, Position> =
-    ApplyFunctor<LGetByBackwardPositionFunctor<Position>, List>;
+    ApplyMap<LGetByBackwardPositionMap<Position>, List>;
 
-impl<List, Position> Functor<List> for LGetByBackwardPositionFunctor<Position>
+impl<List, Position> Map<List> for LGetByBackwardPositionMap<Position>
 where
     List: TList,
     Position: Unsigned + NonZero + Sub<B1>,
     Sub1<Position>: Unsigned,
-    LReverseFunctor: Functor<List>,
-    LGetByPositionFunctor<Sub1<Position>>: Functor<LReverse<List>>,
+    LReverseMap: Map<List>,
+    LGetByPositionMap<Sub1<Position>>: Map<LReverse<List>>,
 {
     type Output = LGetByPosition<LReverse<List>, Sub1<Position>>;
 }

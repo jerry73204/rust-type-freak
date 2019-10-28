@@ -1,28 +1,28 @@
 use super::{KVCons, KVList};
 use crate::{
     counter::{Counter, Current, Next},
-    functional::{ApplyFunctor, Functor},
+    functional::{ApplyMap, Map},
     list::{
-        LGetByBackwardPosition, LGetByBackwardPositionFunctor, LGetByPosition,
-        LGetByPositionFunctor, LIndexOfManyOp, LIndexOfManyOpOutput, LIndexOfOp, LIndexOfOpOutput,
-        LUnzip, LUnzipFunctor, LUnzipOp, LUnzipOpFormerOutput, TList,
+        LGetByBackwardPosition, LGetByBackwardPositionMap, LGetByPosition, LGetByPositionMap,
+        LIndexOfManyOp, LIndexOfManyOpOutput, LIndexOfOp, LIndexOfOpOutput, LUnzip, LUnzipMap,
+        LUnzipOp, LUnzipOpFormerOutput, TList,
     },
-    tuple::{FirstOf, FirstOfFunctor, SecondOf, SecondOfFunctor},
+    tuple::{FirstOf, FirstOfMap, SecondOf, SecondOfMap},
 };
 use std::marker::PhantomData;
 use typenum::{NonZero, Unsigned};
 
-/// A functor that gets index of `Target` in [KVList].
-pub struct KVIndexOfFunctor<Target, Index>
+/// A map that gets index of `Target` in [KVList].
+pub struct KVIndexOfMap<Target, Index>
 where
     Index: Counter,
 {
     _phantom: PhantomData<(Target, Index)>,
 }
 
-pub type KVIndexOf<List, Target, Index> = ApplyFunctor<KVIndexOfFunctor<Target, Index>, List>;
+pub type KVIndexOf<List, Target, Index> = ApplyMap<KVIndexOfMap<Target, Index>, List>;
 
-impl<List, Target, Index> Functor<List> for KVIndexOfFunctor<Target, Index>
+impl<List, Target, Index> Map<List> for KVIndexOfMap<Target, Index>
 where
     List: KVList + LUnzipOp,
     Index: Counter,
@@ -34,12 +34,12 @@ where
 
 // index of many
 
-/// A functor that gets multiple indexes of `Targets` in [KVList].
-pub struct KVIndexOfManyFunctor<Targets, Indexes> {
+/// A map that gets multiple indexes of `Targets` in [KVList].
+pub struct KVIndexOfManyMap<Targets, Indexes> {
     _phantom: PhantomData<(Targets, Indexes)>,
 }
 
-impl<List, Targets, Indexes> Functor<List> for KVIndexOfManyFunctor<Targets, Indexes>
+impl<List, Targets, Indexes> Map<List> for KVIndexOfManyMap<Targets, Indexes>
 where
     List: KVList + LUnzipOp,
     Targets: TList,
@@ -50,55 +50,52 @@ where
     type Output = LIndexOfManyOpOutput<LUnzipOpFormerOutput<List>, Targets, Indexes>;
 }
 
-pub type KVIndexOfMany<List, Targets, Indexes> =
-    ApplyFunctor<KVIndexOfManyFunctor<Targets, Indexes>, List>;
+pub type KVIndexOfMany<List, Targets, Indexes> = ApplyMap<KVIndexOfManyMap<Targets, Indexes>, List>;
 
 // get key-value pair
 
-/// A functor that gets key-value pair from [KVList].
-pub struct KVGetKeyValueAtFunctor<Target, Index> {
+/// A map that gets key-value pair from [KVList].
+pub struct KVGetKeyValueAtMap<Target, Index> {
     _phantom: PhantomData<(Target, Index)>,
 }
 
-pub type KVGetKeyValueAt<List, Target, Index> =
-    ApplyFunctor<KVGetKeyValueAtFunctor<Target, Index>, List>;
+pub type KVGetKeyValueAt<List, Target, Index> = ApplyMap<KVGetKeyValueAtMap<Target, Index>, List>;
 
-impl<Target, Value, Tail> Functor<KVCons<Target, Value, Tail>>
-    for KVGetKeyValueAtFunctor<Target, Current>
+impl<Target, Value, Tail> Map<KVCons<Target, Value, Tail>> for KVGetKeyValueAtMap<Target, Current>
 where
     Tail: KVList,
 {
     type Output = (Target, Value);
 }
 
-impl<NonTarget, Value, Tail, Target, Index> Functor<KVCons<NonTarget, Value, Tail>>
-    for KVGetKeyValueAtFunctor<Target, Next<Index>>
+impl<NonTarget, Value, Tail, Target, Index> Map<KVCons<NonTarget, Value, Tail>>
+    for KVGetKeyValueAtMap<Target, Next<Index>>
 where
     Tail: KVList,
     Index: Counter,
-    KVGetKeyValueAtFunctor<Target, Index>: Functor<Tail>,
+    KVGetKeyValueAtMap<Target, Index>: Map<Tail>,
 {
     type Output = KVGetKeyValueAt<Tail, Target, Index>;
 }
 
 // get value of key
 
-/// A functor that gets the value at `Target` in [KVList].
-pub struct KVGetValueAtFunctor<Target, Index>
+/// A map that gets the value at `Target` in [KVList].
+pub struct KVGetValueAtMap<Target, Index>
 where
     Index: Counter,
 {
     _phantom: PhantomData<(Target, Index)>,
 }
 
-pub type KVGetValueAt<List, Target, Index> = ApplyFunctor<KVGetValueAtFunctor<Target, Index>, List>;
+pub type KVGetValueAt<List, Target, Index> = ApplyMap<KVGetValueAtMap<Target, Index>, List>;
 
-impl<List, Target, Index> Functor<List> for KVGetValueAtFunctor<Target, Index>
+impl<List, Target, Index> Map<List> for KVGetValueAtMap<Target, Index>
 where
     List: KVList,
     Index: Counter,
-    KVGetKeyValueAtFunctor<Target, Index>: Functor<List>,
-    SecondOfFunctor: Functor<KVGetKeyValueAt<List, Target, Index>>,
+    KVGetKeyValueAtMap<Target, Index>: Map<List>,
+    SecondOfMap: Map<KVGetKeyValueAt<List, Target, Index>>,
 {
     type Output = SecondOf<KVGetKeyValueAt<List, Target, Index>>;
 }
@@ -133,8 +130,8 @@ where
     type Output = KVCons<NonTarget, Value, KVSetValueAtOpOutput<Tail, NewValue, Target, Index>>;
 }
 
-/// A [Functor] that sets the value at `Target` in [KVList].
-pub struct KVSetValueAtFunctor<NewValue, Target, Index>
+/// A [Map] that sets the value at `Target` in [KVList].
+pub struct KVSetValueAtMap<NewValue, Target, Index>
 where
     Index: Counter,
 {
@@ -142,9 +139,9 @@ where
 }
 
 pub type KVSetValueAt<List, NewValue, Target, Index> =
-    ApplyFunctor<KVSetValueAtFunctor<NewValue, Target, Index>, List>;
+    ApplyMap<KVSetValueAtMap<NewValue, Target, Index>, List>;
 
-impl<List, NewValue, Target, Index> Functor<List> for KVSetValueAtFunctor<NewValue, Target, Index>
+impl<List, NewValue, Target, Index> Map<List> for KVSetValueAtMap<NewValue, Target, Index>
 where
     List: KVList + KVSetValueAtOp<NewValue, Target, Index>,
     Index: Counter,
@@ -152,31 +149,31 @@ where
     type Output = KVSetValueAtOpOutput<List, NewValue, Target, Index>;
 }
 
-/// A [Functor] that extracts all keys from [KVList].
-pub struct KVKeysFunctor;
+/// A [Map] that extracts all keys from [KVList].
+pub struct KVKeysMap;
 
-pub type KVKeys<List> = ApplyFunctor<KVKeysFunctor, List>;
+pub type KVKeys<List> = ApplyMap<KVKeysMap, List>;
 
-impl<List> Functor<List> for KVKeysFunctor
+impl<List> Map<List> for KVKeysMap
 where
     List: KVList,
-    LUnzipFunctor: Functor<List>,
-    FirstOfFunctor: Functor<LUnzip<List>>,
+    LUnzipMap: Map<List>,
+    FirstOfMap: Map<LUnzip<List>>,
     FirstOf<LUnzip<List>>: TList,
 {
     type Output = FirstOf<LUnzip<List>>;
 }
 
-/// A [Functor] that extracts all values from [KVList].
-pub struct KVValuesFunctor;
+/// A [Map] that extracts all values from [KVList].
+pub struct KVValuesMap;
 
-pub type KVValues<List> = ApplyFunctor<KVValuesFunctor, List>;
+pub type KVValues<List> = ApplyMap<KVValuesMap, List>;
 
-impl<List> Functor<List> for KVValuesFunctor
+impl<List> Map<List> for KVValuesMap
 where
     List: KVList,
-    LUnzipFunctor: Functor<List>,
-    SecondOfFunctor: Functor<LUnzip<List>>,
+    LUnzipMap: Map<List>,
+    SecondOfMap: Map<LUnzip<List>>,
     SecondOf<LUnzip<List>>: TList,
 {
     type Output = SecondOf<LUnzip<List>>;
@@ -184,8 +181,8 @@ where
 
 // get key-value pair by position
 
-/// A [Functor] that gets key-value pair at `Position` in input [KVList].
-pub struct KVGetKeyValueByPositionFunctor<Position>
+/// A [Map] that gets key-value pair at `Position` in input [KVList].
+pub struct KVGetKeyValueByPositionMap<Position>
 where
     Position: Unsigned,
 {
@@ -193,44 +190,43 @@ where
 }
 
 pub type KVGetKeyValueByPosition<List, Position> =
-    ApplyFunctor<KVGetKeyValueByPositionFunctor<Position>, List>;
+    ApplyMap<KVGetKeyValueByPositionMap<Position>, List>;
 
-impl<List, Position> Functor<List> for KVGetKeyValueByPositionFunctor<Position>
+impl<List, Position> Map<List> for KVGetKeyValueByPositionMap<Position>
 where
     List: KVList,
     Position: Unsigned,
-    LGetByPositionFunctor<Position>: Functor<List>,
+    LGetByPositionMap<Position>: Map<List>,
 {
     type Output = LGetByPosition<List, Position>;
 }
 
 // get value by position
 
-/// A [Functor] that gets value at `Position` in input [KVList].
-pub struct KVGetValueByPositionFunctor<Position>
+/// A [Map] that gets value at `Position` in input [KVList].
+pub struct KVGetValueByPositionMap<Position>
 where
     Position: Unsigned,
 {
     _phantom: PhantomData<Position>,
 }
 
-pub type KVGetValueByPosition<List, Position> =
-    ApplyFunctor<KVGetValueByPositionFunctor<Position>, List>;
+pub type KVGetValueByPosition<List, Position> = ApplyMap<KVGetValueByPositionMap<Position>, List>;
 
-impl<List, Position> Functor<List> for KVGetValueByPositionFunctor<Position>
+impl<List, Position> Map<List> for KVGetValueByPositionMap<Position>
 where
     List: KVList,
     Position: Unsigned,
-    KVGetKeyValueByPositionFunctor<Position>: Functor<List>,
-    SecondOfFunctor: Functor<KVGetKeyValueByPosition<List, Position>>,
+    KVGetKeyValueByPositionMap<Position>: Map<List>,
+    SecondOfMap: Map<KVGetKeyValueByPosition<List, Position>>,
 {
     type Output = SecondOf<KVGetKeyValueByPosition<List, Position>>;
 }
 
 // get key-value pair by backward position
 
-/// A [Functor] that gets key-value pair at `Position` from the end of input [KVList].
-pub struct KVGetKeyValueByBackwardPositionFunctor<Position>
+/// A [Map] that gets key-value pair at `Position` from the end of input [KVList].
+pub struct KVGetKeyValueByBackwardPositionMap<Position>
 where
     Position: Unsigned + NonZero,
 {
@@ -238,21 +234,21 @@ where
 }
 
 pub type KVGetKeyValueByBackwardPosition<List, Position> =
-    ApplyFunctor<KVGetKeyValueByBackwardPositionFunctor<Position>, List>;
+    ApplyMap<KVGetKeyValueByBackwardPositionMap<Position>, List>;
 
-impl<List, Position> Functor<List> for KVGetKeyValueByBackwardPositionFunctor<Position>
+impl<List, Position> Map<List> for KVGetKeyValueByBackwardPositionMap<Position>
 where
     List: KVList,
     Position: Unsigned + NonZero,
-    LGetByBackwardPositionFunctor<Position>: Functor<List>,
+    LGetByBackwardPositionMap<Position>: Map<List>,
 {
     type Output = LGetByBackwardPosition<List, Position>;
 }
 
 // get value by backward position
 
-/// A [Functor] that gets value at `Position` from the end of input [KVList].
-pub struct KVGetValueByBackwardPositionFunctor<Position>
+/// A [Map] that gets value at `Position` from the end of input [KVList].
+pub struct KVGetValueByBackwardPositionMap<Position>
 where
     Position: Unsigned + NonZero,
 {
@@ -260,14 +256,14 @@ where
 }
 
 pub type KVGetValueByBackwardPosition<List, Position> =
-    ApplyFunctor<KVGetValueByBackwardPositionFunctor<Position>, List>;
+    ApplyMap<KVGetValueByBackwardPositionMap<Position>, List>;
 
-impl<List, Position> Functor<List> for KVGetValueByBackwardPositionFunctor<Position>
+impl<List, Position> Map<List> for KVGetValueByBackwardPositionMap<Position>
 where
     List: KVList,
     Position: Unsigned + NonZero,
-    KVGetKeyValueByBackwardPositionFunctor<Position>: Functor<List>,
-    SecondOfFunctor: Functor<KVGetKeyValueByBackwardPosition<List, Position>>,
+    KVGetKeyValueByBackwardPositionMap<Position>: Map<List>,
+    SecondOfMap: Map<KVGetKeyValueByBackwardPosition<List, Position>>,
 {
     type Output = SecondOf<KVGetKeyValueByBackwardPosition<List, Position>>;
 }

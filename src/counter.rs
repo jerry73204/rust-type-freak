@@ -73,7 +73,7 @@
 //! }
 //! ```
 
-use crate::functional::{ApplyFunctor, Functor};
+use crate::functional::{ApplyMap, Map};
 use std::{marker::PhantomData, ops::Add};
 use typenum::{Sum, Unsigned, U0, U1};
 
@@ -136,12 +136,12 @@ where
 
 pub type CountOpOutput<Cnt> = <Cnt as CountOp>::Output;
 
-/// A [Functor] that counts the number of steps of [Counter].
-pub struct CountFunctor;
+/// A [Map] that counts the number of steps of [Counter].
+pub struct CountMap;
 
-pub type Count<Input> = ApplyFunctor<CountFunctor, Input>;
+pub type Count<Input> = ApplyMap<CountMap, Input>;
 
-impl<Input> Functor<Input> for CountFunctor
+impl<Input> Map<Input> for CountMap
 where
     Input: Counter + CountOp,
 {

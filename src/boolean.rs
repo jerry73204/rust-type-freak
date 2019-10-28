@@ -25,7 +25,7 @@
 //! }
 //! ```
 
-use crate::functional::{ApplyFunctor, Functor, Predicate};
+use crate::functional::{ApplyMap, Map, Predicate};
 use std::marker::PhantomData;
 use typenum::{False, True};
 // boolean type def
@@ -53,43 +53,43 @@ where
     _phantom: PhantomData<Rhs>,
 }
 
-pub type And<Lhs, Rhs> = ApplyFunctor<AndPredicate<Rhs>, Lhs>;
+pub type And<Lhs, Rhs> = ApplyMap<AndPredicate<Rhs>, Lhs>;
 
 impl<Lhs, Rhs> Predicate<Lhs> for AndPredicate<Rhs>
 where
     Lhs: Boolean,
     Rhs: Boolean,
-    AndPredicate<Rhs>: Functor<Lhs>,
+    AndPredicate<Rhs>: Map<Lhs>,
     And<Lhs, Rhs>: Boolean,
 {
 }
 
-impl Functor<True> for AndPredicate<True> {
+impl Map<True> for AndPredicate<True> {
     type Output = True;
 }
 
-impl Functor<False> for AndPredicate<True> {
+impl Map<False> for AndPredicate<True> {
     type Output = False;
 }
 
-impl Functor<True> for AndPredicate<False> {
+impl Map<True> for AndPredicate<False> {
     type Output = False;
 }
 
-impl Functor<False> for AndPredicate<False> {
+impl Map<False> for AndPredicate<False> {
     type Output = False;
 }
 
 /// A [Predicate] that meets input pair `(Lhs, Rhs)` with [Boolean] type.
 pub struct AndComposePredicate;
 
-pub type AndCompose<Lhs, Rhs> = ApplyFunctor<AndComposePredicate, (Lhs, Rhs)>;
+pub type AndCompose<Lhs, Rhs> = ApplyMap<AndComposePredicate, (Lhs, Rhs)>;
 
-impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for AndComposePredicate
+impl<Lhs, Rhs> Map<(Lhs, Rhs)> for AndComposePredicate
 where
     Lhs: Boolean,
     Rhs: Boolean,
-    AndPredicate<Rhs>: Functor<Lhs>,
+    AndPredicate<Rhs>: Map<Lhs>,
 {
     type Output = And<Lhs, Rhs>;
 }
@@ -104,43 +104,43 @@ where
     _phantom: PhantomData<Rhs>,
 }
 
-pub type Or<Lhs, Rhs> = ApplyFunctor<OrPredicate<Rhs>, Lhs>;
+pub type Or<Lhs, Rhs> = ApplyMap<OrPredicate<Rhs>, Lhs>;
 
 impl<Lhs, Rhs> Predicate<Lhs> for OrPredicate<Rhs>
 where
     Lhs: Boolean,
     Rhs: Boolean,
-    OrPredicate<Rhs>: Functor<Lhs>,
+    OrPredicate<Rhs>: Map<Lhs>,
     Or<Lhs, Rhs>: Boolean,
 {
 }
 
-impl Functor<True> for OrPredicate<True> {
+impl Map<True> for OrPredicate<True> {
     type Output = True;
 }
 
-impl Functor<False> for OrPredicate<True> {
+impl Map<False> for OrPredicate<True> {
     type Output = True;
 }
 
-impl Functor<True> for OrPredicate<False> {
+impl Map<True> for OrPredicate<False> {
     type Output = True;
 }
 
-impl Functor<False> for OrPredicate<False> {
+impl Map<False> for OrPredicate<False> {
     type Output = False;
 }
 
 /// A [Predicate] that joins input pair `(Lhs, Rhs)` with [Boolean] type.
 pub struct OrComposePredicate;
 
-pub type OrCompose<Lhs, Rhs> = ApplyFunctor<OrComposePredicate, (Lhs, Rhs)>;
+pub type OrCompose<Lhs, Rhs> = ApplyMap<OrComposePredicate, (Lhs, Rhs)>;
 
-impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for OrComposePredicate
+impl<Lhs, Rhs> Map<(Lhs, Rhs)> for OrComposePredicate
 where
     Lhs: Boolean,
     Rhs: Boolean,
-    OrPredicate<Rhs>: Functor<Lhs>,
+    OrPredicate<Rhs>: Map<Lhs>,
 {
     type Output = Or<Lhs, Rhs>;
 }
@@ -150,21 +150,21 @@ where
 /// A [Predicate] that inverts [Boolean] types.
 pub struct NotPredicate;
 
-pub type Not<Input> = ApplyFunctor<NotPredicate, Input>;
+pub type Not<Input> = ApplyMap<NotPredicate, Input>;
 
 impl<Input> Predicate<Input> for NotPredicate
 where
     Input: Boolean,
-    NotPredicate: Functor<Input>,
+    NotPredicate: Map<Input>,
     Not<Input>: Boolean,
 {
 }
 
-impl Functor<True> for NotPredicate {
+impl Map<True> for NotPredicate {
     type Output = False;
 }
 
-impl Functor<False> for NotPredicate {
+impl Map<False> for NotPredicate {
     type Output = True;
 }
 
@@ -178,43 +178,43 @@ where
     _phantom: PhantomData<Rhs>,
 }
 
-pub type Xor<Lhs, Rhs> = ApplyFunctor<XorPredicate<Rhs>, Lhs>;
+pub type Xor<Lhs, Rhs> = ApplyMap<XorPredicate<Rhs>, Lhs>;
 
 impl<Lhs, Rhs> Predicate<Lhs> for XorPredicate<Rhs>
 where
     Lhs: Boolean,
     Rhs: Boolean,
-    XorPredicate<Rhs>: Functor<Lhs>,
+    XorPredicate<Rhs>: Map<Lhs>,
     Xor<Lhs, Rhs>: Boolean,
 {
 }
 
-impl Functor<True> for XorPredicate<True> {
+impl Map<True> for XorPredicate<True> {
     type Output = False;
 }
 
-impl Functor<False> for XorPredicate<True> {
+impl Map<False> for XorPredicate<True> {
     type Output = True;
 }
 
-impl Functor<True> for XorPredicate<False> {
+impl Map<True> for XorPredicate<False> {
     type Output = True;
 }
 
-impl Functor<False> for XorPredicate<False> {
+impl Map<False> for XorPredicate<False> {
     type Output = False;
 }
 
 /// A [Predicate] that computes exclusive-or on input pair `(Lhs, Rhs)`.
 pub struct XorComposePredicate;
 
-pub type XorCompose<Lhs, Rhs> = ApplyFunctor<XorComposePredicate, (Lhs, Rhs)>;
+pub type XorCompose<Lhs, Rhs> = ApplyMap<XorComposePredicate, (Lhs, Rhs)>;
 
-impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for XorComposePredicate
+impl<Lhs, Rhs> Map<(Lhs, Rhs)> for XorComposePredicate
 where
     Lhs: Boolean,
     Rhs: Boolean,
-    XorPredicate<Rhs>: Functor<Lhs>,
+    XorPredicate<Rhs>: Map<Lhs>,
 {
     type Output = Xor<Lhs, Rhs>;
 }
@@ -229,43 +229,43 @@ where
     _phantom: PhantomData<Rhs>,
 }
 
-pub type Iff<Lhs, Rhs> = ApplyFunctor<IffPredicate<Rhs>, Lhs>;
+pub type Iff<Lhs, Rhs> = ApplyMap<IffPredicate<Rhs>, Lhs>;
 
 impl<Lhs, Rhs> Predicate<Lhs> for IffPredicate<Rhs>
 where
     Lhs: Boolean,
     Rhs: Boolean,
-    IffPredicate<Rhs>: Functor<Lhs>,
+    IffPredicate<Rhs>: Map<Lhs>,
     Iff<Lhs, Rhs>: Boolean,
 {
 }
 
-impl Functor<True> for IffPredicate<True> {
+impl Map<True> for IffPredicate<True> {
     type Output = True;
 }
 
-impl Functor<False> for IffPredicate<True> {
+impl Map<False> for IffPredicate<True> {
     type Output = False;
 }
 
-impl Functor<True> for IffPredicate<False> {
+impl Map<True> for IffPredicate<False> {
     type Output = False;
 }
 
-impl Functor<False> for IffPredicate<False> {
+impl Map<False> for IffPredicate<False> {
     type Output = True;
 }
 
 /// A [Predicate] that returns if pair of input types `(Lhs, Rhs)` have same [Boolean] value.
 pub struct IffComposePredicate;
 
-pub type IffCompose<Lhs, Rhs> = ApplyFunctor<IffComposePredicate, (Lhs, Rhs)>;
+pub type IffCompose<Lhs, Rhs> = ApplyMap<IffComposePredicate, (Lhs, Rhs)>;
 
-impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for IffComposePredicate
+impl<Lhs, Rhs> Map<(Lhs, Rhs)> for IffComposePredicate
 where
     Lhs: Boolean,
     Rhs: Boolean,
-    IffPredicate<Rhs>: Functor<Lhs>,
+    IffPredicate<Rhs>: Map<Lhs>,
 {
     type Output = Iff<Lhs, Rhs>;
 }
@@ -280,43 +280,43 @@ where
     _phantom: PhantomData<Rhs>,
 }
 
-pub type Imply<Lhs, Rhs> = ApplyFunctor<ImplyPredicate<Rhs>, Lhs>;
+pub type Imply<Lhs, Rhs> = ApplyMap<ImplyPredicate<Rhs>, Lhs>;
 
 impl<Lhs, Rhs> Predicate<Lhs> for ImplyPredicate<Rhs>
 where
     Lhs: Boolean,
     Rhs: Boolean,
-    ImplyPredicate<Rhs>: Functor<Lhs>,
+    ImplyPredicate<Rhs>: Map<Lhs>,
     Imply<Lhs, Rhs>: Boolean,
 {
 }
 
-impl Functor<True> for ImplyPredicate<True> {
+impl Map<True> for ImplyPredicate<True> {
     type Output = True;
 }
 
-impl Functor<False> for ImplyPredicate<True> {
+impl Map<False> for ImplyPredicate<True> {
     type Output = True;
 }
 
-impl Functor<True> for ImplyPredicate<False> {
+impl Map<True> for ImplyPredicate<False> {
     type Output = False;
 }
 
-impl Functor<False> for ImplyPredicate<False> {
+impl Map<False> for ImplyPredicate<False> {
     type Output = True;
 }
 
 /// A [Predicate] that computes if `Lhs` implies `Rhs` for input pair `(Lhs, Rhs)`.
 pub struct ImplyComposePredicate;
 
-pub type ImplyCompose<Lhs, Rhs> = ApplyFunctor<ImplyComposePredicate, (Lhs, Rhs)>;
+pub type ImplyCompose<Lhs, Rhs> = ApplyMap<ImplyComposePredicate, (Lhs, Rhs)>;
 
-impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for ImplyComposePredicate
+impl<Lhs, Rhs> Map<(Lhs, Rhs)> for ImplyComposePredicate
 where
     Lhs: Boolean,
     Rhs: Boolean,
-    ImplyPredicate<Rhs>: Functor<Lhs>,
+    ImplyPredicate<Rhs>: Map<Lhs>,
 {
     type Output = Imply<Lhs, Rhs>;
 }
@@ -331,43 +331,43 @@ where
     _phantom: PhantomData<Rhs>,
 }
 
-pub type NotImply<Lhs, Rhs> = ApplyFunctor<NotImplyPredicate<Rhs>, Lhs>;
+pub type NotImply<Lhs, Rhs> = ApplyMap<NotImplyPredicate<Rhs>, Lhs>;
 
 impl<Lhs, Rhs> Predicate<Lhs> for NotImplyPredicate<Rhs>
 where
     Lhs: Boolean,
     Rhs: Boolean,
-    NotImplyPredicate<Rhs>: Functor<Lhs>,
+    NotImplyPredicate<Rhs>: Map<Lhs>,
     NotImply<Lhs, Rhs>: Boolean,
 {
 }
 
-impl Functor<True> for NotImplyPredicate<True> {
+impl Map<True> for NotImplyPredicate<True> {
     type Output = False;
 }
 
-impl Functor<False> for NotImplyPredicate<True> {
+impl Map<False> for NotImplyPredicate<True> {
     type Output = False;
 }
 
-impl Functor<True> for NotImplyPredicate<False> {
+impl Map<True> for NotImplyPredicate<False> {
     type Output = True;
 }
 
-impl Functor<False> for NotImplyPredicate<False> {
+impl Map<False> for NotImplyPredicate<False> {
     type Output = False;
 }
 
 /// A [Predicate] that computes if `Lhs` is true while `Rhs` is false for input pair `(Lhs, Rhs)`.
 pub struct NotImplyComposePredicate;
 
-pub type NotImplyCompose<Lhs, Rhs> = ApplyFunctor<NotImplyComposePredicate, (Lhs, Rhs)>;
+pub type NotImplyCompose<Lhs, Rhs> = ApplyMap<NotImplyComposePredicate, (Lhs, Rhs)>;
 
-impl<Lhs, Rhs> Functor<(Lhs, Rhs)> for NotImplyComposePredicate
+impl<Lhs, Rhs> Map<(Lhs, Rhs)> for NotImplyComposePredicate
 where
     Lhs: Boolean,
     Rhs: Boolean,
-    NotImplyPredicate<Rhs>: Functor<Lhs>,
+    NotImplyPredicate<Rhs>: Map<Lhs>,
 {
     type Output = NotImply<Lhs, Rhs>;
 }

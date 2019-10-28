@@ -1,10 +1,10 @@
-use super::ApplyFunctor;
+use super::ApplyMap;
 use std::marker::PhantomData;
 
-/// A [Functor](super::Functor) that applies input wrapped [Functor](super::Functor)
+/// A [Map](super::Map) that applies input wrapped [Map](super::Map)
 /// to `Rhs` contained type.
-pub struct ApplicativeFunctor<Rhs> {
+pub struct ApplicativeMap<Rhs> {
     _phantom: PhantomData<Rhs>,
 }
 
-pub type Applicative<Lhs, Rhs> = ApplyFunctor<ApplicativeFunctor<Rhs>, Lhs>;
+pub type Applicative<Lhs, Rhs> = ApplyMap<ApplicativeMap<Rhs>, Lhs>;

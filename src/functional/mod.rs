@@ -1,10 +1,8 @@
-//! Functional primitives like [Functor](crate::functional::Functor) and
+//! Functional primitives like [Map](crate::functional::Map) and
 //! [Compose](crate::functional::Compose).
 
 mod applicative;
-mod fmap;
-mod functor;
+mod map;
 
 pub use applicative::*;
-pub use fmap::*;
-pub use functor::*;
+pub use map::*;

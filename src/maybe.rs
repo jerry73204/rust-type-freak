@@ -15,7 +15,7 @@
 //! type Val3 = UnwrapOr<Opt2, U0>; // U0
 //! ```
 
-use crate::functional::{ApplicativeFunctor, ApplyFunctor, FMapFunctor, Functor};
+use crate::functional::{ApplicativeMap, ApplyMap, FMapMap, Map};
 use std::marker::PhantomData;
 
 // maybe def
@@ -41,105 +41,105 @@ impl Maybe for Nothing {}
 
 // unwrap op
 
-/// A [Functor] that unwraps [Just<T>](Just).
-pub struct UnwrapFunctor {}
+/// A [Map] that unwraps [Just<T>](Just).
+pub struct UnwrapMap {}
 
-pub type Unwrap<T> = ApplyFunctor<UnwrapFunctor, T>;
+pub type Unwrap<T> = ApplyMap<UnwrapMap, T>;
 
-impl<T> Functor<Just<T>> for UnwrapFunctor {
+impl<T> Map<Just<T>> for UnwrapMap {
     type Output = T;
 }
 
 // unwrap or default op
 
-/// A [Functor] that unwraps [Just<T>](Just), or returns `Defaultvalue` if [Nothing].
-pub struct UnwrapOrFunctor<DefaultValue> {
+/// A [Map] that unwraps [Just<T>](Just), or returns `Defaultvalue` if [Nothing].
+pub struct UnwrapOrMap<DefaultValue> {
     _phantom: PhantomData<DefaultValue>,
 }
 
-pub type UnwrapOr<T, DefaultValue> = ApplyFunctor<UnwrapOrFunctor<DefaultValue>, T>;
+pub type UnwrapOr<T, DefaultValue> = ApplyMap<UnwrapOrMap<DefaultValue>, T>;
 
-impl<T, DefaultValue> Functor<Just<T>> for UnwrapOrFunctor<DefaultValue> {
+impl<T, DefaultValue> Map<Just<T>> for UnwrapOrMap<DefaultValue> {
     type Output = T;
 }
 
-impl<DefaultValue> Functor<Nothing> for UnwrapOrFunctor<DefaultValue> {
+impl<DefaultValue> Map<Nothing> for UnwrapOrMap<DefaultValue> {
     type Output = DefaultValue;
 }
 
 // map the value of maybe
 
-/// A [Functor] that maps a [Maybe] type by a [Functor].
-pub struct MaybeMapFunctor<Func> {
+/// A [Map] that maps a [Maybe] type by a [Map].
+pub struct MaybeMapMap<Func> {
     _phantom: PhantomData<Func>,
 }
 
-pub type MaybeMap<Input, Func> = ApplyFunctor<MaybeMapFunctor<Func>, Input>;
+pub type MaybeMap<Input, Func> = ApplyMap<MaybeMapMap<Func>, Input>;
 
-impl<Func> Functor<Nothing> for MaybeMapFunctor<Func> {
+impl<Func> Map<Nothing> for MaybeMapMap<Func> {
     type Output = Nothing;
 }
 
-impl<Func, T> Functor<Just<T>> for MaybeMapFunctor<Func>
+impl<Func, T> Map<Just<T>> for MaybeMapMap<Func>
 where
-    Func: Functor<T>,
+    Func: Map<T>,
 {
-    type Output = Just<ApplyFunctor<Func, T>>;
+    type Output = Just<ApplyMap<Func, T>>;
 }
 
 // filter
 
-/// A [Functor] that filters a [Maybe] type by a [Functor].
-pub struct MaybeFilterFunctor<Func> {
+/// A [Map] that filters a [Maybe] type by a [Map].
+pub struct MaybeFilterMap<Func> {
     _phantom: PhantomData<Func>,
 }
 
-pub type MaybeFilter<Input, Func> = ApplyFunctor<MaybeFilterFunctor<Func>, Input>;
+pub type MaybeFilter<Input, Func> = ApplyMap<MaybeFilterMap<Func>, Input>;
 
-impl<Func> Functor<Nothing> for MaybeFilterFunctor<Func> {
+impl<Func> Map<Nothing> for MaybeFilterMap<Func> {
     type Output = Nothing;
 }
 
-impl<Func, T> Functor<Just<T>> for MaybeFilterFunctor<Func>
+impl<Func, T> Map<Just<T>> for MaybeFilterMap<Func>
 where
-    Func: Functor<T>,
+    Func: Map<T>,
     Func::Output: Maybe,
 {
-    type Output = ApplyFunctor<Func, T>;
+    type Output = ApplyMap<Func, T>;
 }
 
 // impl FMap for Maybe
 
-impl<Func> Functor<Nothing> for FMapFunctor<Func> {
+impl<Func> Map<Nothing> for FMapMap<Func> {
     type Output = Nothing;
 }
 
-impl<T, Func> Functor<Just<T>> for FMapFunctor<Func>
+impl<T, Func> Map<Just<T>> for FMapMap<Func>
 where
-    MaybeMapFunctor<Func>: Functor<Just<T>>,
+    MaybeMapMap<Func>: Map<Just<T>>,
 {
     type Output = MaybeMap<Just<T>, Func>;
 }
 
 // Applicative
 
-impl Functor<Nothing> for ApplicativeFunctor<Nothing> {
+impl Map<Nothing> for ApplicativeMap<Nothing> {
     type Output = Nothing;
 }
 
-impl<Func> Functor<Just<Func>> for ApplicativeFunctor<Nothing> {
+impl<Func> Map<Just<Func>> for ApplicativeMap<Nothing> {
     type Output = Nothing;
 }
 
-impl<Value> Functor<Nothing> for ApplicativeFunctor<Just<Value>> {
+impl<Value> Map<Nothing> for ApplicativeMap<Just<Value>> {
     type Output = Nothing;
 }
 
-impl<Func, Value> Functor<Just<Func>> for ApplicativeFunctor<Just<Value>>
+impl<Func, Value> Map<Just<Func>> for ApplicativeMap<Just<Value>>
 where
-    Func: Functor<Value>,
+    Func: Map<Value>,
 {
-    type Output = Just<ApplyFunctor<Func, Value>>;
+    type Output = Just<ApplyMap<Func, Value>>;
 }
 
 // tests
@@ -151,7 +151,7 @@ mod tests {
         boolean::Boolean,
         control::{IfElsePredicate, IfElsePredicateOutput, IfSameOutput},
         functional::{Applicative, FMap},
-        numeric::AddOneFunctor,
+        numeric::AddOneMap,
     };
     use typenum::{consts::*, GrEq, IsGreaterOrEqual, Unsigned};
 
@@ -168,7 +168,7 @@ mod tests {
     // map
     struct BoxFunc;
 
-    impl<Input> Functor<Input> for BoxFunc {
+    impl<Input> Map<Input> for BoxFunc {
         type Output = Box<Input>;
     }
 
@@ -178,7 +178,7 @@ mod tests {
     // filter
     struct ThresholdFunc;
 
-    impl<Input> Functor<Input> for ThresholdFunc
+    impl<Input> Map<Input> for ThresholdFunc
     where
         Input: Unsigned + IsGreaterOrEqual<U4>,
         GrEq<Input, U4>: Boolean,
@@ -192,14 +192,14 @@ mod tests {
     type Assert8 = IfSameOutput<(), MaybeFilter<Nothing, ThresholdFunc>, Nothing>;
 
     // FMap
-    type Assert9 = IfSameOutput<(), FMap<Nothing, AddOneFunctor>, Nothing>;
-    type Assert10 = IfSameOutput<(), FMap<Just<U8>, AddOneFunctor>, Just<U9>>;
+    type Assert9 = IfSameOutput<(), FMap<Nothing, AddOneMap>, Nothing>;
+    type Assert10 = IfSameOutput<(), FMap<Just<U8>, AddOneMap>, Just<U9>>;
 
     // Applicative
     type Assert11 = IfSameOutput<(), Applicative<Nothing, Nothing>, Nothing>;
-    type Assert12 = IfSameOutput<(), Applicative<Just<AddOneFunctor>, Nothing>, Nothing>;
+    type Assert12 = IfSameOutput<(), Applicative<Just<AddOneMap>, Nothing>, Nothing>;
     type Assert13 = IfSameOutput<(), Applicative<Nothing, Just<U7>>, Nothing>;
-    type Assert14 = IfSameOutput<(), Applicative<Just<AddOneFunctor>, Just<U7>>, Just<U8>>;
+    type Assert14 = IfSameOutput<(), Applicative<Just<AddOneMap>, Just<U7>>, Just<U8>>;
 
     #[test]
     fn maybe_test() {

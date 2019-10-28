@@ -1,5 +1,5 @@
 use super::{LCons, LNil, TList};
-use crate::functional::{ApplyFunctor, Functor};
+use crate::functional::{ApplyMap, Map};
 use std::marker::PhantomData;
 
 /// Zips two [TList]s into single [TList] of tuple pairs.
@@ -40,17 +40,17 @@ impl LZipOp<LNil> for LNil {
     type Output = LNil;
 }
 
-/// A [Functor] that zips `Lhs` and `Rhs` [TList]s
-pub struct LZipFunctor<Rhs>
+/// A [Map] that zips `Lhs` and `Rhs` [TList]s
+pub struct LZipMap<Rhs>
 where
     Rhs: TList,
 {
     _phantom: PhantomData<Rhs>,
 }
 
-pub type LZip<Lhs, Rhs> = ApplyFunctor<LZipFunctor<Rhs>, Lhs>;
+pub type LZip<Lhs, Rhs> = ApplyMap<LZipMap<Rhs>, Lhs>;
 
-impl<Lhs, Rhs> Functor<Lhs> for LZipFunctor<Rhs>
+impl<Lhs, Rhs> Map<Lhs> for LZipMap<Rhs>
 where
     Lhs: TList + LZipOp<Rhs>,
     Rhs: TList,
@@ -85,12 +85,12 @@ impl LUnzipOp for LNil {
     type LatterOutput = LNil;
 }
 
-/// A [Functor] that unzips a [TList] of pairs.
-pub struct LUnzipFunctor;
+/// A [Map] that unzips a [TList] of pairs.
+pub struct LUnzipMap;
 
-pub type LUnzip<List> = ApplyFunctor<LUnzipFunctor, List>;
+pub type LUnzip<List> = ApplyMap<LUnzipMap, List>;
 
-impl<List> Functor<List> for LUnzipFunctor
+impl<List> Map<List> for LUnzipMap
 where
     List: TList + LUnzipOp,
 {
