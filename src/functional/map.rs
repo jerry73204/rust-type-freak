@@ -20,17 +20,17 @@ where
 {
 }
 
-/// Composes two maps from `Rhs` to `Lhs`.
+/// Composes `Lhs` map with `Rhs` map. `Lhs` is applied before `Rhs`.
 pub struct Compose<Lhs, Rhs> {
     _phantom: PhantomData<(Lhs, Rhs)>,
 }
 
 impl<Input, Lhs, Rhs> Map<Input> for Compose<Lhs, Rhs>
 where
-    Lhs: Map<ApplyMap<Rhs, Input>>,
-    Rhs: Map<Input>,
+    Lhs: Map<Input>,
+    Rhs: Map<ApplyMap<Lhs, Input>>,
 {
-    type Output = ApplyMap<Lhs, ApplyMap<Rhs, Input>>;
+    type Output = ApplyMap<Rhs, ApplyMap<Lhs, Input>>;
 }
 
 /// An identity [Map].
@@ -41,27 +41,27 @@ impl<Input> Map<Input> for IdentityMap {
 }
 
 /// A [Map] that applies `Func` to `(Lhs, input)` type.
-pub struct LeftComposeMap<Lhs, Func> {
+pub struct LeftPartialMap<Lhs, Func> {
     _phantom: PhantomData<(Lhs, Func)>,
 }
 
-impl<Lhs, Rhs, Func> Map<Rhs> for LeftComposeMap<Lhs, Func>
+impl<Lhs, Input, Func> Map<Input> for LeftPartialMap<Lhs, Func>
 where
-    Func: Map<(Lhs, Rhs)>,
+    Func: Map<(Lhs, Input)>,
 {
-    type Output = ApplyMap<Func, (Lhs, Rhs)>;
+    type Output = ApplyMap<Func, (Lhs, Input)>;
 }
 
 /// A [Map] that applies `Func` to `(input, Rhs)` type.
-pub struct RightComposeMap<Rhs, Func> {
+pub struct RightPartialMap<Rhs, Func> {
     _phantom: PhantomData<(Rhs, Func)>,
 }
 
-impl<Lhs, Rhs, Func> Map<Lhs> for RightComposeMap<Rhs, Func>
+impl<Input, Rhs, Func> Map<Input> for RightPartialMap<Rhs, Func>
 where
-    Func: Map<(Lhs, Rhs)>,
+    Func: Map<(Input, Rhs)>,
 {
-    type Output = ApplyMap<Func, (Lhs, Rhs)>;
+    type Output = ApplyMap<Func, (Input, Rhs)>;
 }
 
 /// A map that applies `Func` to input container type.
