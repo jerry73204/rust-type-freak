@@ -84,58 +84,11 @@
 //! let values = <TListType![P3, N5, Z0] as LToUsizeVec>::to_usize_vec();
 //! ```
 
-mod access;
-mod functional;
-mod insert;
+pub mod base;
 mod macros;
-pub mod marker;
-mod misc;
-mod reduction;
-mod remove;
-mod zipping;
+pub mod markers;
+mod operators;
 
-pub use access::*;
-pub use functional::*;
-pub use insert::*;
-pub use macros::*;
-pub use misc::*;
-pub use reduction::*;
-pub use remove::*;
-pub use zipping::*;
-
-use std::marker::PhantomData;
-
-// list
-
-/// Represents a typed list constructed by [LCons] and [LNil].
-pub trait TList {}
-
-// intermediate node
-
-/// Represents an intermediate node.
-pub struct LCons<Head, Tail>
-where
-    Tail: TList,
-{
-    _phantom: PhantomData<(Head, Tail)>,
-}
-
-impl<Head, Tail> LCons<Head, Tail>
-where
-    Tail: TList,
-{
-    pub fn new() -> LCons<Head, Tail> {
-        Self {
-            _phantom: PhantomData,
-        }
-    }
-}
-
-impl<Head, Tail> TList for LCons<Head, Tail> where Tail: TList {}
-
-// end of list
-
-/// Represents the end of list.
-pub struct LNil;
-
-impl TList for LNil {}
+pub use base::*;
+pub use markers::*;
+pub use operators::*;

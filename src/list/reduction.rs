@@ -5,6 +5,22 @@ use crate::{
     numeric::{MaxComposeMap, MinComposeMap, ProdComposeMap, SumComposeMap},
 };
 
+pub mod ops {
+    use super::*;
+}
+
+pub mod op_aliases {
+    use super::*;
+}
+
+pub mod maps {
+    use super::*;
+}
+
+pub mod map_aliases {
+    use super::*;
+}
+
 // reduce max
 
 /// A [Map] that takes the maximum value among a [TList].
