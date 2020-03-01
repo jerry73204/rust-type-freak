@@ -1,7 +1,10 @@
 use super::{Cons, List, Nil};
-use crate::counter::{Counter, Step};
+use crate::{
+    counter::{Counter, Step},
+    functional::{Apply, Map},
+};
 use std::ops::{Add, Sub};
-use typenum::{Add1, Bit, Sub1, UInt, UTerm, Unsigned, B0, B1, U1};
+use typenum::{Add1, Bit, Sub1, UInt, UTerm, Unsigned, B0, B1};
 
 pub mod ops {
     use super::*;
@@ -781,6 +784,49 @@ pub mod ops {
     {
         type Output = Cons<(HeadL, HeadR), op_aliases::Zip<TailL, TailR>>;
     }
+
+    // map elements
+
+    pub trait ForEach<MapType>
+    where
+        Self: List,
+        Self::Output: List,
+    {
+        type Output;
+    }
+
+    impl<MapType> ForEach<MapType> for Nil {
+        type Output = Nil;
+    }
+
+    impl<Head, Tail, MapType> ForEach<MapType> for Cons<Head, Tail>
+    where
+        MapType: Map<Head>,
+        Tail: List + ForEach<MapType>,
+    {
+        type Output = Cons<Apply<MapType, Head>, op_aliases::ForEach<Tail, MapType>>;
+    }
+
+    // fold operation
+
+    pub trait Fold<MapType, Init>
+    where
+        Self: List,
+    {
+        type Output;
+    }
+
+    impl<MapType, Init> Fold<MapType, Init> for Nil {
+        type Output = Init;
+    }
+
+    impl<MapType, Init, Head, Tail> Fold<MapType, Init> for Cons<Head, Tail>
+    where
+        Tail: List + Fold<MapType, Apply<MapType, (Init, Head)>>,
+        MapType: Map<(Init, Head)>,
+    {
+        type Output = op_aliases::Fold<Tail, MapType, Apply<MapType, (Init, Head)>>;
+    }
 }
 
 pub mod op_aliases {
@@ -816,6 +862,8 @@ pub mod op_aliases {
     pub type RangeTo<InputList, ToIndex> = <InputList as ops::RangeTo<ToIndex>>::Output;
     pub type RangeFrom<InputList, FromIndex> = <InputList as ops::RangeFrom<FromIndex>>::Output;
     pub type Zip<Lhs, Rhs> = <Lhs as ops::Zip<Rhs>>::Output;
+    pub type ForEach<InputList, MapType> = <InputList as ops::ForEach<MapType>>::Output;
+    pub type Fold<InputList, MapType, Init> = <InputList as ops::Fold<MapType, Init>>::Output;
 }
 
 #[cfg(test)]
@@ -878,6 +926,8 @@ mod tests {
     type Assert43 = AssertSame<RangeFrom<TripleList, U2>, ListT![C], ()>;
     type Assert44 = AssertSame<RangeFrom<TripleList, U3>, ListT![], ()>;
     type Assert45 = AssertSame<Zip<DoubleList, TripleList>, ListT![(B, A), (C, B)], ()>;
+
+    // TODO: test ForEach and Fold
 
     #[test]
     fn list_test() {
