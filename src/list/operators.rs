@@ -1,4 +1,5 @@
 use super::{Cons, List, Nil};
+use crate::counter::{Counter, Step};
 use std::ops::{Add, Sub};
 use typenum::{Add1, Bit, Sub1, UInt, UTerm, Unsigned, B0, B1, U1};
 
@@ -94,6 +95,29 @@ pub mod ops {
         type Output = Cons<Head, op_aliases::Insert<Tail, Node, UInt<Sub1<U>, B1>>>;
     }
 
+    // insert by counter
+
+    pub trait InsertByCounter<Node, Count>
+    where
+        Count: Counter,
+        Self: List,
+        Self::Output: List,
+    {
+        type Output;
+    }
+
+    impl<Node> InsertByCounter<Node, Nil> for Nil {
+        type Output = Cons<Node, Nil>;
+    }
+
+    impl<Node, Next, Head, Tail> InsertByCounter<Node, Step<Next>> for Cons<Head, Tail>
+    where
+        Tail: List + InsertByCounter<Node, Next>,
+        Next: Counter,
+    {
+        type Output = Cons<Head, op_aliases::InsertByCounter<Tail, Node, Next>>;
+    }
+
     // remove
 
     pub trait Remove<Node, Index>
@@ -137,6 +161,32 @@ pub mod ops {
         type Output = Cons<Head, op_aliases::Remove<Tail, Node, UInt<Sub1<U>, B1>>>;
     }
 
+    // remove by counter
+
+    pub trait RemoveByCounter<Node, Count>
+    where
+        Self: List,
+        Self::Output: List,
+        Count: Counter,
+    {
+        type Output;
+    }
+
+    impl<Node, Tail> RemoveByCounter<Node, Nil> for Cons<Node, Tail>
+    where
+        Tail: List,
+    {
+        type Output = Tail;
+    }
+
+    impl<Node, Next, Head, Tail> RemoveByCounter<Node, Step<Next>> for Cons<Head, Tail>
+    where
+        Tail: List + RemoveByCounter<Node, Next>,
+        Next: Counter,
+    {
+        type Output = Cons<Head, op_aliases::RemoveByCounter<Tail, Node, Next>>;
+    }
+
     // extend
 
     pub trait Extend<Other>
@@ -163,9 +213,9 @@ pub mod ops {
         type Output = Cons<Head, op_aliases::Extend<Tail, Other>>;
     }
 
-    // get
+    // at
 
-    pub trait Get<Index>
+    pub trait At<Index>
     where
         Self: List,
         Index: Unsigned,
@@ -173,36 +223,78 @@ pub mod ops {
         type Output;
     }
 
-    impl<Head, Tail> Get<UTerm> for Cons<Head, Tail>
+    impl<Head, Tail> At<UTerm> for Cons<Head, Tail>
     where
         Tail: List,
     {
         type Output = Head;
     }
 
-    impl<Head, Tail> Get<UInt<UTerm, B1>> for Cons<Head, Tail>
+    impl<Head, Tail> At<UInt<UTerm, B1>> for Cons<Head, Tail>
     where
-        Tail: List + Get<UTerm>,
+        Tail: List + At<UTerm>,
     {
-        type Output = op_aliases::Get<Tail, UTerm>;
+        type Output = op_aliases::At<Tail, UTerm>;
     }
 
-    impl<Head, Tail, U, B> Get<UInt<UInt<U, B>, B1>> for Cons<Head, Tail>
+    impl<Head, Tail, U, B> At<UInt<UInt<U, B>, B1>> for Cons<Head, Tail>
     where
-        Tail: List + Get<UInt<UInt<U, B>, B0>>,
+        Tail: List + At<UInt<UInt<U, B>, B0>>,
         U: Unsigned,
         B: Bit,
     {
-        type Output = op_aliases::Get<Tail, UInt<UInt<U, B>, B0>>;
+        type Output = op_aliases::At<Tail, UInt<UInt<U, B>, B0>>;
     }
 
-    impl<Head, Tail, U> Get<UInt<U, B0>> for Cons<Head, Tail>
+    impl<Head, Tail, U> At<UInt<U, B0>> for Cons<Head, Tail>
     where
-        Tail: List + Get<UInt<Sub1<U>, B1>>,
+        Tail: List + At<UInt<Sub1<U>, B1>>,
         U: Unsigned + Sub<B1>,
         Sub1<U>: Unsigned,
     {
-        type Output = op_aliases::Get<Tail, UInt<Sub1<U>, B1>>;
+        type Output = op_aliases::At<Tail, UInt<Sub1<U>, B1>>;
+    }
+
+    // at by counter
+
+    pub trait AtByCounter<Index>
+    where
+        Self: List,
+        Index: Unsigned,
+    {
+        type Output;
+    }
+
+    impl<Head, Tail> AtByCounter<UTerm> for Cons<Head, Tail>
+    where
+        Tail: List,
+    {
+        type Output = Head;
+    }
+
+    impl<Head, Tail> AtByCounter<UInt<UTerm, B1>> for Cons<Head, Tail>
+    where
+        Tail: List + AtByCounter<UTerm>,
+    {
+        type Output = op_aliases::AtByCounter<Tail, UTerm>;
+    }
+
+    impl<Head, Tail, U, B> AtByCounter<UInt<UInt<U, B>, B1>> for Cons<Head, Tail>
+    where
+        Tail: List + AtByCounter<UInt<UInt<U, B>, B0>>,
+        U: Unsigned,
+        B: Bit,
+    {
+        type Output = op_aliases::AtByCounter<Tail, UInt<UInt<U, B>, B0>>;
+    }
+
+    impl<Head, Tail, U> AtByCounter<UInt<U, B0>> for Cons<Head, Tail>
+    where
+        Tail: List + AtByCounter<UInt<Sub1<U>, B1>>,
+        U: Unsigned + Sub<B1>,
+        Sub1<U>: Unsigned,
+    {
+        type Output = op_aliases::AtByCounter<Tail, UInt<Sub1<U>, B1>>;
     }
 
     // index of
@@ -402,9 +494,9 @@ pub mod ops {
         type Output = op_aliases::Last<Cons<Next, Tail>>;
     }
 
-    // set
+    // replace
 
-    pub trait Set<Target, Index, New>
+    pub trait Replace<Target, Index, New>
     where
         Self: List,
         Self::Output: List,
@@ -413,37 +505,64 @@ pub mod ops {
         type Output;
     }
 
-    impl<Target, New, Tail> Set<Target, UTerm, New> for Cons<Target, Tail>
+    impl<Target, New, Tail> Replace<Target, UTerm, New> for Cons<Target, Tail>
     where
         Tail: List,
     {
         type Output = Cons<New, Tail>;
     }
 
-    impl<Target, NonTarget, New, Tail> Set<Target, UInt<UTerm, B1>, New> for Cons<NonTarget, Tail>
+    impl<Target, NonTarget, New, Tail> Replace<Target, UInt<UTerm, B1>, New> for Cons<NonTarget, Tail>
     where
-        Tail: List + Set<Target, UTerm, New>,
+        Tail: List + Replace<Target, UTerm, New>,
     {
-        type Output = Cons<NonTarget, op_aliases::Set<Tail, Target, UTerm, New>>;
+        type Output = Cons<NonTarget, op_aliases::Replace<Tail, Target, UTerm, New>>;
     }
 
-    impl<Target, NonTarget, New, Tail, U, B> Set<Target, UInt<UInt<U, B>, B1>, New>
+    impl<Target, NonTarget, New, Tail, U, B> Replace<Target, UInt<UInt<U, B>, B1>, New>
         for Cons<NonTarget, Tail>
     where
-        Tail: List + Set<Target, UInt<UInt<U, B>, B0>, New>,
+        Tail: List + Replace<Target, UInt<UInt<U, B>, B0>, New>,
         U: Unsigned,
         B: Bit,
     {
-        type Output = Cons<NonTarget, op_aliases::Set<Tail, Target, UInt<UInt<U, B>, B0>, New>>;
+        type Output = Cons<NonTarget, op_aliases::Replace<Tail, Target, UInt<UInt<U, B>, B0>, New>>;
     }
 
-    impl<Target, NonTarget, New, Tail, U> Set<Target, UInt<U, B0>, New> for Cons<NonTarget, Tail>
+    impl<Target, NonTarget, New, Tail, U> Replace<Target, UInt<U, B0>, New> for Cons<NonTarget, Tail>
     where
-        Tail: List + Set<Target, UInt<Sub1<U>, B1>, New>,
+        Tail: List + Replace<Target, UInt<Sub1<U>, B1>, New>,
         U: Unsigned + Sub<B1>,
         Sub1<U>: Unsigned,
     {
-        type Output = Cons<NonTarget, op_aliases::Set<Tail, Target, UInt<Sub1<U>, B1>, New>>;
+        type Output = Cons<NonTarget, op_aliases::Replace<Tail, Target, UInt<Sub1<U>, B1>, New>>;
+    }
+
+    // replace by counter
+
+    pub trait ReplaceByCounter<Target, Count, New>
+    where
+        Self: List,
+        Self::Output: List,
+        Count: Counter,
+    {
+        type Output;
+    }
+
+    impl<Target, New, Tail> ReplaceByCounter<Target, Nil, New> for Cons<Target, Tail>
+    where
+        Tail: List,
+    {
+        type Output = Cons<New, Tail>;
+    }
+
+    impl<Target, NonTarget, Next, New, Tail> ReplaceByCounter<Target, Step<Next>, New>
+        for Cons<NonTarget, Tail>
+    where
+        Tail: List + ReplaceByCounter<Target, Next, New>,
+        Next: Counter,
+    {
+        type Output = Cons<NonTarget, op_aliases::ReplaceByCounter<Tail, Target, Next, New>>;
     }
 
     // range to
@@ -670,9 +789,14 @@ pub mod op_aliases {
     pub type Append<InputList, Node> = <InputList as ops::Append<Node>>::Output;
     pub type Prepend<InputList, Node> = <InputList as ops::Prepend<Node>>::Output;
     pub type Insert<InputList, Node, Index> = <InputList as ops::Insert<Node, Index>>::Output;
+    pub type InsertByCounter<InputList, Node, Counter> =
+        <InputList as ops::InsertByCounter<Node, Counter>>::Output;
     pub type Remove<InputList, Node, Index> = <InputList as ops::Remove<Node, Index>>::Output;
+    pub type RemoveByCounter<InputList, Node, Counter> =
+        <InputList as ops::RemoveByCounter<Node, Counter>>::Output;
     pub type Extend<InputList, OtherList> = <InputList as ops::Extend<OtherList>>::Output;
-    pub type Get<InputList, Index> = <InputList as ops::Get<Index>>::Output;
+    pub type At<InputList, Index> = <InputList as ops::At<Index>>::Output;
+    pub type AtByCounter<InputList, Counter> = <InputList as ops::AtByCounter<Counter>>::Output;
     pub type IndexOf<InputList, Target, Index> = <InputList as ops::IndexOf<Target, Index>>::Output;
     pub type IndexOfWithBase<InputList, Target, Base, Index> =
         <InputList as ops::IndexOfWithBase<Target, Base, Index>>::Output;
@@ -683,8 +807,10 @@ pub mod op_aliases {
     pub type LenWithBase<InputList, Base> = <InputList as ops::LenWithBase<Base>>::Output;
     pub type First<InputList> = <InputList as ops::First>::Output;
     pub type Last<InputList> = <InputList as ops::Last>::Output;
-    pub type Set<InputList, Target, Index, New> =
-        <InputList as ops::Set<Target, Index, New>>::Output;
+    pub type Replace<InputList, Target, Index, New> =
+        <InputList as ops::Replace<Target, Index, New>>::Output;
+    pub type ReplaceByCounter<InputList, Target, Counter, New> =
+        <InputList as ops::ReplaceByCounter<Target, Counter, New>>::Output;
     pub type Range<InputList, FromIndex, ToIndex> =
         <InputList as ops::Range<FromIndex, ToIndex>>::Output;
     pub type RangeTo<InputList, ToIndex> = <InputList as ops::RangeTo<ToIndex>>::Output;
@@ -721,8 +847,8 @@ mod tests {
     type Assert12<Index> = IfSame<(), Remove<DoubleList, C, Index>, ListT![B]>;
     type Assert13<Element> = IfSame<(), Remove<DoubleList, Element, U0>, ListT![C]>;
     type Assert14 = IfSame<(), Extend<SingleList, DoubleList>, ListT![A, B, C]>;
-    type Assert15 = IfSame<(), Get<DoubleList, U0>, B>;
-    type Assert16 = IfSame<(), Get<DoubleList, U1>, C>;
+    type Assert15 = IfSame<(), At<DoubleList, U0>, B>;
+    type Assert16 = IfSame<(), At<DoubleList, U1>, C>;
     type Assert17<Index> = IfSame<(), IndexOf<DoubleList, B, Index>, U0>;
     type Assert18<Index> = IfSame<(), IndexOf<DoubleList, C, Index>, U1>;
     type Assert19 = IfSame<(), Reverse<DoubleList>, ListT![C, B]>;
@@ -731,8 +857,8 @@ mod tests {
     type Assert22 = IfSame<(), Len<DoubleList>, U2>;
     type Assert23 = IfSame<(), First<DoubleList>, B>;
     type Assert24 = IfSame<(), Last<DoubleList>, C>;
-    type Assert25<Target> = IfSame<(), Set<DoubleList, Target, U1, A>, ListT![B, A]>;
-    type Assert26<Index> = IfSame<(), Set<DoubleList, C, Index, A>, ListT![B, A]>;
+    type Assert25<Target> = IfSame<(), Replace<DoubleList, Target, U1, A>, ListT![B, A]>;
+    type Assert26<Index> = IfSame<(), Replace<DoubleList, C, Index, A>, ListT![B, A]>;
     type Assert27 = IfSame<(), RangeTo<TripleList, U0>, ListT![]>;
     type Assert28 = IfSame<(), RangeTo<TripleList, U1>, ListT![A]>;
     type Assert29 = IfSame<(), RangeTo<TripleList, U2>, ListT![A, B]>;
