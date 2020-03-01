@@ -73,77 +73,16 @@
 //! }
 //! ```
 
-use crate::functional::{ApplyMap, Map};
-use std::{marker::PhantomData, ops::Add};
-use typenum::{Sum, Unsigned, U0, U1};
+use crate::list::base::{Cons, List, Nil};
 
-/// A trait that counts the number of steps.
-pub trait Counter {}
-
-/// Represents one more step of [Counter].
-pub struct Next<Count>
+pub trait Counter
 where
-    Count: Counter,
-{
-    _phantom: PhantomData<Count>,
-}
-
-impl<Cnt> Counter for Next<Cnt> where Cnt: Counter {}
-
-/// End of [Counter].
-pub struct Current;
-
-impl Counter for Current {}
-
-/// Duplicates the [Counter].
-pub struct Branch<LeftCount, RightCount>
-where
-    LeftCount: Counter,
-    RightCount: Counter,
-{
-    _phantom: PhantomData<(LeftCount, RightCount)>,
-}
-
-impl<LeftCount, RightCount> Counter for Branch<LeftCount, RightCount>
-where
-    LeftCount: Counter,
-    RightCount: Counter,
+    Self: List,
 {
 }
 
-// count op
+pub type Step<Tail> = Cons<(), Tail>;
 
-/// A type operator that counts the steps of [Counter].
-pub trait CountOp
-where
-    Self::Output: Unsigned,
-{
-    type Output;
-}
+impl<Tail> Counter for Step<Tail> where Tail: Counter {}
 
-impl CountOp for Current {
-    type Output = U0;
-}
-
-impl<Cnt> CountOp for Next<Cnt>
-where
-    Cnt: Counter + CountOp,
-    CountOpOutput<Cnt>: Add<U1>,
-    Sum<CountOpOutput<Cnt>, U1>: Unsigned,
-{
-    type Output = Sum<CountOpOutput<Cnt>, U1>;
-}
-
-pub type CountOpOutput<Cnt> = <Cnt as CountOp>::Output;
-
-/// A [Map] that counts the number of steps of [Counter].
-pub struct CountMap;
-
-pub type Count<Input> = ApplyMap<CountMap, Input>;
-
-impl<Input> Map<Input> for CountMap
-where
-    Input: Counter + CountOp,
-{
-    type Output = CountOpOutput<Input>;
-}
+impl Counter for Nil {}
