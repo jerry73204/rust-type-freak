@@ -61,378 +61,502 @@
 
 // use crate::{boolean::Boolean,};
 use typenum::{
-    Bit, Eq, False, Gr, GrEq, IsEqual, IsGreater, IsGreaterOrEqual, IsLess, IsLessOrEqual, Le,
-    LeEq, NonZero, True, B0, U0, Z0,
+    Bit, Eq, False, Gr, GrEq, IsEqual, IsGreater, IsGreaterOrEqual, IsLess, IsLessOrEqual,
+    IsNotEqual, Le, LeEq, NInt, NonZero, NotEq, PInt, True, UInt, UTerm, Unsigned, B0, B1, U0, Z0,
 };
 
 pub mod ops {
     use super::*;
 
-    // if type equivalence
+    // assert type equivalence
 
     /// Returns input type if both `Lhs` and `Rhs` are equivalent types.
-    pub trait IfSame<Lhs, Rhs> {
+    pub trait AssertSame<Lhs, Rhs, Output> {
         type Output;
     }
 
-    impl<Same, Output> IfSame<Same, Same> for Output {
+    impl<Same, Output> AssertSame<Same, Same, Output> for () {
         type Output = Output;
     }
 
-    // if predicate holds
+    // assert boolean predicate
 
     /// Returns input type if `Cond` evaluates to [True].
-    pub trait IfPredicate<Cond>
+    pub trait AssertPredicate<Cond, Output>
     where
         Cond: Bit,
     {
         type Output;
     }
 
-    impl<Output> IfPredicate<True> for Output {
+    impl<Output> AssertPredicate<True, Output> for () {
         type Output = Output;
     }
 
-    // if predicate is false
+    // assert predicate is false
 
     /// Returns input type if `Cond` evaluates to [False].
-    pub trait IfNotPredicate<Cond>
+    pub trait AssertNotPredicate<Cond, Output>
     where
         Cond: Bit,
     {
         type Output;
     }
 
-    impl<Output> IfNotPredicate<False> for Output {
+    impl<Output> AssertNotPredicate<False, Output> for () {
         type Output = Output;
     }
 
     // if-else predicate
 
     /// Returns input type if `Cond` evaluates to [True], otherwise returns `Else`.
-    pub trait IfElsePredicate<ElseOutput, Cond>
+    pub trait IfElsePredicate<Cond, TrueOutput, FalseOutput>
     where
         Cond: Bit,
     {
         type Output;
     }
 
-    impl<TrueOutput, FalseOutput> IfElsePredicate<FalseOutput, True> for TrueOutput {
+    impl<TrueOutput, FalseOutput> IfElsePredicate<True, TrueOutput, FalseOutput> for () {
         type Output = TrueOutput;
     }
 
-    impl<TrueOutput, FalseOutput> IfElsePredicate<FalseOutput, False> for TrueOutput {
+    impl<TrueOutput, FalseOutput> IfElsePredicate<False, TrueOutput, FalseOutput> for () {
         type Output = FalseOutput;
     }
 
-    // if less than
+    // if-else not predicate
 
-    /// Returns input type if `Lhs` is less than `Rhs`.
-    pub trait IfLess<Lhs, Rhs> {
+    /// Returns input type if `Cond` evaluates to [True], otherwise returns `Else`.
+    pub trait IfElseNotPredicate<Cond, TrueOutput, FalseOutput>
+    where
+        Cond: Bit,
+    {
         type Output;
     }
 
-    impl<Lhs, Rhs, Output> IfLess<Lhs, Rhs> for Output
+    impl<TrueOutput, FalseOutput> IfElseNotPredicate<True, TrueOutput, FalseOutput> for () {
+        type Output = FalseOutput;
+    }
+
+    impl<TrueOutput, FalseOutput> IfElseNotPredicate<False, TrueOutput, FalseOutput> for () {
+        type Output = TrueOutput;
+    }
+
+    // assert less than
+
+    /// Returns input type if `Lhs` is less than `Rhs`.
+    pub trait AssertLess<Lhs, Rhs, Output> {
+        type Output;
+    }
+
+    impl<Lhs, Rhs, Output> AssertLess<Lhs, Rhs, Output> for ()
     where
+        (): AssertPredicate<Le<Lhs, Rhs>, Output>,
         Lhs: IsLess<Rhs>,
-        Output: IfPredicate<Le<Lhs, Rhs>>,
         Le<Lhs, Rhs>: Bit,
     {
-        type Output = op_aliases::IfPredicate<Output, Le<Lhs, Rhs>>;
+        type Output = Output;
     }
 
     // if-else less than
 
     /// Returns input type if `Lhs` is less than `Rhs`, otherwise returns `Else`.
-    pub trait IfElseLess<Else, Lhs, Rhs> {
+    pub trait IfElseLess<Lhs, Rhs, TrueOutput, FalseOutput> {
         type Output;
     }
 
-    impl<Lhs, Rhs, Output, Else> IfElseLess<Else, Lhs, Rhs> for Output
+    impl<Lhs, Rhs, TrueOutput, FalseOutput> IfElseLess<Lhs, Rhs, TrueOutput, FalseOutput> for ()
     where
         Lhs: IsLess<Rhs>,
-        Output: IfElsePredicate<Else, Le<Lhs, Rhs>>,
+        (): IfElsePredicate<Le<Lhs, Rhs>, TrueOutput, FalseOutput>,
         Le<Lhs, Rhs>: Bit,
     {
-        type Output = op_aliases::IfElsePredicate<Output, Else, Le<Lhs, Rhs>>;
+        type Output = op_aliases::IfElsePredicate<Le<Lhs, Rhs>, TrueOutput, FalseOutput>;
     }
 
-    // if less than or equal
+    // assert less than or equal
 
     /// Returns input type if `Lhs` is less than or equals to `Rhs`.
-    pub trait IfLessOrEqual<Lhs, Rhs> {
+    pub trait AssertLessOrEqual<Lhs, Rhs, Output> {
         type Output;
     }
 
-    impl<Lhs, Rhs, Output> IfLessOrEqual<Lhs, Rhs> for Output
+    impl<Lhs, Rhs, Output> AssertLessOrEqual<Lhs, Rhs, Output> for ()
     where
+        (): AssertPredicate<LeEq<Lhs, Rhs>, Output>,
         Lhs: IsLessOrEqual<Rhs>,
-        Output: IfPredicate<LeEq<Lhs, Rhs>>,
         LeEq<Lhs, Rhs>: Bit,
     {
-        type Output = op_aliases::IfPredicate<Output, LeEq<Lhs, Rhs>>;
+        type Output = Output;
     }
 
     // if-else less or equal
 
     /// Returns input type if `Lhs` is less than or equals to `Rhs`, otherwise returns `Else`.
-    pub trait IfElseLessOrEqual<Else, Lhs, Rhs> {
+    pub trait IfElseLessOrEqual<Lhs, Rhs, TrueOutput, FalseOutput> {
         type Output;
     }
 
-    impl<Lhs, Rhs, Output, Else> IfElseLessOrEqual<Else, Lhs, Rhs> for Output
+    impl<Lhs, Rhs, TrueOutput, FalseOutput> IfElseLessOrEqual<Lhs, Rhs, TrueOutput, FalseOutput> for ()
     where
-        Lhs: IsLess<Rhs>,
-        Output: IfElsePredicate<Else, Le<Lhs, Rhs>>,
-        Le<Lhs, Rhs>: Bit,
+        (): IfElsePredicate<LeEq<Lhs, Rhs>, TrueOutput, FalseOutput>,
+        Lhs: IsLessOrEqual<Rhs>,
+        LeEq<Lhs, Rhs>: Bit,
     {
-        type Output = op_aliases::IfElsePredicate<Output, Else, Le<Lhs, Rhs>>;
+        type Output = op_aliases::IfElsePredicate<LeEq<Lhs, Rhs>, TrueOutput, FalseOutput>;
     }
 
-    // if greater than
+    // assert greater than
 
     /// Returns input type if `Lhs` is greater than `Rhs`.
-    pub trait IfGreater<Lhs, Rhs> {
+    pub trait AssertGreater<Lhs, Rhs, Output> {
         type Output;
     }
 
-    impl<Lhs, Rhs, Output> IfGreater<Lhs, Rhs> for Output
+    impl<Lhs, Rhs, Output> AssertGreater<Lhs, Rhs, Output> for ()
     where
+        (): AssertPredicate<Gr<Lhs, Rhs>, Output>,
         Lhs: IsGreater<Rhs>,
-        Output: IfPredicate<Gr<Lhs, Rhs>>,
         Gr<Lhs, Rhs>: Bit,
     {
-        type Output = op_aliases::IfPredicate<Output, Gr<Lhs, Rhs>>;
+        type Output = Output;
     }
 
     // if-else greater than
 
     /// Returns input type if `Lhs` is greater than `Rhs`, otherwise returns `Else`.
-    pub trait IfElseGreater<Else, Lhs, Rhs> {
+    pub trait IfElseGreater<Lhs, Rhs, TrueOutput, FalseOutput> {
         type Output;
     }
 
-    impl<Lhs, Rhs, Output, Else> IfElseGreater<Else, Lhs, Rhs> for Output
+    impl<Lhs, Rhs, TrueOutput, FalseOutput> IfElseGreater<Lhs, Rhs, TrueOutput, FalseOutput> for ()
     where
-        Lhs: IsLess<Rhs>,
-        Output: IfElsePredicate<Else, Le<Lhs, Rhs>>,
-        Le<Lhs, Rhs>: Bit,
+        (): IfElsePredicate<Gr<Lhs, Rhs>, TrueOutput, FalseOutput>,
+        Lhs: IsGreater<Rhs>,
+        Gr<Lhs, Rhs>: Bit,
     {
-        type Output = op_aliases::IfElsePredicate<Output, Else, Le<Lhs, Rhs>>;
+        type Output = op_aliases::IfElsePredicate<Gr<Lhs, Rhs>, TrueOutput, FalseOutput>;
     }
 
-    // if greater than or equal
+    // assert greater than or equal
 
     /// Returns input type if `Lhs` is greater than or equals to `Rhs`.
-    pub trait IfGreaterOrEqual<Lhs, Rhs> {
+    pub trait AssertGreaterOrEqual<Lhs, Rhs, Output> {
         type Output;
     }
 
-    impl<Lhs, Rhs, Output> IfGreaterOrEqual<Lhs, Rhs> for Output
+    impl<Lhs, Rhs, Output> AssertGreaterOrEqual<Lhs, Rhs, Output> for ()
     where
+        (): AssertPredicate<GrEq<Lhs, Rhs>, Output>,
         Lhs: IsGreaterOrEqual<Rhs>,
-        Output: IfPredicate<GrEq<Lhs, Rhs>>,
         GrEq<Lhs, Rhs>: Bit,
     {
-        type Output = op_aliases::IfPredicate<Output, GrEq<Lhs, Rhs>>;
+        type Output = Output;
     }
 
     // if-else greater or equal
 
     /// Returns input type if `Lhs` is greater than or equals to `Rhs`, otherwise returns `Else`.
-    pub trait IfElseGreaterOrEqual<Else, Lhs, Rhs> {
+    pub trait IfElseGreaterOrEqual<Lhs, Rhs, TrueOutput, FalseOutput> {
         type Output;
     }
 
-    impl<Lhs, Rhs, Output, Else> IfElseGreaterOrEqual<Lhs, Rhs, Else> for Output
+    impl<Lhs, Rhs, TrueOutput, FalseOutput> IfElseGreaterOrEqual<Lhs, Rhs, TrueOutput, FalseOutput>
+        for ()
     where
-        Lhs: IsLess<Rhs>,
-        Output: IfElsePredicate<Else, Le<Lhs, Rhs>>,
-        Le<Lhs, Rhs>: Bit,
+        (): IfElsePredicate<GrEq<Lhs, Rhs>, TrueOutput, FalseOutput>,
+        Lhs: IsGreaterOrEqual<Rhs>,
+        GrEq<Lhs, Rhs>: Bit,
     {
-        type Output = op_aliases::IfElsePredicate<Output, Else, Le<Lhs, Rhs>>;
+        type Output = op_aliases::IfElsePredicate<GrEq<Lhs, Rhs>, TrueOutput, FalseOutput>;
     }
 
-    // if equal
+    // assert equal
 
     /// Returns input type if `Lhs` equals to `Rhs`.
-    pub trait IfEqual<Lhs, Rhs> {
+    pub trait AssertEqual<Lhs, Rhs, Output> {
         type Output;
     }
 
-    impl<Lhs, Rhs, Output> IfEqual<Lhs, Rhs> for Output
+    impl<Lhs, Rhs, Output> AssertEqual<Lhs, Rhs, Output> for ()
     where
+        (): AssertPredicate<Eq<Lhs, Rhs>, Output>,
         Lhs: IsEqual<Rhs>,
-        Output: IfPredicate<Eq<Lhs, Rhs>>,
         Eq<Lhs, Rhs>: Bit,
     {
-        type Output = op_aliases::IfPredicate<Output, Eq<Lhs, Rhs>>;
+        type Output = Output;
     }
 
     // if else equal
 
     /// Returns output if left-hand-site equals to right-hand-side, otherwise returns `Else`.
-    pub trait IfElseEqual<Else, Lhs, Rhs> {
+    pub trait IfElseEqual<Lhs, Rhs, TrueOutput, FalseOutput> {
         type Output;
     }
 
-    impl<Lhs, Rhs, Output, Else> IfElseEqual<Else, Lhs, Rhs> for Output
+    impl<Lhs, Rhs, TrueOutput, FalseOutput> IfElseEqual<Lhs, Rhs, TrueOutput, FalseOutput> for ()
     where
+        (): IfElsePredicate<Eq<Lhs, Rhs>, TrueOutput, FalseOutput>,
         Lhs: IsEqual<Rhs>,
-        Output: IfElsePredicate<Else, Eq<Lhs, Rhs>>,
         Eq<Lhs, Rhs>: Bit,
     {
-        type Output = op_aliases::IfElsePredicate<Output, Else, Eq<Lhs, Rhs>>;
+        type Output = op_aliases::IfElsePredicate<Eq<Lhs, Rhs>, TrueOutput, FalseOutput>;
     }
 
-    // if zero
+    // assert not equal
+
+    /// Returns input type if `Lhs` equals to `Rhs`.
+    pub trait AssertNotEqual<Lhs, Rhs, Output> {
+        type Output;
+    }
+
+    impl<Lhs, Rhs, Output> AssertNotEqual<Lhs, Rhs, Output> for ()
+    where
+        (): AssertPredicate<NotEq<Lhs, Rhs>, Output>,
+        Lhs: IsNotEqual<Rhs>,
+        NotEq<Lhs, Rhs>: Bit,
+    {
+        type Output = Output;
+    }
+
+    // if else not equal
+
+    /// Returns output if left-hand-site equals to right-hand-side, otherwise returns `Else`.
+    pub trait IfElseNotEqual<Lhs, Rhs, TrueOutput, FalseOutput> {
+        type Output;
+    }
+
+    impl<Lhs, Rhs, TrueOutput, FalseOutput> IfElseNotEqual<Lhs, Rhs, TrueOutput, FalseOutput> for ()
+    where
+        (): IfElsePredicate<NotEq<Lhs, Rhs>, TrueOutput, FalseOutput>,
+        Lhs: IsNotEqual<Rhs>,
+        NotEq<Lhs, Rhs>: Bit,
+    {
+        type Output = op_aliases::IfElsePredicate<NotEq<Lhs, Rhs>, TrueOutput, FalseOutput>;
+    }
+
+    // assert zero
 
     /// A type operator that checks if a [typenum] value is either
     /// [B0](typenum::B0), [Z0](typenum::Z0) or [U0](typenum::U0).
-    pub trait IfZero<Value> {
+    pub trait AssertZero<Value, Output> {
         type Output;
     }
 
-    impl<Output> IfZero<B0> for Output {
+    impl<Output> AssertZero<B0, Output> for () {
         type Output = Output;
     }
 
-    impl<Output> IfZero<Z0> for Output {
+    impl<Output> AssertZero<Z0, Output> for () {
         type Output = Output;
     }
 
-    impl<Output> IfZero<U0> for Output {
+    impl<Output> AssertZero<U0, Output> for () {
         type Output = Output;
     }
 
-    // if non-zero
+    // if-else zero
+
+    pub trait IfElseZero<Value, TrueOutput, FalseOutput> {
+        type Output;
+    }
+
+    impl<TrueOutput, FalseOutput> IfElseZero<B0, TrueOutput, FalseOutput> for () {
+        type Output = TrueOutput;
+    }
+
+    impl<TrueOutput, FalseOutput> IfElseZero<B1, TrueOutput, FalseOutput> for () {
+        type Output = FalseOutput;
+    }
+
+    impl<TrueOutput, FalseOutput> IfElseZero<Z0, TrueOutput, FalseOutput> for () {
+        type Output = TrueOutput;
+    }
+
+    impl<TrueOutput, FalseOutput, U> IfElseZero<PInt<U>, TrueOutput, FalseOutput> for ()
+    where
+        U: Unsigned + NonZero,
+    {
+        type Output = FalseOutput;
+    }
+
+    impl<TrueOutput, FalseOutput, U> IfElseZero<NInt<U>, TrueOutput, FalseOutput> for ()
+    where
+        U: Unsigned + NonZero,
+    {
+        type Output = FalseOutput;
+    }
+
+    impl<TrueOutput, FalseOutput> IfElseZero<UTerm, TrueOutput, FalseOutput> for () {
+        type Output = TrueOutput;
+    }
+
+    impl<TrueOutput, FalseOutput, U, B> IfElseZero<UInt<U, B>, TrueOutput, FalseOutput> for ()
+    where
+        U: Unsigned,
+        B: Bit,
+    {
+        type Output = FalseOutput;
+    }
+
+    // assert non-zero
 
     /// A type operator that checks if a [typenum] value implements
     /// [NonZero](typenum::NonZero) trait.
-    pub trait IfNonZero<Value>
+    pub trait AssertNonZero<Value, Output>
     where
         Value: NonZero,
     {
         type Output;
     }
 
-    impl<Value, Output> IfNonZero<Value> for Output
+    impl<Value, Output> AssertNonZero<Value, Output> for ()
     where
         Value: NonZero,
     {
         type Output = Output;
     }
 
+    // if-else non-zero
+
+    pub trait IfElseNonZero<Value, TrueOutput, FalseOutput> {
+        type Output;
+    }
+
+    impl<Value, TrueOutput, FalseOutput> IfElseNonZero<Value, TrueOutput, FalseOutput> for ()
+    where
+        (): IfElseZero<Value, FalseOutput, TrueOutput>,
+    {
+        type Output = op_aliases::IfElseZero<Value, FalseOutput, TrueOutput>;
+    }
 }
 
 pub mod op_aliases {
     use super::*;
 
-    pub type IfSame<Output, Lhs, Rhs> = <Output as ops::IfSame<Lhs, Rhs>>::Output;
-    pub type IfZero<Output, Value> = <Output as ops::IfZero<Value>>::Output;
-    pub type IfNonZero<Output, Value> = <Output as ops::IfNonZero<Value>>::Output;
-    pub type IfPredicate<Output, Cond> = <Output as ops::IfPredicate<Cond>>::Output;
-    pub type IfElseEqual<Output, Else, Lhs, Rhs> =
-        <Output as ops::IfElseEqual<Else, Lhs, Rhs>>::Output;
-    pub type IfNotPredicate<Output, Cond> = <Output as ops::IfNotPredicate<Cond>>::Output;
-    pub type IfElsePredicate<TrueOutput, FalseOutput, Cond> =
-        <TrueOutput as ops::IfElsePredicate<FalseOutput, Cond>>::Output;
-    pub type IfLess<Output, Lhs, Rhs> = <Output as ops::IfLess<Lhs, Rhs>>::Output;
-    pub type IfElseLess<Output, Else, Lhs, Rhs> =
-        <Output as ops::IfElseLess<Else, Lhs, Rhs>>::Output;
-    pub type IfLessOrEqual<Output, Lhs, Rhs> = <Output as ops::IfLessOrEqual<Lhs, Rhs>>::Output;
-    pub type IfElseLessOrEqual<Output, Else, Lhs, Rhs> =
-        <Output as ops::IfElseLessOrEqual<Else, Lhs, Rhs>>::Output;
-    pub type IfGreater<Output, Lhs, Rhs> = <Output as ops::IfGreater<Lhs, Rhs>>::Output;
-    pub type IfElseGreater<Output, Else, Lhs, Rhs> =
-        <Output as ops::IfElseGreater<Else, Lhs, Rhs>>::Output;
-    pub type IfGreaterOrEqual<Output, Lhs, Rhs> =
-        <Output as ops::IfGreaterOrEqual<Lhs, Rhs>>::Output;
-    pub type IfElseGreaterOrEqual<Output, Else, Lhs, Rhs> =
-        <Output as ops::IfElseGreaterOrEqual<Else, Lhs, Rhs>>::Output;
-    pub type IfEqual<Output, Lhs, Rhs> = <Output as ops::IfEqual<Lhs, Rhs>>::Output;
+    pub type AssertSame<Lhs, Rhs, Output> = <() as ops::AssertSame<Lhs, Rhs, Output>>::Output;
+    pub type AssertPredicate<Cond, Output> = <() as ops::AssertPredicate<Cond, Output>>::Output;
+    pub type AssertNotPredicate<Cond, Output> =
+        <() as ops::AssertNotPredicate<Cond, Output>>::Output;
+    pub type AssertEqual<Lhs, Rhs, Output> = <() as ops::AssertEqual<Lhs, Rhs, Output>>::Output;
+    pub type AssertNotEqual<Lhs, Rhs, Output> =
+        <() as ops::AssertNotEqual<Lhs, Rhs, Output>>::Output;
+    pub type AssertLess<Lhs, Rhs, Output> = <() as ops::AssertLess<Lhs, Rhs, Output>>::Output;
+    pub type AssertLessOrEqual<Lhs, Rhs, Output> =
+        <() as ops::AssertLessOrEqual<Lhs, Rhs, Output>>::Output;
+    pub type AssertGreater<Lhs, Rhs, Output> = <() as ops::AssertGreater<Lhs, Rhs, Output>>::Output;
+    pub type AssertGreaterOrEqual<Lhs, Rhs, Output> =
+        <() as ops::AssertGreaterOrEqual<Lhs, Rhs, Output>>::Output;
+    pub type AssertZero<Value, Output> = <() as ops::AssertZero<Value, Output>>::Output;
+    pub type AssertNonZero<Value, Output> = <() as ops::AssertNonZero<Value, Output>>::Output;
+
+    pub type IfElsePredicate<Cond, TrueOutput, FalseOutput> =
+        <() as ops::IfElsePredicate<Cond, TrueOutput, FalseOutput>>::Output;
+    pub type IfElseNotPredicate<Cond, TrueOutput, FalseOutput> =
+        <() as ops::IfElseNotPredicate<Cond, TrueOutput, FalseOutput>>::Output;
+    pub type IfElseEqual<Lhs, Rhs, TrueOutput, FalseOutput> =
+        <() as ops::IfElseEqual<Lhs, Rhs, TrueOutput, FalseOutput>>::Output;
+    pub type IfElseNotEqual<Lhs, Rhs, TrueOutput, FalseOutput> =
+        <() as ops::IfElseNotEqual<Lhs, Rhs, TrueOutput, FalseOutput>>::Output;
+    pub type IfElseLess<Lhs, Rhs, TrueOutput, FalseOutput> =
+        <() as ops::IfElseLess<Lhs, Rhs, TrueOutput, FalseOutput>>::Output;
+    pub type IfElseLessOrEqual<Lhs, Rhs, TrueOutput, FalseOutput> =
+        <() as ops::IfElseLessOrEqual<Lhs, Rhs, TrueOutput, FalseOutput>>::Output;
+    pub type IfElseGreater<Lhs, Rhs, TrueOutput, FalseOutput> =
+        <() as ops::IfElseGreater<Lhs, Rhs, TrueOutput, FalseOutput>>::Output;
+    pub type IfElseGreaterOrEqual<Lhs, Rhs, TrueOutput, FalseOutput> =
+        <() as ops::IfElseGreaterOrEqual<Lhs, Rhs, TrueOutput, FalseOutput>>::Output;
+    pub type IfElseZero<Value, TrueOutput, FalseOutput> =
+        <() as ops::IfElseZero<Value, TrueOutput, FalseOutput>>::Output;
+    pub type IfElseNonZero<Value, TrueOutput, FalseOutput> =
+        <() as ops::IfElseNonZero<Value, TrueOutput, FalseOutput>>::Output;
 
 }
-
-pub mod maps {
-    use super::*;
-}
-
-pub mod map_aliases {
-    use super::*;
-}
-
-// if
-
-// /// Returns input type if `Cond` can be constructed.
-// pub trait If<Cond> {
-//     type Output;
-// }
-
-// pub type If<Output, Cond> = <Output as If<Cond>>::Output;
-
-// impl<Cond, Output> If<Cond> for Output {
-//     type Output = FirstOf<(Output, Cond)>;
-// }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use typenum::{consts::*, Le, Unsigned};
+    use super::op_aliases::*;
+    use typenum::consts::*;
 
-    // if constructed
-    // type Assert1 = If<U3, ()>;
+    type Assert1 = AssertSame<((), ()), ((), ()), ()>;
+    type Assert2 = AssertPredicate<True, ()>;
+    type Assert3 = AssertNotPredicate<False, ()>;
+    type Assert4 = AssertEqual<U1, U1, ()>;
+    type Assert5 = AssertLess<U1, U2, ()>;
+    type Assert6 = AssertLessOrEqual<U1, U2, ()>;
+    type Assert8 = AssertGreater<U2, U1, ()>;
+    type Assert9 = AssertGreaterOrEqual<U2, U1, ()>;
+    type Assert11 = AssertNotEqual<U1, U2, ()>;
 
-    // if type equivalence
-    type Assert2 = op_aliases::IfSame<(), u8, u8>;
+    type Assert12 = IfElsePredicate<True, ((),), ()>;
+    type Assert13 = IfElsePredicate<False, ((),), ()>;
 
-    // if predicate
-    type Assert3 = op_aliases::IfPredicate<(), Le<U3, U4>>;
+    type Assert14 = IfElseNotPredicate<False, ((),), ()>;
+    type Assert15 = IfElseNotPredicate<True, ((),), ()>;
 
-    // if else predicate
-    type Assert4 = op_aliases::IfElsePredicate<True, False, Le<U3, U4>>;
+    type Assert16 = IfElseEqual<U1, U1, ((),), ()>;
+    type Assert17 = IfElseEqual<U1, U2, ((),), ()>;
 
-    // if less than
-    type Assert5 = op_aliases::IfLess<(), U6, U9>;
+    type Assert18 = IfElseLess<U1, U2, ((),), ()>;
+    type Assert19 = IfElseLess<U1, U1, ((),), ()>;
+    type Assert20 = IfElseLess<U2, U1, ((),), ()>;
 
-    // if less than or equal
-    type Assert6 = op_aliases::IfLessOrEqual<(), U6, U6>;
-    type Assert7 = op_aliases::IfLessOrEqual<(), U6, U7>;
+    type Assert21 = IfElseLessOrEqual<U1, U2, ((),), ()>;
+    type Assert22 = IfElseLessOrEqual<U1, U1, ((),), ()>;
+    type Assert23 = IfElseLessOrEqual<U2, U1, ((),), ()>;
 
-    // if greater than
-    type Assert8 = op_aliases::IfGreater<(), U7, U4>;
+    type Assert27 = IfElseGreater<U1, U2, ((),), ()>;
+    type Assert28 = IfElseGreater<U1, U1, ((),), ()>;
+    type Assert29 = IfElseGreater<U2, U1, ((),), ()>;
 
-    // if greater than or equal
-    type Assert9 = op_aliases::IfGreaterOrEqual<(), U7, U4>;
-    type Assert10 = op_aliases::IfGreaterOrEqual<(), U7, U7>;
+    type Assert33 = IfElseGreaterOrEqual<U1, U2, ((),), ()>;
+    type Assert34 = IfElseGreaterOrEqual<U1, U1, ((),), ()>;
+    type Assert35 = IfElseGreaterOrEqual<U2, U1, ((),), ()>;
 
-    // if equal
-    type Assert11 = op_aliases::IfEqual<(), Z0, Z0>;
-
-    // if zero
-    type Assert12<Value> = op_aliases::IfZero<(), Value>;
-
-    // if non-zero
-    type Assert13<Value> = op_aliases::IfNonZero<(), Value>;
+    type Assert36 = IfElseNotEqual<U1, U2, ((),), ()>;
+    type Assert37 = IfElseNotEqual<U1, U1, ((),), ()>;
+    type Assert38 = IfElseNotEqual<U2, U1, ((),), ()>;
 
     #[test]
     fn control_test() {
-        // assert_eq!(3, Assert1::USIZE);
+        let _: Assert1 = ();
         let _: Assert2 = ();
         let _: Assert3 = ();
-        assert!(Assert4::BOOL);
+        let _: Assert4 = ();
         let _: Assert5 = ();
         let _: Assert6 = ();
-        let _: Assert7 = ();
         let _: Assert8 = ();
         let _: Assert9 = ();
-        let _: Assert10 = ();
         let _: Assert11 = ();
-        let _: Assert12<B0> = ();
-        let _: Assert12<Z0> = ();
-        let _: Assert12<U0> = ();
-        let _: Assert13<P1> = ();
-        let _: Assert13<N1> = ();
-        let _: Assert13<U1> = ();
+
+        let _: Assert12 = ((),);
+        let _: Assert13 = ();
+
+        let _: Assert14 = ((),);
+        let _: Assert15 = ();
+
+        let _: Assert16 = ((),);
+        let _: Assert17 = ();
+
+        let _: Assert18 = ((),);
+        let _: Assert19 = ();
+        let _: Assert20 = ();
+
+        let _: Assert21 = ((),);
+        let _: Assert22 = ((),);
+        let _: Assert23 = ();
+
+        let _: Assert27 = ();
+        let _: Assert28 = ();
+        let _: Assert29 = ((),);
+
+        let _: Assert33 = ();
+        let _: Assert34 = ((),);
+        let _: Assert35 = ((),);
+
+        let _: Assert36 = ((),);
+        let _: Assert37 = ();
+        let _: Assert38 = ((),);
     }
 }
