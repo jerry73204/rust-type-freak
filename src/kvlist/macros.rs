@@ -7,8 +7,8 @@
 /// // Same as KVCons<U0, String, KVCons<U3, usize, KVNil>>
 /// ```
 #[macro_export]
-macro_rules! KVListType {
-    () => { $crate::kvlist::KVNil };
-    (($name:ty, $value:ty)) => { $crate::kvlist::KVCons<$name, $value, $crate::kvlist::KVNil> };
-    (($name:ty, $value:ty), $(($names:ty, $values:ty)),+) => { $crate::kvlist::KVCons<$name, $value, $crate::KVListType![$(($names, $values)),*]> };
+macro_rules! KVListT {
+    {} => { $crate::kvlist::KVNil };
+    {$name:ty : $value:ty $(,)?} => { $crate::kvlist::KVCons<$name, $value, $crate::kvlist::KVNil> };
+    {$name:ty : $value:ty $(, $names:ty : $values:ty)+ $(,)?} => { $crate::kvlist::KVCons<$name, $value, $crate::KVListT![$($names : $values),*]> };
 }
