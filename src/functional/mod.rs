@@ -1,8 +1,3 @@
-//! Functional primitives like [Map](crate::functional::Map) and
-//! [Compose](crate::functional::Compose).
+pub mod base;
 
-mod applicative;
-mod map;
-
-pub use applicative::*;
-pub use map::*;
+pub use base::*;
