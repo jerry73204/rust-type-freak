@@ -1,71 +1,161 @@
 //! Numeric type operators and functors.
 
-use crate::{
-    boolean::Boolean,
-    control::{IfElsePredicate, IfElsePredicateOutput},
-    functional::Map,
-};
-use std::ops::{Add, Mul, Sub};
-use typenum::{Add1, Gr, IsGreater, IsLess, Le, Prod, Sub1, Sum, B1};
+use std::ops::{Add, Sub};
+use typenum::{Add1, Bit, Sub1, UInt, UTerm, Unsigned, B0, B1};
 
-/// A [Map] type that computes summation of inputs.
-pub struct SumComposeMap;
+pub mod ops {
+    use super::*;
 
-impl<Lhs, Rhs> Map<(Lhs, Rhs)> for SumComposeMap
-where
-    Lhs: Add<Rhs>,
-{
-    type Output = Sum<Lhs, Rhs>;
+    // popcount
+
+    pub trait PopCount
+    where
+        Self: Unsigned,
+        Self::Output: Unsigned,
+    {
+        type Output;
+    }
+
+    impl<Input> PopCount for Input
+    where
+        Input: Unsigned + PopCountWithBase<UTerm>,
+    {
+        type Output = op_aliases::PopCountWithBase<Input, UTerm>;
+    }
+
+    // popcount with base
+
+    pub trait PopCountWithBase<Base>
+    where
+        Self: Unsigned,
+        Self::Output: Unsigned,
+        Base: Unsigned,
+    {
+        type Output;
+    }
+
+    impl<Base> PopCountWithBase<Base> for UTerm
+    where
+        Base: Unsigned,
+    {
+        type Output = Base;
+    }
+
+    impl<Base, U> PopCountWithBase<Base> for UInt<U, B0>
+    where
+        U: Unsigned + PopCountWithBase<Base>,
+        Base: Unsigned,
+    {
+        type Output = op_aliases::PopCountWithBase<U, Base>;
+    }
+
+    impl<Base, U> PopCountWithBase<Base> for UInt<U, B1>
+    where
+        U: Unsigned + PopCountWithBase<Add1<Base>>,
+        Base: Unsigned + Add<B1>,
+        Add1<Base>: Unsigned,
+    {
+        type Output = op_aliases::PopCountWithBase<U, Add1<Base>>;
+    }
+
+    // binary to sequence of bits
+
+    pub trait BitSeqOf
+    where
+        Self: Unsigned,
+        Self::Output: Unsigned,
+    {
+        type Output;
+    }
+
+    impl<Input> BitSeqOf for Input
+    where
+        Input: Unsigned + BitSeqOfWithBase<UTerm>,
+    {
+        type Output = op_aliases::BitSeqOfWithBase<Input, UTerm>;
+    }
+
+    // binary to sequence of bits with base
+
+    pub trait BitSeqOfWithBase<Base>
+    where
+        Self: Unsigned,
+        Self::Output: Unsigned,
+        Base: Unsigned,
+    {
+        type Output;
+    }
+
+    impl<Base> BitSeqOfWithBase<Base> for UTerm
+    where
+        Base: Unsigned,
+    {
+        type Output = Base;
+    }
+
+    impl<Base> BitSeqOfWithBase<Base> for UInt<UTerm, B1>
+    where
+        Base: Unsigned + Add<B1>,
+    {
+        type Output = op_aliases::BitSeqOfWithBase<UTerm, UInt<Base, B1>>;
+    }
+
+    impl<Base, U, B> BitSeqOfWithBase<Base> for UInt<UInt<U, B>, B1>
+    where
+        UInt<UInt<U, B>, B0>: BitSeqOfWithBase<UInt<Base, B1>>,
+        Base: Unsigned,
+        U: Unsigned,
+        B: Bit,
+    {
+        type Output = op_aliases::BitSeqOfWithBase<UInt<UInt<U, B>, B0>, UInt<Base, B1>>;
+    }
+
+    impl<Base, U> BitSeqOfWithBase<Base> for UInt<U, B0>
+    where
+        Base: Unsigned,
+        U: Unsigned + Sub<B1>,
+        UInt<Sub1<U>, B1>: BitSeqOfWithBase<UInt<Base, B1>>,
+    {
+        type Output = op_aliases::BitSeqOfWithBase<UInt<Sub1<U>, B1>, UInt<Base, B1>>;
+    }
+
 }
 
-/// A [Map] type that computes product of inputs.
-pub struct ProdComposeMap;
+pub mod op_aliases {
+    use super::*;
 
-impl<Lhs, Rhs> Map<(Lhs, Rhs)> for ProdComposeMap
-where
-    Lhs: Mul<Rhs>,
-{
-    type Output = Prod<Lhs, Rhs>;
+    pub type PopCount<Input> = <Input as ops::PopCount>::Output;
+    pub type PopCountWithBase<Input, Base> = <Input as ops::PopCountWithBase<Base>>::Output;
+    pub type BitSeqOf<Input> = <Input as ops::BitSeqOf>::Output;
+    pub type BitSeqOfWithBase<Input, Base> = <Input as ops::BitSeqOfWithBase<Base>>::Output;
 }
 
-/// A [Map] type that gets minimum of inputs.
-pub struct MinComposeMap;
+#[cfg(test)]
+mod tests {
+    use super::op_aliases::*;
+    use crate::control::op_aliases::IfSame;
+    use typenum::{U0, U1, U15, U2, U3, U4, U7};
 
-impl<Lhs, Rhs> Map<(Lhs, Rhs)> for MinComposeMap
-where
-    Rhs: IsLess<Lhs> + IfElsePredicate<Le<Rhs, Lhs>, Lhs>,
-    Le<Rhs, Lhs>: Boolean,
-{
-    type Output = IfElsePredicateOutput<Rhs, Le<Rhs, Lhs>, Lhs>;
-}
+    type Assert1 = IfSame<(), PopCount<U0>, U0>;
+    type Assert2 = IfSame<(), PopCount<U1>, U1>;
+    type Assert3 = IfSame<(), PopCount<U2>, U1>;
+    type Assert4 = IfSame<(), PopCount<U3>, U2>;
+    type Assert5 = IfSame<(), BitSeqOf<U0>, U0>;
+    type Assert6 = IfSame<(), BitSeqOf<U1>, U1>;
+    type Assert7 = IfSame<(), BitSeqOf<U2>, U3>;
+    type Assert8 = IfSame<(), BitSeqOf<U3>, U7>;
+    type Assert9 = IfSame<(), BitSeqOf<U4>, U15>;
 
-/// A [Map] type that gets maximum of inputs.
-pub struct MaxComposeMap;
-
-impl<Lhs, Rhs> Map<(Lhs, Rhs)> for MaxComposeMap
-where
-    Rhs: IsGreater<Lhs> + IfElsePredicate<Gr<Rhs, Lhs>, Lhs>,
-    Gr<Rhs, Lhs>: Boolean,
-{
-    type Output = IfElsePredicateOutput<Rhs, Gr<Rhs, Lhs>, Lhs>;
-}
-
-/// A [Map] that increases input [typenum] integer by one.
-pub struct AddOneMap;
-
-impl<Value> Map<Value> for AddOneMap
-where
-    Value: Add<B1>,
-{
-    type Output = Add1<Value>;
-}
-
-/// A [Map] that decreases input [typenum] integer by one.
-pub struct SubOneMap;
-
-impl<Value> Map<Value> for SubOneMap
-where
-    Value: Sub<B1>,
-{
-    type Output = Sub1<Value>;
+    #[test]
+    fn numeric_test() {
+        let _: Assert1 = ();
+        let _: Assert2 = ();
+        let _: Assert3 = ();
+        let _: Assert4 = ();
+        let _: Assert5 = ();
+        let _: Assert6 = ();
+        let _: Assert7 = ();
+        let _: Assert8 = ();
+        let _: Assert9 = ();
+    }
 }
