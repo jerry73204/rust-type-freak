@@ -326,27 +326,29 @@ mod tests {
     type DoubleList = KVListT! {Ka: Va, Kb: Vb};
     type TripleList = KVListT! {Ka: Va, Kb: Vb, Kc: Vc};
 
-    type Assert1<Index> = IfSame<(), Insert<EmptyList, Ka, Va, Index>, KVListT! {Ka: Va}>;
-    type Assert2 = IfSame<(), Insert<SingleList, Kb, Vb, U0>, KVListT! {Kb: Vb, Ka: Va}>;
-    type Assert3 = IfSame<(), Insert<SingleList, Kb, Vb, U1>, KVListT! {Ka: Va, Kb: Vb}>;
-    type Assert4 = IfSame<(), Insert<DoubleList, Kc, Vc, U1>, KVListT! {Ka: Va, Kc: Vc, Kb: Vb}>;
-    type Assert8 = IfSame<(), Insert<DoubleList, Kc, Vc, U2>, KVListT! {Ka: Va, Kb: Vb, Kc: Vc}>;
-    type Assert5<Index> = IfSame<(), Remove<TripleList, Kb, Index>, KVListT! {Ka: Va, Kc: Vc}>;
-    type Assert6<Key> = IfSame<(), Remove<TripleList, Key, U2>, KVListT! {Ka: Va, Kb: Vb}>;
-    type Assert7 = IfSame<(), Keys<TripleList>, ListT![Ka, Kb, Kc]>;
-    type Assert9 = IfSame<(), Values<TripleList>, ListT![Va, Vb, Vc]>;
-    type Assert10<Index> = IfSame<(), IndexOf<TripleList, Kb, Index>, U1>;
-    type Assert11 = IfSame<(), KeyAt<TripleList, U2>, Kc>;
-    type Assert12 = IfSame<(), ValueAt<TripleList, U2>, Vc>;
-    type Assert13<Counter> = IfSame<(), Get<TripleList, Kc, Counter>, Vc>;
+    type Assert1<Index> = AssertSame<Insert<EmptyList, Ka, Va, Index>, KVListT! {Ka: Va}, ()>;
+    type Assert2 = AssertSame<Insert<SingleList, Kb, Vb, U0>, KVListT! {Kb: Vb, Ka: Va}, ()>;
+    type Assert3 = AssertSame<Insert<SingleList, Kb, Vb, U1>, KVListT! {Ka: Va, Kb: Vb}, ()>;
+    type Assert4 =
+        AssertSame<Insert<DoubleList, Kc, Vc, U1>, KVListT! {Ka: Va, Kc: Vc, Kb: Vb}, ()>;
+    type Assert8 =
+        AssertSame<Insert<DoubleList, Kc, Vc, U2>, KVListT! {Ka: Va, Kb: Vb, Kc: Vc}, ()>;
+    type Assert5<Index> = AssertSame<Remove<TripleList, Kb, Index>, KVListT! {Ka: Va, Kc: Vc}, ()>;
+    type Assert6<Key> = AssertSame<Remove<TripleList, Key, U2>, KVListT! {Ka: Va, Kb: Vb}, ()>;
+    type Assert7 = AssertSame<Keys<TripleList>, ListT![Ka, Kb, Kc], ()>;
+    type Assert9 = AssertSame<Values<TripleList>, ListT![Va, Vb, Vc], ()>;
+    type Assert10<Index> = AssertSame<IndexOf<TripleList, Kb, Index>, U1, ()>;
+    type Assert11 = AssertSame<KeyAt<TripleList, U2>, Kc, ()>;
+    type Assert12 = AssertSame<ValueAt<TripleList, U2>, Vc, ()>;
+    type Assert13<Counter> = AssertSame<Get<TripleList, Kc, Counter>, Vc, ()>;
     type Assert14<Indexes> =
-        IfSame<(), Permute<SingleList, ListT![Ka], Indexes>, KVListT! {Ka: Va}>;
+        AssertSame<Permute<SingleList, ListT![Ka], Indexes>, KVListT! {Ka: Va}, ()>;
     type Assert15<Indexes> =
-        IfSame<(), Permute<DoubleList, ListT![Kb, Ka], Indexes>, KVListT! {Kb: Vb, Ka: Va}>;
-    type Assert16<Indexes> = IfSame<
-        (),
+        AssertSame<Permute<DoubleList, ListT![Kb, Ka], Indexes>, KVListT! {Kb: Vb, Ka: Va}, ()>;
+    type Assert16<Indexes> = AssertSame<
         Permute<TripleList, ListT![Kc, Ka, Kb], Indexes>,
         KVListT! {Kc: Vc, Ka: Va, Kb: Vb},
+        (),
     >;
 
     #[test]

@@ -133,18 +133,18 @@ pub mod op_aliases {
 #[cfg(test)]
 mod tests {
     use super::op_aliases::*;
-    use crate::control::op_aliases::IfSame;
+    use crate::control::op_aliases::*;
     use typenum::{U0, U1, U15, U2, U3, U4, U7};
 
-    type Assert1 = IfSame<(), PopCount<U0>, U0>;
-    type Assert2 = IfSame<(), PopCount<U1>, U1>;
-    type Assert3 = IfSame<(), PopCount<U2>, U1>;
-    type Assert4 = IfSame<(), PopCount<U3>, U2>;
-    type Assert5 = IfSame<(), BitSeqOf<U0>, U0>;
-    type Assert6 = IfSame<(), BitSeqOf<U1>, U1>;
-    type Assert7 = IfSame<(), BitSeqOf<U2>, U3>;
-    type Assert8 = IfSame<(), BitSeqOf<U3>, U7>;
-    type Assert9 = IfSame<(), BitSeqOf<U4>, U15>;
+    type Assert1 = AssertSame<PopCount<U0>, U0, ()>;
+    type Assert2 = AssertSame<PopCount<U1>, U1, ()>;
+    type Assert3 = AssertSame<PopCount<U2>, U1, ()>;
+    type Assert4 = AssertSame<PopCount<U3>, U2, ()>;
+    type Assert5 = AssertSame<BitSeqOf<U0>, U0, ()>;
+    type Assert6 = AssertSame<BitSeqOf<U1>, U1, ()>;
+    type Assert7 = AssertSame<BitSeqOf<U2>, U3, ()>;
+    type Assert8 = AssertSame<BitSeqOf<U3>, U7, ()>;
+    type Assert9 = AssertSame<BitSeqOf<U4>, U15, ()>;
 
     #[test]
     fn numeric_test() {

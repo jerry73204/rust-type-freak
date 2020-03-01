@@ -21,7 +21,7 @@ impl KVList for KVNil {}
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{control::op_aliases::IfSame, KVListT};
+    use crate::{control::op_aliases::*, KVListT};
 
     struct Ka;
     struct Kb;
@@ -30,15 +30,15 @@ mod tests {
     struct Vb;
     struct Vc;
 
-    type Assert1 = IfSame<(), KVListT! {}, KVNil>;
-    type Assert2 = IfSame<(), KVListT! {Ka: Va}, KVCons<Ka, Va, KVNil>>;
-    type Assert3 = IfSame<(), KVListT! {Ka: Va, Kb: Vb}, KVCons<Ka, Va, KVCons<Kb, Vb, KVNil>>>;
-    type Assert4 = IfSame<
-        (),
+    type Assert1 = AssertSame<KVListT! {}, KVNil, ()>;
+    type Assert2 = AssertSame<KVListT! {Ka: Va}, KVCons<Ka, Va, KVNil>, ()>;
+    type Assert3 = AssertSame<KVListT! {Ka: Va, Kb: Vb}, KVCons<Ka, Va, KVCons<Kb, Vb, KVNil>>, ()>;
+    type Assert4 = AssertSame<
         KVListT! {Ka: Va, Kb: Vb, Kc: Vc},
         KVCons<Ka, Va, KVCons<Kb, Vb, KVCons<Kc, Vc, KVNil>>>,
+        (),
     >;
-    type Assert5 = IfSame<(), KVListT! {Ka: Va, Kb: Va}, KVCons<Ka, Va, KVCons<Kb, Va, KVNil>>>;
+    type Assert5 = AssertSame<KVListT! {Ka: Va, Kb: Va}, KVCons<Ka, Va, KVCons<Kb, Va, KVNil>>, ()>;
 
     #[test]
     fn kvlist_type_test() {
