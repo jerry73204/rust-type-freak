@@ -152,6 +152,41 @@ pub mod ops {
         type Output = KVCons<Key, Value, op_aliases::RemoveByCounter<Tail, Target, Next>>;
     }
 
+    // remove many
+
+    pub trait RemoveMany<Targets, Counters>
+    where
+        Self: KVList,
+        Self::Output: List,
+        Targets: List,
+        Counters: List,
+    {
+        type Output;
+    }
+
+    impl<InputList> RemoveMany<Nil, Nil> for InputList
+    where
+        InputList: KVList,
+    {
+        type Output = InputList;
+    }
+
+    impl<Target, TargetTail, Count, CountTail, InputList>
+        RemoveMany<Cons<Target, TargetTail>, Cons<Count, CountTail>> for InputList
+    where
+        Count: Counter,
+        InputList: KVList + RemoveByCounter<Target, Count>,
+        TargetTail: List,
+        CountTail: List,
+        op_aliases::RemoveByCounter<InputList, Target, Count>: RemoveMany<TargetTail, CountTail>,
+    {
+        type Output = op_aliases::RemoveMany<
+            op_aliases::RemoveByCounter<InputList, Target, Count>,
+            TargetTail,
+            CountTail,
+        >;
+    }
+
     // keys
 
     pub trait Keys
@@ -336,7 +371,8 @@ pub mod op_aliases {
     pub type Permute<InputList, TargetKeys, Indexes> =
         <InputList as ops::Permute<TargetKeys, Indexes>>::Output;
     pub type Get<InputList, Target, Counter> = <InputList as ops::Get<Target, Counter>>::Output;
-
+    pub type RemoveMany<InputList, Targets, Counters> =
+        <InputList as ops::RemoveMany<Targets, Counters>>::Output;
 }
 
 #[cfg(test)]
@@ -385,6 +421,12 @@ mod tests {
         AssertSame<Insert<SingleList, Ka, Count, Kb, Vb>, KVListT! {Kb: Vb, Ka: Va}, ()>;
     type Assert18<Count> =
         AssertSame<Insert<DoubleList, Kb, Count, Kc, Vc>, KVListT! {Ka: Va, Kc: Vc, Kb: Vb}, ()>;
+    type Assert19<Counters> =
+        AssertSame<RemoveMany<SingleList, ListT![], Counters>, KVListT! {Ka: Va}, ()>;
+    type Assert20<Counters> =
+        AssertSame<RemoveMany<SingleList, ListT![Ka], Counters>, KVListT! {}, ()>;
+    type Assert21<Counters> =
+        AssertSame<RemoveMany<TripleList, ListT![Kc, Ka], Counters>, KVListT! {Kb: Vb}, ()>;
 
     #[test]
     fn kvlist_ops_test() {
@@ -406,5 +448,8 @@ mod tests {
         let _: Assert16<_> = ();
         let _: Assert17<_> = ();
         let _: Assert18<_> = ();
+        let _: Assert19<_> = ();
+        let _: Assert20<_> = ();
+        let _: Assert21<_> = ();
     }
 }
