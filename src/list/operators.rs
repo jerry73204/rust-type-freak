@@ -258,6 +258,41 @@ pub mod ops {
         type Output = Cons<Head, op_aliases::RemoveByCounter<Tail, Node, Next>>;
     }
 
+    // remove many
+
+    pub trait RemoveMany<Targets, Counters>
+    where
+        Self: List,
+        Self::Output: List,
+        Targets: List,
+        Counters: List,
+    {
+        type Output;
+    }
+
+    impl<InputList> RemoveMany<Nil, Nil> for InputList
+    where
+        InputList: List,
+    {
+        type Output = InputList;
+    }
+
+    impl<Target, TargetTail, Count, CountTail, InputList>
+        RemoveMany<Cons<Target, TargetTail>, Cons<Count, CountTail>> for InputList
+    where
+        InputList: List + RemoveByCounter<Target, Count>,
+        TargetTail: List,
+        Count: Counter,
+        CountTail: List,
+        op_aliases::RemoveByCounter<InputList, Target, Count>: RemoveMany<TargetTail, CountTail>,
+    {
+        type Output = op_aliases::RemoveMany<
+            op_aliases::RemoveByCounter<InputList, Target, Count>,
+            TargetTail,
+            CountTail,
+        >;
+    }
+
     // extend
 
     pub trait Extend<Other>
@@ -936,6 +971,8 @@ pub mod op_aliases {
     pub type Fold<InputList, MapType, Init> = <InputList as ops::Fold<MapType, Init>>::Output;
     pub type PopBack<InputList> = <InputList as ops::PopBack>::Output;
     pub type PopFront<InputList> = <InputList as ops::PopFront>::Output;
+    pub type RemoveMany<InputList, Targets, Counters> =
+        <InputList as ops::RemoveMany<Targets, Counters>>::Output;
 }
 
 #[cfg(test)]
@@ -1002,6 +1039,10 @@ mod tests {
     type Assert47<Count> = AssertSame<Insert<DoubleList, C, Count, A>, ListT![B, A, C], ()>;
     type Assert48 = AssertSame<PopFront<TripleList>, ListT![B, C], ()>;
     type Assert49 = AssertSame<PopBack<TripleList>, ListT![A, B], ()>;
+    type Assert50<Counters> = AssertSame<RemoveMany<SingleList, ListT![], Counters>, ListT![A], ()>;
+    type Assert51<Counters> = AssertSame<RemoveMany<SingleList, ListT![A], Counters>, ListT![], ()>;
+    type Assert52<Counters> =
+        AssertSame<RemoveMany<TripleList, ListT![A, C], Counters>, ListT![B], ()>;
 
     // TODO: test ForEach and Fold
 
@@ -1056,5 +1097,8 @@ mod tests {
         let _: Assert47<_> = ();
         let _: Assert48 = ();
         let _: Assert49 = ();
+        let _: Assert50<_> = ();
+        let _: Assert51<_> = ();
+        let _: Assert52<_> = ();
     }
 }
