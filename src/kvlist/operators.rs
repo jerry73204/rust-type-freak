@@ -12,9 +12,38 @@ use typenum::{Bit, Sub1, UInt, UTerm, Unsigned, B0, B1};
 pub mod ops {
     use super::*;
 
-    // insert
+    // insert at element
 
-    pub trait Insert<Key, Value, Index>
+    pub trait Insert<Target, Count, Key, Value>
+    where
+        Self: KVList,
+        Self::Output: KVList,
+        Count: Counter,
+    {
+        type Output;
+    }
+
+    impl<Target, TargetValue, Key, Value, Tail> Insert<Target, Nil, Key, Value>
+        for KVCons<Target, TargetValue, Tail>
+    where
+        Tail: KVList,
+    {
+        type Output = KVCons<Key, Value, KVCons<Target, TargetValue, Tail>>;
+    }
+
+    impl<Target, Next, Key, Value, CurrKey, CurrValue, Tail> Insert<Target, Step<Next>, Key, Value>
+        for KVCons<CurrKey, CurrValue, Tail>
+    where
+        Next: Counter,
+        Tail: KVList + Insert<Target, Next, Key, Value>,
+    {
+        type Output =
+            KVCons<CurrKey, CurrValue, op_aliases::Insert<Tail, Target, Next, Key, Value>>;
+    }
+
+    // insert at index
+
+    pub trait InsertAt<Key, Value, Index>
     where
         Self: KVList,
         Self::Output: KVList,
@@ -23,13 +52,13 @@ pub mod ops {
         type Output;
     }
 
-    impl<Key, Value, Index, InputList> Insert<Key, Value, Index> for InputList
+    impl<Key, Value, Index, InputList> InsertAt<Key, Value, Index> for InputList
     where
-        InputList: KVList + list::ops::Insert<(Key, Value), Index>,
+        InputList: KVList + list::ops::InsertAt<(Key, Value), Index>,
         Index: Unsigned,
-        list::op_aliases::Insert<InputList, (Key, Value), Index>: KVList,
+        list::op_aliases::InsertAt<InputList, (Key, Value), Index>: KVList,
     {
-        type Output = list::op_aliases::Insert<InputList, (Key, Value), Index>;
+        type Output = list::op_aliases::InsertAt<InputList, (Key, Value), Index>;
     }
 
     // insert by counter
@@ -290,8 +319,10 @@ pub mod ops {
 pub mod op_aliases {
     use super::*;
 
-    pub type Insert<InputList, Key, Value, Index> =
-        <InputList as ops::Insert<Key, Value, Index>>::Output;
+    pub type Insert<InputList, Target, Count, Key, Value> =
+        <InputList as ops::Insert<Target, Count, Key, Value>>::Output;
+    pub type InsertAt<InputList, Key, Value, Index> =
+        <InputList as ops::InsertAt<Key, Value, Index>>::Output;
     pub type InsertByCounter<InputList, Key, Value, Counter> =
         <InputList as ops::InsertByCounter<Key, Value, Counter>>::Output;
     pub type Remove<InputList, Key, Index> = <InputList as ops::Remove<Key, Index>>::Output;
@@ -326,13 +357,13 @@ mod tests {
     type DoubleList = KVListT! {Ka: Va, Kb: Vb};
     type TripleList = KVListT! {Ka: Va, Kb: Vb, Kc: Vc};
 
-    type Assert1<Index> = AssertSame<Insert<EmptyList, Ka, Va, Index>, KVListT! {Ka: Va}, ()>;
-    type Assert2 = AssertSame<Insert<SingleList, Kb, Vb, U0>, KVListT! {Kb: Vb, Ka: Va}, ()>;
-    type Assert3 = AssertSame<Insert<SingleList, Kb, Vb, U1>, KVListT! {Ka: Va, Kb: Vb}, ()>;
+    type Assert1<Index> = AssertSame<InsertAt<EmptyList, Ka, Va, Index>, KVListT! {Ka: Va}, ()>;
+    type Assert2 = AssertSame<InsertAt<SingleList, Kb, Vb, U0>, KVListT! {Kb: Vb, Ka: Va}, ()>;
+    type Assert3 = AssertSame<InsertAt<SingleList, Kb, Vb, U1>, KVListT! {Ka: Va, Kb: Vb}, ()>;
     type Assert4 =
-        AssertSame<Insert<DoubleList, Kc, Vc, U1>, KVListT! {Ka: Va, Kc: Vc, Kb: Vb}, ()>;
+        AssertSame<InsertAt<DoubleList, Kc, Vc, U1>, KVListT! {Ka: Va, Kc: Vc, Kb: Vb}, ()>;
     type Assert8 =
-        AssertSame<Insert<DoubleList, Kc, Vc, U2>, KVListT! {Ka: Va, Kb: Vb, Kc: Vc}, ()>;
+        AssertSame<InsertAt<DoubleList, Kc, Vc, U2>, KVListT! {Ka: Va, Kb: Vb, Kc: Vc}, ()>;
     type Assert5<Index> = AssertSame<Remove<TripleList, Kb, Index>, KVListT! {Ka: Va, Kc: Vc}, ()>;
     type Assert6<Key> = AssertSame<Remove<TripleList, Key, U2>, KVListT! {Ka: Va, Kb: Vb}, ()>;
     type Assert7 = AssertSame<Keys<TripleList>, ListT![Ka, Kb, Kc], ()>;
@@ -350,6 +381,10 @@ mod tests {
         KVListT! {Kc: Vc, Ka: Va, Kb: Vb},
         (),
     >;
+    type Assert17<Count> =
+        AssertSame<Insert<SingleList, Ka, Count, Kb, Vb>, KVListT! {Kb: Vb, Ka: Va}, ()>;
+    type Assert18<Count> =
+        AssertSame<Insert<DoubleList, Kb, Count, Kc, Vc>, KVListT! {Ka: Va, Kc: Vc, Kb: Vb}, ()>;
 
     #[test]
     fn kvlist_ops_test() {
@@ -369,5 +404,7 @@ mod tests {
         let _: Assert14<_> = ();
         let _: Assert15<_> = ();
         let _: Assert16<_> = ();
+        let _: Assert17<_> = ();
+        let _: Assert18<_> = ();
     }
 }

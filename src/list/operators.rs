@@ -1,6 +1,6 @@
 use super::{Cons, List, Nil};
 use crate::{
-    counter::{Counter, Step},
+    counter::{self, Counter, Step},
     functional::{Apply, Map},
 };
 use std::ops::{Add, Sub};
@@ -51,9 +51,35 @@ pub mod ops {
         type Output = Cons<Node, Self>;
     }
 
-    // insert
+    // insert at element
 
-    pub trait Insert<Node, Index>
+    pub trait Insert<Target, Count, New>
+    where
+        Self: List,
+        Self::Output: List,
+        Count: Counter,
+    {
+        type Output;
+    }
+
+    impl<Target, New, Tail> Insert<Target, Nil, New> for Cons<Target, Tail>
+    where
+        Tail: List,
+    {
+        type Output = Cons<New, Cons<Target, Tail>>;
+    }
+
+    impl<Target, Next, New, Head, Tail> Insert<Target, Step<Next>, New> for Cons<Head, Tail>
+    where
+        Tail: List + Insert<Target, Next, New>,
+        Next: Counter,
+    {
+        type Output = Cons<Head, op_aliases::Insert<Tail, Target, Next, New>>;
+    }
+
+    // insert at index
+
+    pub trait InsertAt<New, Index>
     where
         Index: Unsigned,
         Self: List,
@@ -62,45 +88,45 @@ pub mod ops {
         type Output;
     }
 
-    impl<Node> Insert<Node, UTerm> for Nil {
+    impl<Node> InsertAt<Node, UTerm> for Nil {
         type Output = Cons<Node, Nil>;
     }
 
-    impl<Node, Head, Tail> Insert<Node, UTerm> for Cons<Head, Tail>
+    impl<Node, Head, Tail> InsertAt<Node, UTerm> for Cons<Head, Tail>
     where
         Tail: List,
     {
         type Output = Cons<Node, Self>;
     }
 
-    impl<Node, Head, Tail> Insert<Node, UInt<UTerm, B1>> for Cons<Head, Tail>
+    impl<Node, Head, Tail> InsertAt<Node, UInt<UTerm, B1>> for Cons<Head, Tail>
     where
-        Tail: List + Insert<Node, UTerm>,
+        Tail: List + InsertAt<Node, UTerm>,
     {
-        type Output = Cons<Head, op_aliases::Insert<Tail, Node, UTerm>>;
+        type Output = Cons<Head, op_aliases::InsertAt<Tail, Node, UTerm>>;
     }
 
-    impl<Node, Head, Tail, U, B> Insert<Node, UInt<UInt<U, B>, B1>> for Cons<Head, Tail>
+    impl<Node, Head, Tail, U, B> InsertAt<Node, UInt<UInt<U, B>, B1>> for Cons<Head, Tail>
     where
-        Tail: List + Insert<Node, UInt<UInt<U, B>, B0>>,
+        Tail: List + InsertAt<Node, UInt<UInt<U, B>, B0>>,
         U: Unsigned,
         B: Bit,
     {
-        type Output = Cons<Head, op_aliases::Insert<Tail, Node, UInt<UInt<U, B>, B0>>>;
+        type Output = Cons<Head, op_aliases::InsertAt<Tail, Node, UInt<UInt<U, B>, B0>>>;
     }
 
-    impl<Node, Head, Tail, U> Insert<Node, UInt<U, B0>> for Cons<Head, Tail>
+    impl<Node, Head, Tail, U> InsertAt<Node, UInt<U, B0>> for Cons<Head, Tail>
     where
-        Tail: List + Insert<Node, UInt<Sub1<U>, B1>>,
+        Tail: List + InsertAt<Node, UInt<Sub1<U>, B1>>,
         U: Unsigned + Sub<B1>,
         Sub1<U>: Unsigned,
     {
-        type Output = Cons<Head, op_aliases::Insert<Tail, Node, UInt<Sub1<U>, B1>>>;
+        type Output = Cons<Head, op_aliases::InsertAt<Tail, Node, UInt<Sub1<U>, B1>>>;
     }
 
     // insert by counter
 
-    pub trait InsertByCounter<Node, Count>
+    pub trait InsertByCounter<New, Count>
     where
         Count: Counter,
         Self: List,
@@ -109,16 +135,19 @@ pub mod ops {
         type Output;
     }
 
-    impl<Node> InsertByCounter<Node, Nil> for Nil {
-        type Output = Cons<Node, Nil>;
+    impl<New, InputList> InsertByCounter<New, Nil> for InputList
+    where
+        InputList: List,
+    {
+        type Output = Cons<New, InputList>;
     }
 
-    impl<Node, Next, Head, Tail> InsertByCounter<Node, Step<Next>> for Cons<Head, Tail>
+    impl<New, Next, Head, Tail> InsertByCounter<New, Step<Next>> for Cons<Head, Tail>
     where
-        Tail: List + InsertByCounter<Node, Next>,
+        Tail: List + InsertByCounter<New, Next>,
         Next: Counter,
     {
-        type Output = Cons<Head, op_aliases::InsertByCounter<Tail, Node, Next>>;
+        type Output = Cons<Head, op_aliases::InsertByCounter<Tail, New, Next>>;
     }
 
     // remove
@@ -834,7 +863,9 @@ pub mod op_aliases {
 
     pub type Append<InputList, Node> = <InputList as ops::Append<Node>>::Output;
     pub type Prepend<InputList, Node> = <InputList as ops::Prepend<Node>>::Output;
-    pub type Insert<InputList, Node, Index> = <InputList as ops::Insert<Node, Index>>::Output;
+    pub type Insert<InputList, Target, Count, New> =
+        <InputList as ops::Insert<Target, Count, New>>::Output;
+    pub type InsertAt<InputList, Node, Index> = <InputList as ops::InsertAt<Node, Index>>::Output;
     pub type InsertByCounter<InputList, Node, Counter> =
         <InputList as ops::InsertByCounter<Node, Counter>>::Output;
     pub type Remove<InputList, Node, Index> = <InputList as ops::Remove<Node, Index>>::Output;
@@ -887,10 +918,10 @@ mod tests {
     type Assert4 = AssertSame<Prepend<EmptyList, A>, ListT![A], ()>;
     type Assert5 = AssertSame<Prepend<SingleList, B>, ListT![B, A], ()>;
     type Assert6 = AssertSame<Prepend<DoubleList, A>, ListT![A, B, C], ()>;
-    type Assert7<Index> = AssertSame<Insert<EmptyList, A, Index>, ListT![A], ()>;
-    type Assert8 = AssertSame<Insert<DoubleList, A, U0>, ListT![A, B, C], ()>;
-    type Assert9 = AssertSame<Insert<DoubleList, A, U1>, ListT![B, A, C], ()>;
-    type Assert10 = AssertSame<Insert<DoubleList, A, U2>, ListT![B, C, A], ()>;
+    type Assert7<Index> = AssertSame<InsertAt<EmptyList, A, Index>, ListT![A], ()>;
+    type Assert8 = AssertSame<InsertAt<DoubleList, A, U0>, ListT![A, B, C], ()>;
+    type Assert9 = AssertSame<InsertAt<DoubleList, A, U1>, ListT![B, A, C], ()>;
+    type Assert10 = AssertSame<InsertAt<DoubleList, A, U2>, ListT![B, C, A], ()>;
     type Assert11<Index> = AssertSame<Remove<SingleList, A, Index>, ListT![], ()>;
     type Assert12<Index> = AssertSame<Remove<DoubleList, C, Index>, ListT![B], ()>;
     type Assert13<Element> = AssertSame<Remove<DoubleList, Element, U0>, ListT![C], ()>;
@@ -926,6 +957,8 @@ mod tests {
     type Assert43 = AssertSame<RangeFrom<TripleList, U2>, ListT![C], ()>;
     type Assert44 = AssertSame<RangeFrom<TripleList, U3>, ListT![], ()>;
     type Assert45 = AssertSame<Zip<DoubleList, TripleList>, ListT![(B, A), (C, B)], ()>;
+    type Assert46<Count> = AssertSame<Insert<DoubleList, B, Count, A>, ListT![A, B, C], ()>;
+    type Assert47<Count> = AssertSame<Insert<DoubleList, C, Count, A>, ListT![B, A, C], ()>;
 
     // TODO: test ForEach and Fold
 
@@ -976,5 +1009,7 @@ mod tests {
         let _: Assert43 = ();
         let _: Assert44 = ();
         let _: Assert45 = ();
+        let _: Assert46<_> = ();
+        let _: Assert47<_> = ();
     }
 }

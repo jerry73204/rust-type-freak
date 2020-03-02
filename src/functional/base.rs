@@ -15,7 +15,7 @@ pub struct Compose<Lhs, Rhs>(PhantomData<(Lhs, Rhs)>);
 impl<Inputs, Lhs, Rhs> Map<Inputs> for Compose<Lhs, Rhs>
 where
     Lhs: Map<Inputs>,
-    Rhs: Map<Apply<Lhs, Inputs>>
+    Rhs: Map<Apply<Lhs, Inputs>>,
 {
     type Output = Apply<Rhs, Apply<Lhs, Inputs>>;
 }

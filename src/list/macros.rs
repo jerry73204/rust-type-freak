@@ -5,11 +5,12 @@
 /// type List = TListType![i8, i16, i32];
 /// // Same as Cons<i8, Cons<i16, Cons<i32, LNil>>>
 /// ```
+
 #[macro_export]
 macro_rules! ListT {
     [] => { $crate::list::Nil };
     [$name:ty] => { $crate::list::Cons<$name, $crate::list::Nil> };
-    ($name:ty, $($names:ty),+) => { $crate::list::Cons<$name, $crate::ListT![$($names),*]> };
+    [$name:ty, $($names:ty),+] => { $crate::list::Cons<$name, $crate::ListT![$($names),*]> };
 }
 
 /// Builds a type that implements [TList](crate::list::TList) with extra appending list.
