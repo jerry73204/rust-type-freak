@@ -51,6 +51,45 @@ pub mod ops {
         type Output = Cons<Node, Self>;
     }
 
+    // pop back
+
+    pub trait PopBack
+    where
+        Self: List,
+        Self::Output: List,
+    {
+        type Output;
+    }
+
+    impl<Head> PopBack for Cons<Head, Nil> {
+        type Output = Nil;
+    }
+
+    impl<Head1, Head2, Tail> PopBack for Cons<Head1, Cons<Head2, Tail>>
+    where
+        Tail: List,
+        Cons<Head2, Tail>: PopBack,
+    {
+        type Output = Cons<Head1, op_aliases::PopBack<Cons<Head2, Tail>>>;
+    }
+
+    // pop front
+
+    pub trait PopFront
+    where
+        Self: List,
+        Self::Output: List,
+    {
+        type Output;
+    }
+
+    impl<Head, Tail> PopFront for Cons<Head, Tail>
+    where
+        Tail: List,
+    {
+        type Output = Tail;
+    }
+
     // insert at element
 
     pub trait Insert<Target, Count, New>
@@ -895,6 +934,8 @@ pub mod op_aliases {
     pub type Zip<Lhs, Rhs> = <Lhs as ops::Zip<Rhs>>::Output;
     pub type ForEach<InputList, MapType> = <InputList as ops::ForEach<MapType>>::Output;
     pub type Fold<InputList, MapType, Init> = <InputList as ops::Fold<MapType, Init>>::Output;
+    pub type PopBack<InputList> = <InputList as ops::PopBack>::Output;
+    pub type PopFront<InputList> = <InputList as ops::PopFront>::Output;
 }
 
 #[cfg(test)]
@@ -959,6 +1000,8 @@ mod tests {
     type Assert45 = AssertSame<Zip<DoubleList, TripleList>, ListT![(B, A), (C, B)], ()>;
     type Assert46<Count> = AssertSame<Insert<DoubleList, B, Count, A>, ListT![A, B, C], ()>;
     type Assert47<Count> = AssertSame<Insert<DoubleList, C, Count, A>, ListT![B, A, C], ()>;
+    type Assert48 = AssertSame<PopFront<TripleList>, ListT![B, C], ()>;
+    type Assert49 = AssertSame<PopBack<TripleList>, ListT![A, B], ()>;
 
     // TODO: test ForEach and Fold
 
@@ -1011,5 +1054,7 @@ mod tests {
         let _: Assert45 = ();
         let _: Assert46<_> = ();
         let _: Assert47<_> = ();
+        let _: Assert48 = ();
+        let _: Assert49 = ();
     }
 }
