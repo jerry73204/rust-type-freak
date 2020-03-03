@@ -2,16 +2,25 @@ use crate::{List, ListT};
 
 // conversions
 
+macro_rules! ListIdent {
+    [] => {
+        $crate::list::base::Nil
+    };
+    [$name:ident $(, $names:ident)* $(,)?] => {
+        $crate::list::base::Cons($name, ListIdent![$($names),*])
+    };
+}
+
 macro_rules! impl_convert_tuple_list {
     ($($generics:ident),+ ; $($vars:ident),+) => {
         impl<$($generics),*> From<($($generics),* ,)> for ListT![$($generics),*] {
             fn from(($($vars),* ,): ($($generics),* ,)) -> Self {
-                List![$($vars),*]
+                ListIdent![$($vars),*]
             }
         }
 
         impl<$($generics),*> From<ListT![$($generics),*]> for ($($generics),* ,) {
-            fn from(List![$($vars),*]: ListT![$($generics),*]) -> Self {
+            fn from(ListIdent![$($vars),*]: ListT![$($generics),*]) -> Self {
                 ($($vars),* ,)
             }
         }
