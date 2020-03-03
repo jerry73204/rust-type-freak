@@ -6,7 +6,7 @@ pub trait List {}
 // intermediate node
 
 /// Represents an intermediate node.
-pub struct Cons<Head, Tail>(Head, Tail)
+pub struct Cons<Head, Tail>(pub Head, pub Tail)
 where
     Tail: List;
 
