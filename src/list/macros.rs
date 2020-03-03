@@ -8,9 +8,16 @@
 
 #[macro_export]
 macro_rules! ListT {
-    [] => { $crate::list::Nil };
-    [$name:ty] => { $crate::list::Cons<$name, $crate::list::Nil> };
-    [$name:ty, $($names:ty),+] => { $crate::list::Cons<$name, $crate::ListT![$($names),*]> };
+    [] => { $crate::list::base::Nil };
+    [$name:ty] => { $crate::list::base::Cons<$name, $crate::list::base::Nil> };
+    [$name:ty, $($names:ty),+] => { $crate::list::base::Cons<$name, $crate::ListT![$($names),*]> };
+}
+
+#[macro_export]
+macro_rules! List {
+    [] => { $crate::list::base::Nil };
+    [$name:ident] => { $crate::list::base::Cons($name, $crate::list::base::Nil) };
+    [$name:ident, $($names:ident),+] => { $crate::list::base::Cons($name, $crate::List![$($names),*]) };
 }
 
 /// Builds a type that implements [TList](crate::list::TList) with extra appending list.
@@ -23,6 +30,6 @@ macro_rules! ListT {
 /// ```
 #[macro_export]
 macro_rules! ListWithTailT {
-    [$name:ty; $tail:ty] => { $crate::list::Cons<$name, $tail> };
-    [$name:ty, $($names:ty),+; $tail:ty] => { $crate::list::Cons<$name, $crate::ListWithTailT![$($names),*; $tail]> };
+    [$name:ty; $tail:ty] => { $crate::list::base::Cons<$name, $tail> };
+    [$name:ty, $($names:ty),+; $tail:ty] => { $crate::list::base::Cons<$name, $crate::ListWithTailT![$($names),*; $tail]> };
 }
