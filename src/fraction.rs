@@ -285,3 +285,30 @@ where
 // TODO: sum of singed fractions
 
 // TODO: subtraction of signed fractions
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::control::op_aliases::AssertSame;
+    use typenum::{U1, U2, U27, U3, U35, U36, U4, U6, U8, U9};
+
+    type Frac1 = UFrac<U3, U4>;
+    type Frac2 = UFrac<U2, U9>;
+    type Frac3 = Prod<Frac1, Frac2>;
+    type Frac4 = Quot<Frac1, Frac2>;
+    type Frac5 = Sum<Frac1, Frac2>;
+    type Frac6 = Sum<Frac1, Frac1>;
+
+    type Assert1 = AssertSame<Frac3, UFrac<U1, U6>, ()>;
+    type Assert2 = AssertSame<Frac4, UFrac<U27, U8>, ()>;
+    type Assert3 = AssertSame<Frac5, UFrac<U35, U36>, ()>;
+    type Assert4 = AssertSame<Frac6, UFrac<U3, U2>, ()>;
+
+    #[test]
+    fn frac_test() {
+        let _: Assert1 = ();
+        let _: Assert2 = ();
+        let _: Assert3 = ();
+        let _: Assert4 = ();
+    }
+}
