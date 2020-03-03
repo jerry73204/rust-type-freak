@@ -43,6 +43,47 @@ where
 
 // TODO: sum of unsigned fractions
 
+// impl<LN, LD, RN, RD> Add<UFrac<RN, RD>> for UFrac<LN, LD> {
+//     type TmpD = Prod<LD, RD>;
+//     type TmpN = Sum<Prod<LN, RD>, Prod<RN, LD>>;
+//     type TmpGcd = numeric::op_aliases::Gcd<N, D>;
+//     type OutN = Quot<TmpN, TmpGcd>;
+//     type OutD = Quot<TmpD, TmpGcd>;
+//     type Output = UFrac<OutN, OutD>;
+// }
+
+impl<LN, LD, RN, RD> Add<UFrac<RN, RD>> for UFrac<LN, LD>
+where
+    LD: Unsigned + NonZero + Mul<RD>,
+    RD: Unsigned + NonZero,
+    LN: Unsigned + Mul<RD>,
+    RN: Unsigned + Mul<LD>,
+    Prod<LN, RD>: Unsigned + Add<Prod<RN, LD>>,
+    Sum<Prod<LN, RD>, Prod<RN, LD>>: Unsigned + numeric::ops::Gcd<Prod<LD, RD>>,
+    Prod<LD, RD>:
+        Unsigned + Div<numeric::op_aliases::Gcd<Sum<Prod<LN, RD>, Prod<RN, LD>>, Prod<LD, RD>>>,
+    Sum<Prod<LN, RD>, Prod<RN, LD>>:
+        Unsigned + Div<numeric::op_aliases::Gcd<Sum<Prod<LN, RD>, Prod<RN, LD>>, Prod<LD, RD>>>,
+    Quot<
+        Sum<Prod<LN, RD>, Prod<RN, LD>>,
+        numeric::op_aliases::Gcd<Sum<Prod<LN, RD>, Prod<RN, LD>>, Prod<LD, RD>>,
+    >: Unsigned,
+    Quot<Prod<LD, RD>, numeric::op_aliases::Gcd<Sum<Prod<LN, RD>, Prod<RN, LD>>, Prod<LD, RD>>>:
+        Unsigned + NonZero,
+{
+    type Output = UFrac<
+        Quot<
+            Sum<Prod<LN, RD>, Prod<RN, LD>>,
+            numeric::op_aliases::Gcd<Sum<Prod<LN, RD>, Prod<RN, LD>>, Prod<LD, RD>>,
+        >,
+        Quot<Prod<LD, RD>, numeric::op_aliases::Gcd<Sum<Prod<LN, RD>, Prod<RN, LD>>, Prod<LD, RD>>>,
+    >;
+
+    fn add(self, _rhs: UFrac<RN, RD>) -> Self::Output {
+        UFrac::new()
+    }
+}
+
 // TODO: subtraction of unsigned fractions
 
 // product of unsigned fractions
