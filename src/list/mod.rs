@@ -85,6 +85,7 @@
 //! ```
 
 pub mod base;
+pub mod convert;
 mod macros;
 pub mod markers;
 mod operators;
