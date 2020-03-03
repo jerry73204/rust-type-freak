@@ -930,6 +930,41 @@ pub mod ops {
     {
         type Output = op_aliases::Fold<Tail, MapType, Apply<MapType, (Init, Head)>>;
     }
+
+    // swap
+
+    pub trait Swap<A, B, Counts>
+    where
+        Self: List,
+        Self::Output: List,
+    {
+        type Output;
+    }
+
+    impl<A, B, NextB, Tail> Swap<A, B, (Nil, Step<NextB>)> for Cons<A, Tail>
+    where
+        NextB: Counter,
+        Tail: List + ReplaceByCounter<B, NextB, A>,
+    {
+        type Output = Cons<B, op_aliases::ReplaceByCounter<Tail, B, NextB, A>>;
+    }
+
+    impl<A, B, NextA, Tail> Swap<A, B, (Step<NextA>, Nil)> for Cons<B, Tail>
+    where
+        NextA: Counter,
+        Tail: List + ReplaceByCounter<A, NextA, B>,
+    {
+        type Output = Cons<A, op_aliases::ReplaceByCounter<Tail, A, NextA, B>>;
+    }
+
+    impl<A, B, NextA, NextB, Head, Tail> Swap<A, B, (Step<NextA>, Step<NextB>)> for Cons<Head, Tail>
+    where
+        NextA: Counter,
+        NextB: Counter,
+        Tail: List + Swap<A, B, (NextA, NextB)>,
+    {
+        type Output = Cons<Head, op_aliases::Swap<Tail, A, B, (NextA, NextB)>>;
+    }
 }
 
 pub mod op_aliases {
@@ -973,6 +1008,7 @@ pub mod op_aliases {
     pub type PopFront<InputList> = <InputList as ops::PopFront>::Output;
     pub type RemoveMany<InputList, Targets, Counters> =
         <InputList as ops::RemoveMany<Targets, Counters>>::Output;
+    pub type Swap<InputList, A, B, Counters> = <InputList as ops::Swap<A, B, Counters>>::Output;
 }
 
 #[cfg(test)]
@@ -1043,6 +1079,8 @@ mod tests {
     type Assert51<Counters> = AssertSame<RemoveMany<SingleList, ListT![A], Counters>, ListT![], ()>;
     type Assert52<Counters> =
         AssertSame<RemoveMany<TripleList, ListT![A, C], Counters>, ListT![B], ()>;
+    type Assert53<Counters> = AssertSame<Swap<TripleList, A, B, Counters>, ListT![B, A, C], ()>;
+    type Assert54<Counters> = AssertSame<Swap<TripleList, A, C, Counters>, ListT![C, B, A], ()>;
 
     // TODO: test ForEach and Fold
 
@@ -1100,5 +1138,7 @@ mod tests {
         let _: Assert50<_> = ();
         let _: Assert51<_> = ();
         let _: Assert52<_> = ();
+        let _: Assert53<_> = ();
+        let _: Assert54<_> = ();
     }
 }
