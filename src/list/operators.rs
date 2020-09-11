@@ -1,10 +1,9 @@
 use super::{Cons, List, Nil};
+use crate::common::*;
 use crate::{
-    counter::{self, Counter, Step},
+    counter::{Counter, Step},
     functional::{Apply, Map},
 };
-use std::ops::{Add, Sub};
-use typenum::{Add1, Bit, Sub1, UInt, UTerm, Unsigned, B0, B1};
 
 pub mod ops {
     use super::*;
@@ -1014,73 +1013,73 @@ pub mod op_aliases {
 #[cfg(test)]
 mod tests {
     use super::op_aliases::*;
-    use crate::{control::op_aliases::*, ListT};
+    use crate::{control::op_aliases::*, List};
     use typenum::{U0, U1, U2, U3};
 
     struct A;
     struct B;
     struct C;
 
-    type EmptyList = ListT![];
-    type SingleList = ListT![A];
-    type DoubleList = ListT![B, C];
-    type TripleList = ListT![A, B, C];
+    type EmptyList = List![];
+    type SingleList = List![A];
+    type DoubleList = List![B, C];
+    type TripleList = List![A, B, C];
 
-    type Assert1 = AssertSame<Append<EmptyList, A>, ListT![A], ()>;
-    type Assert2 = AssertSame<Append<SingleList, B>, ListT![A, B], ()>;
-    type Assert3 = AssertSame<Append<DoubleList, A>, ListT![B, C, A], ()>;
-    type Assert4 = AssertSame<Prepend<EmptyList, A>, ListT![A], ()>;
-    type Assert5 = AssertSame<Prepend<SingleList, B>, ListT![B, A], ()>;
-    type Assert6 = AssertSame<Prepend<DoubleList, A>, ListT![A, B, C], ()>;
-    type Assert7<Index> = AssertSame<InsertAt<EmptyList, A, Index>, ListT![A], ()>;
-    type Assert8 = AssertSame<InsertAt<DoubleList, A, U0>, ListT![A, B, C], ()>;
-    type Assert9 = AssertSame<InsertAt<DoubleList, A, U1>, ListT![B, A, C], ()>;
-    type Assert10 = AssertSame<InsertAt<DoubleList, A, U2>, ListT![B, C, A], ()>;
-    type Assert11<Index> = AssertSame<Remove<SingleList, A, Index>, ListT![], ()>;
-    type Assert12<Index> = AssertSame<Remove<DoubleList, C, Index>, ListT![B], ()>;
-    type Assert13<Element> = AssertSame<Remove<DoubleList, Element, U0>, ListT![C], ()>;
-    type Assert14 = AssertSame<Extend<SingleList, DoubleList>, ListT![A, B, C], ()>;
+    type Assert1 = AssertSame<Append<EmptyList, A>, List![A], ()>;
+    type Assert2 = AssertSame<Append<SingleList, B>, List![A, B], ()>;
+    type Assert3 = AssertSame<Append<DoubleList, A>, List![B, C, A], ()>;
+    type Assert4 = AssertSame<Prepend<EmptyList, A>, List![A], ()>;
+    type Assert5 = AssertSame<Prepend<SingleList, B>, List![B, A], ()>;
+    type Assert6 = AssertSame<Prepend<DoubleList, A>, List![A, B, C], ()>;
+    type Assert7<Index> = AssertSame<InsertAt<EmptyList, A, Index>, List![A], ()>;
+    type Assert8 = AssertSame<InsertAt<DoubleList, A, U0>, List![A, B, C], ()>;
+    type Assert9 = AssertSame<InsertAt<DoubleList, A, U1>, List![B, A, C], ()>;
+    type Assert10 = AssertSame<InsertAt<DoubleList, A, U2>, List![B, C, A], ()>;
+    type Assert11<Index> = AssertSame<Remove<SingleList, A, Index>, List![], ()>;
+    type Assert12<Index> = AssertSame<Remove<DoubleList, C, Index>, List![B], ()>;
+    type Assert13<Element> = AssertSame<Remove<DoubleList, Element, U0>, List![C], ()>;
+    type Assert14 = AssertSame<Extend<SingleList, DoubleList>, List![A, B, C], ()>;
     type Assert15 = AssertSame<At<DoubleList, U0>, B, ()>;
     type Assert16 = AssertSame<At<DoubleList, U1>, C, ()>;
     type Assert17<Index> = AssertSame<IndexOf<DoubleList, B, Index>, U0, ()>;
     type Assert18<Index> = AssertSame<IndexOf<DoubleList, C, Index>, U1, ()>;
-    type Assert19 = AssertSame<Reverse<DoubleList>, ListT![C, B], ()>;
+    type Assert19 = AssertSame<Reverse<DoubleList>, List![C, B], ()>;
     type Assert20 = AssertSame<Len<EmptyList>, U0, ()>;
     type Assert21 = AssertSame<Len<SingleList>, U1, ()>;
     type Assert22 = AssertSame<Len<DoubleList>, U2, ()>;
     type Assert23 = AssertSame<First<DoubleList>, B, ()>;
     type Assert24 = AssertSame<Last<DoubleList>, C, ()>;
-    type Assert25<Target> = AssertSame<Replace<DoubleList, Target, U1, A>, ListT![B, A], ()>;
-    type Assert26<Index> = AssertSame<Replace<DoubleList, C, Index, A>, ListT![B, A], ()>;
-    type Assert27 = AssertSame<RangeTo<TripleList, U0>, ListT![], ()>;
-    type Assert28 = AssertSame<RangeTo<TripleList, U1>, ListT![A], ()>;
-    type Assert29 = AssertSame<RangeTo<TripleList, U2>, ListT![A, B], ()>;
-    type Assert30 = AssertSame<RangeTo<TripleList, U3>, ListT![A, B, C], ()>;
-    type Assert31 = AssertSame<Range<TripleList, U0, U0>, ListT![], ()>;
-    type Assert32 = AssertSame<Range<TripleList, U0, U1>, ListT![A], ()>;
-    type Assert33 = AssertSame<Range<TripleList, U0, U2>, ListT![A, B], ()>;
-    type Assert34 = AssertSame<Range<TripleList, U0, U3>, ListT![A, B, C], ()>;
-    type Assert35 = AssertSame<Range<TripleList, U1, U1>, ListT![], ()>;
-    type Assert36 = AssertSame<Range<TripleList, U1, U2>, ListT![B], ()>;
-    type Assert37 = AssertSame<Range<TripleList, U1, U3>, ListT![B, C], ()>;
-    type Assert38 = AssertSame<Range<TripleList, U2, U2>, ListT![], ()>;
-    type Assert39 = AssertSame<Range<TripleList, U2, U3>, ListT![C], ()>;
-    type Assert40 = AssertSame<Range<TripleList, U3, U3>, ListT![], ()>;
-    type Assert41 = AssertSame<RangeFrom<TripleList, U0>, ListT![A, B, C], ()>;
-    type Assert42 = AssertSame<RangeFrom<TripleList, U1>, ListT![B, C], ()>;
-    type Assert43 = AssertSame<RangeFrom<TripleList, U2>, ListT![C], ()>;
-    type Assert44 = AssertSame<RangeFrom<TripleList, U3>, ListT![], ()>;
-    type Assert45 = AssertSame<Zip<DoubleList, TripleList>, ListT![(B, A), (C, B)], ()>;
-    type Assert46<Count> = AssertSame<Insert<DoubleList, B, Count, A>, ListT![A, B, C], ()>;
-    type Assert47<Count> = AssertSame<Insert<DoubleList, C, Count, A>, ListT![B, A, C], ()>;
-    type Assert48 = AssertSame<PopFront<TripleList>, ListT![B, C], ()>;
-    type Assert49 = AssertSame<PopBack<TripleList>, ListT![A, B], ()>;
-    type Assert50<Counters> = AssertSame<RemoveMany<SingleList, ListT![], Counters>, ListT![A], ()>;
-    type Assert51<Counters> = AssertSame<RemoveMany<SingleList, ListT![A], Counters>, ListT![], ()>;
+    type Assert25<Target> = AssertSame<Replace<DoubleList, Target, U1, A>, List![B, A], ()>;
+    type Assert26<Index> = AssertSame<Replace<DoubleList, C, Index, A>, List![B, A], ()>;
+    type Assert27 = AssertSame<RangeTo<TripleList, U0>, List![], ()>;
+    type Assert28 = AssertSame<RangeTo<TripleList, U1>, List![A], ()>;
+    type Assert29 = AssertSame<RangeTo<TripleList, U2>, List![A, B], ()>;
+    type Assert30 = AssertSame<RangeTo<TripleList, U3>, List![A, B, C], ()>;
+    type Assert31 = AssertSame<Range<TripleList, U0, U0>, List![], ()>;
+    type Assert32 = AssertSame<Range<TripleList, U0, U1>, List![A], ()>;
+    type Assert33 = AssertSame<Range<TripleList, U0, U2>, List![A, B], ()>;
+    type Assert34 = AssertSame<Range<TripleList, U0, U3>, List![A, B, C], ()>;
+    type Assert35 = AssertSame<Range<TripleList, U1, U1>, List![], ()>;
+    type Assert36 = AssertSame<Range<TripleList, U1, U2>, List![B], ()>;
+    type Assert37 = AssertSame<Range<TripleList, U1, U3>, List![B, C], ()>;
+    type Assert38 = AssertSame<Range<TripleList, U2, U2>, List![], ()>;
+    type Assert39 = AssertSame<Range<TripleList, U2, U3>, List![C], ()>;
+    type Assert40 = AssertSame<Range<TripleList, U3, U3>, List![], ()>;
+    type Assert41 = AssertSame<RangeFrom<TripleList, U0>, List![A, B, C], ()>;
+    type Assert42 = AssertSame<RangeFrom<TripleList, U1>, List![B, C], ()>;
+    type Assert43 = AssertSame<RangeFrom<TripleList, U2>, List![C], ()>;
+    type Assert44 = AssertSame<RangeFrom<TripleList, U3>, List![], ()>;
+    type Assert45 = AssertSame<Zip<DoubleList, TripleList>, List![(B, A), (C, B)], ()>;
+    type Assert46<Count> = AssertSame<Insert<DoubleList, B, Count, A>, List![A, B, C], ()>;
+    type Assert47<Count> = AssertSame<Insert<DoubleList, C, Count, A>, List![B, A, C], ()>;
+    type Assert48 = AssertSame<PopFront<TripleList>, List![B, C], ()>;
+    type Assert49 = AssertSame<PopBack<TripleList>, List![A, B], ()>;
+    type Assert50<Counters> = AssertSame<RemoveMany<SingleList, List![], Counters>, List![A], ()>;
+    type Assert51<Counters> = AssertSame<RemoveMany<SingleList, List![A], Counters>, List![], ()>;
     type Assert52<Counters> =
-        AssertSame<RemoveMany<TripleList, ListT![A, C], Counters>, ListT![B], ()>;
-    type Assert53<Counters> = AssertSame<Swap<TripleList, A, B, Counters>, ListT![B, A, C], ()>;
-    type Assert54<Counters> = AssertSame<Swap<TripleList, A, C, Counters>, ListT![C, B, A], ()>;
+        AssertSame<RemoveMany<TripleList, List![A, C], Counters>, List![B], ()>;
+    type Assert53<Counters> = AssertSame<Swap<TripleList, A, B, Counters>, List![B, A, C], ()>;
+    type Assert54<Counters> = AssertSame<Swap<TripleList, A, C, Counters>, List![C, B, A], ()>;
 
     // TODO: test ForEach and Fold
 

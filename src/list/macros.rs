@@ -1,56 +1,76 @@
 /// Builds a type that implements [TList](crate::list::TList).
 ///
 /// ```rust
-/// use type_freak::TListType;
-/// type List = TListType![i8, i16, i32];
+/// use type_freak::TListype;
+/// type List = TListype![i8, i16, i32];
 /// // Same as Cons<i8, Cons<i16, Cons<i32, LNil>>>
 /// ```
-
-#[macro_export]
-macro_rules! ListT {
-    [] => {
-        $crate::list::base::Nil
-    };
-    [$name:ty $(, $names:ty)* $(,)?] => {
-        $crate::list::base::Cons<$name, $crate::ListT![$($names),*]>
-    };
-}
 
 #[macro_export]
 macro_rules! List {
     [] => {
         $crate::list::base::Nil
     };
+    [$name:ty $(, $names:ty)* $(,)?] => {
+        $crate::list::base::Cons<$name, $crate::List![$($names),*]>
+    };
+}
+
+#[macro_export]
+macro_rules! list {
+    [] => {
+        $crate::list::base::Nil
+    };
     [$name:expr $(, $names:expr)* $(,)?] => {
-        $crate::list::base::Cons($name, $crate::List![$($names),*])
+        $crate::list::base::Cons { head: $name, tail: $crate::list![$($names),*] }
     };
 }
 
 /// Builds a type that implements [TList](crate::list::TList) with extra appending list.
 ///
 /// ```rust
-/// use type_freak::{TListType, TListTypeWithTail};
-/// type Tail = TListType![f32, f64];
-/// type List = TListTypeWithTail![i8, i16, i32; Tail];
+/// use type_freak::{TListype, TListypeWithTail};
+/// type Tail = TListype![f32, f64];
+/// type List = TListypeWithTail![i8, i16, i32; Tail];
 /// // Same as Cons<i8, Cons<i16, Cons<i32, Cons<f32, Cons<f64, LNil>>>>>
 /// ```
 #[macro_export]
-macro_rules! ListWithTailT {
+macro_rules! PrependList {
     [; $tail:ty] => {
         $tail
     };
     [$name:ty $(, $names:ty)* $(,)?; $tail:ty] => {
-        $crate::list::base::Cons<$name, $crate::ListWithTailT![$($names),*; $tail]>
+        $crate::list::base::Cons<$name, $crate::PrependList![$($names),*; $tail]>
     };
 }
 
 #[macro_export]
-macro_rules! ListWithTail {
+macro_rules! prepend_list {
     [; $tail:expr] => {
         $tail
     };
     [$name:expr $(, $names:expr)* $(,)?; $tail:expr] => {
-        $crate::list::base::Cons($name, $crate::ListWithTail![$($names),*; $tail])
+        $crate::list::base::Cons { head: $name, tail: $crate::prepend_list![$($names),*; $tail] }
+    };
+}
+
+#[macro_export]
+macro_rules! ListFromTuple {
+    () => {
+        $crate::list::base::Nil
+    };
+    ($head:ty $(, $elems:ty)* $(,)?) => {
+        $crate::list::base::Cons<$head, $crate::ListFromTuple!($($elems),*)>
+    };
+}
+
+#[macro_export]
+macro_rules! list_from_tuple {
+    () => {
+        $crate::list::base::Nil
+    };
+    ($head:expr $(, $elems:expr)* $(,)?) => {
+        $crate::list::base::Cons { head: $head, tail: $crate::list_from_tuple!($($elems),*) }
     };
 }
 
@@ -68,8 +88,8 @@ mod tests {
         E2,
     }
 
-    type List1 = ListT![A, B, C];
-    type List2 = ListWithTailT![D, E; List1];
+    type List1 = List![A, B, C];
+    type List2 = PrependList![D, E; List1];
 
     type Assert1 = AssertSame<List1, Cons<A, Cons<B, Cons<C, Nil>>>, ()>;
     type Assert2 = AssertSame<List2, Cons<D, Cons<E, Cons<A, Cons<B, Cons<C, Nil>>>>>, ()>;
@@ -83,20 +103,20 @@ mod tests {
             let a = A(2);
             let b = B("text".into());
             let c = C(false);
-            let _: List1 = List![A(3), B("string".into()), C(true)];
-            let _: List1 = List![a, b, c];
+            let _: List1 = list![A(3), B("string".into()), C(true)];
+            let _: List1 = list![a, b, c];
         }
 
         {
-            let tail: List1 = List![A(3), B("string".into()), C(true)];
-            let _: List2 = ListWithTail![D([1, 2]), E::E1; tail];
+            let tail: List1 = list![A(3), B("string".into()), C(true)];
+            let _: List2 = prepend_list![D([1, 2]), E::E1; tail];
         }
 
         {
-            let tail: List1 = List![A(3), B("string".into()), C(true)];
+            let tail: List1 = list![A(3), B("string".into()), C(true)];
             let d = D([3, 4]);
             let e = E::E2;
-            let _: List2 = ListWithTail![d, e; tail];
+            let _: List2 = prepend_list![d, e; tail];
         }
     }
 }

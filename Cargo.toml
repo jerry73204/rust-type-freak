@@ -10,4 +10,5 @@ readme = "README.md"
 license-file = "LICENSE.md"
 
 [dependencies]
-typenum = "^1.11.2"
+typenum = "1.12"
+typ = { git = "https://github.com/jerry73204/typ.git" }

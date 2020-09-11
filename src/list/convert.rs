@@ -1,4 +1,4 @@
-use crate::{List, ListT};
+use crate::{list, List};
 
 // conversions
 
@@ -7,29 +7,29 @@ macro_rules! ListIdent {
         $crate::list::base::Nil
     };
     [$name:ident $(, $names:ident)* $(,)?] => {
-        $crate::list::base::Cons($name, ListIdent![$($names),*])
+        $crate::list::base::Cons { head: $name, tail: ListIdent![$($names),*] }
     };
 }
 
 macro_rules! impl_convert_tuple_list {
     ($($generics:ident),+ ; $($vars:ident),+) => {
-        impl<$($generics),*> From<($($generics),* ,)> for ListT![$($generics),*] {
+        impl<$($generics),*> From<($($generics),* ,)> for List![$($generics),*] {
             fn from(($($vars),* ,): ($($generics),* ,)) -> Self {
                 ListIdent![$($vars),*]
             }
         }
 
-        impl<$($generics),*> From<ListT![$($generics),*]> for ($($generics),* ,) {
-            fn from(ListIdent![$($vars),*]: ListT![$($generics),*]) -> Self {
+        impl<$($generics),*> From<List![$($generics),*]> for ($($generics),* ,) {
+            fn from(ListIdent![$($vars),*]: List![$($generics),*]) -> Self {
                 ($($vars),* ,)
             }
         }
     }
 }
 
-impl From<()> for ListT![] {
+impl From<()> for List![] {
     fn from(_: ()) -> Self {
-        List![]
+        list![]
     }
 }
 

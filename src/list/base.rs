@@ -6,9 +6,13 @@ pub trait List {}
 // intermediate node
 
 /// Represents an intermediate node.
-pub struct Cons<Head, Tail>(pub Head, pub Tail)
+pub struct Cons<Head, Tail>
 where
-    Tail: List;
+    Tail: List,
+{
+    pub head: Head,
+    pub tail: Tail,
+}
 
 impl<Head, Tail> List for Cons<Head, Tail> where Tail: List {}
 
@@ -18,3 +22,13 @@ impl<Head, Tail> List for Cons<Head, Tail> where Tail: List {}
 pub struct Nil;
 
 impl List for Nil {}
+
+/// Marks an empty [TList].
+pub trait EmptyList: List {}
+
+impl EmptyList for Nil {}
+
+/// Marks a non-empty [TList].
+pub trait NonEmptyList: List {}
+
+impl<Head, Tail> NonEmptyList for Cons<Head, Tail> where Tail: List {}
