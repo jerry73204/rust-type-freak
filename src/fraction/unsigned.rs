@@ -1,6 +1,6 @@
 use super::{
-    Irreducible, Reciprocal, ReciprocalOp, UFracAdd, UFracAddOp, UFracDiv, UFracDivOp, UFracMul,
-    UFracMulOp, UFracSub, UFracSubOp, UFraction,
+    Irreducible, Reciprocal, UFracAdd, UFracAddOp, UFracDiv, UFracDivOp, UFracMul, UFracMulOp,
+    UFracSub, UFracSubOp, UFraction,
 };
 use crate::{
     common::*,
@@ -54,7 +54,7 @@ where
 {
     type Output = UFracAddOp<Self, Rhs>;
 
-    fn add(self, rhs: Rhs) -> Self::Output {
+    fn add(self, _rhs: Rhs) -> Self::Output {
         Self::Output::new()
     }
 }
@@ -70,7 +70,7 @@ where
 {
     type Output = UFracSubOp<Self, Rhs>;
 
-    fn sub(self, rhs: Rhs) -> Self::Output {
+    fn sub(self, _rhs: Rhs) -> Self::Output {
         Self::Output::new()
     }
 }
@@ -86,7 +86,7 @@ where
 {
     type Output = UFracMulOp<Self, Rhs>;
 
-    fn mul(self, rhs: Rhs) -> Self::Output {
+    fn mul(self, _rhs: Rhs) -> Self::Output {
         Self::Output::new()
     }
 }
@@ -103,7 +103,7 @@ where
 {
     type Output = UFracDivOp<UFrac<NL, DL>, UFrac<NR, DR>>;
 
-    fn div(self, rhs: UFrac<NR, DR>) -> Self::Output {
+    fn div(self, _rhs: UFrac<NR, DR>) -> Self::Output {
         Self::Output::new()
     }
 }
