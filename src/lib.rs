@@ -11,4 +11,4 @@ pub mod numeric;
 // pub mod tuple;
 // pub mod dynum;
 // pub mod floating;
-// pub mod fraction;
+pub mod fraction;

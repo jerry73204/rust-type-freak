@@ -1,12 +1,8 @@
 use super::{
-    marker::{Fraction, Irreducible, UFraction},
-    op_aliases, ops,
+    FracAdd, FracAddOp, FracDiv, FracDivOp, FracMul, FracMulOp, FracSub, FracSubOp, Fraction,
+    Irreducible, UFracAdd, UFracDiv, UFracMul, UFracSub, UFraction,
 };
-use crate::{common::*, control, FracT};
-use std::{
-    marker::PhantomData,
-    ops::{Add, Div, Mul, Sub},
-};
+use crate::{common::*, Frac};
 
 // positive fraction type
 
@@ -50,702 +46,582 @@ impl<F> Irreducible for PFrac<F> where F: UFraction + Irreducible {}
 
 impl<F> Irreducible for NFrac<F> where F: UFraction + Irreducible {}
 
-// sum of singed fractions
+// negation
 
-impl<LF, RF> Add<PFrac<RF>> for PFrac<LF>
+impl<Frac> Neg for PFrac<Frac>
 where
-    LF: UFraction + Add<RF>,
-    RF: UFraction,
-    Sum<LF, RF>: UFraction,
+    Frac: UFraction,
 {
-    type Output = PFrac<Sum<LF, RF>>;
+    type Output = NFrac<Frac>;
 
-    fn add(self, _rhs: PFrac<RF>) -> Self::Output {
-        PFrac::new()
-    }
-}
-
-impl<LF, RF> Add<NFrac<RF>> for NFrac<LF>
-where
-    LF: UFraction + Add<RF>,
-    RF: UFraction,
-    Sum<LF, RF>: UFraction,
-{
-    type Output = NFrac<Sum<LF, RF>>;
-
-    fn add(self, _rhs: NFrac<RF>) -> Self::Output {
-        NFrac::new()
-    }
-}
-
-impl<LF, RF> Add<NFrac<RF>> for PFrac<LF>
-where
-    LF: UFraction,
-    RF: UFraction,
-    PFrac<LF>: Sub<PFrac<RF>>,
-    Diff<PFrac<LF>, PFrac<RF>>: Fraction,
-{
-    type Output = Diff<PFrac<LF>, PFrac<RF>>;
-
-    fn add(self, _rhs: NFrac<RF>) -> Self::Output {
+    fn neg(self) -> Self::Output {
         Self::Output::new()
     }
 }
 
-impl<LF, RF> Add<PFrac<RF>> for NFrac<LF>
+impl<Frac> Neg for NFrac<Frac>
 where
-    LF: UFraction,
-    RF: UFraction,
-    PFrac<RF>: Sub<PFrac<LF>>,
-    Diff<PFrac<RF>, PFrac<LF>>: Fraction,
+    Frac: UFraction,
 {
-    type Output = Diff<PFrac<RF>, PFrac<LF>>;
+    type Output = PFrac<Frac>;
 
-    fn add(self, _rhs: PFrac<RF>) -> Self::Output {
+    fn neg(self) -> Self::Output {
+        Self::Output::new()
+    }
+}
+
+// sum of singed fractions
+
+impl<F, Rhs> Add<Rhs> for PFrac<F>
+where
+    (): FracAdd<Self, Rhs>,
+    F: UFraction,
+    Rhs: Fraction,
+{
+    type Output = FracAddOp<Self, Rhs>;
+
+    fn add(self, _rhs: Rhs) -> Self::Output {
+        Self::Output::new()
+    }
+}
+
+impl<F, Rhs> Add<Rhs> for NFrac<F>
+where
+    (): FracAdd<Self, Rhs>,
+    F: UFraction,
+    Rhs: Fraction,
+{
+    type Output = FracAddOp<Self, Rhs>;
+
+    fn add(self, _rhs: Rhs) -> Self::Output {
         Self::Output::new()
     }
 }
 
 // subtraction of signed fractions
 
-impl<LF, RF> Sub<PFrac<RF>> for PFrac<LF>
+impl<F, Rhs> Sub<Rhs> for PFrac<F>
 where
-    (): control::ops::IfElseGreaterOrEqual<
-        LF,
-        RF,
-        PFrac<op_aliases::SaturatingSub<LF, RF>>,
-        NFrac<op_aliases::SaturatingSub<RF, LF>>,
-    >,
-    LF: UFraction + ops::SaturatingSub<RF>,
-    RF: UFraction + ops::SaturatingSub<LF>,
-    control::op_aliases::IfElseGreaterOrEqual<
-        LF,
-        RF,
-        PFrac<op_aliases::SaturatingSub<LF, RF>>,
-        NFrac<op_aliases::SaturatingSub<RF, LF>>,
-    >: Fraction,
+    (): FracSub<Self, Rhs>,
+    F: UFraction,
+    Rhs: Fraction,
 {
-    type Output = control::op_aliases::IfElseGreaterOrEqual<
-        LF,
-        RF,
-        PFrac<op_aliases::SaturatingSub<LF, RF>>,
-        NFrac<op_aliases::SaturatingSub<RF, LF>>,
-    >;
+    type Output = FracSubOp<Self, Rhs>;
 
-    fn sub(self, _rhs: PFrac<RF>) -> Self::Output {
+    fn sub(self, _rhs: Rhs) -> Self::Output {
         Self::Output::new()
     }
 }
 
-impl<LF, RF> Sub<NFrac<RF>> for NFrac<LF>
+impl<F, Rhs> Sub<Rhs> for NFrac<F>
 where
-    (): control::ops::IfElseGreaterOrEqual<
-        LF,
-        RF,
-        NFrac<op_aliases::SaturatingSub<LF, RF>>,
-        PFrac<op_aliases::SaturatingSub<RF, LF>>,
-    >,
-    LF: UFraction + ops::SaturatingSub<RF>,
-    RF: UFraction + ops::SaturatingSub<LF>,
-    control::op_aliases::IfElseGreaterOrEqual<
-        LF,
-        RF,
-        NFrac<op_aliases::SaturatingSub<LF, RF>>,
-        PFrac<op_aliases::SaturatingSub<RF, LF>>,
-    >: Fraction,
+    (): FracSub<Self, Rhs>,
+    F: UFraction,
+    Rhs: Fraction,
 {
-    type Output = control::op_aliases::IfElseGreaterOrEqual<
-        LF,
-        RF,
-        NFrac<op_aliases::SaturatingSub<LF, RF>>,
-        PFrac<op_aliases::SaturatingSub<RF, LF>>,
-    >;
+    type Output = FracSubOp<Self, Rhs>;
 
-    fn sub(self, _rhs: NFrac<RF>) -> Self::Output {
+    fn sub(self, _rhs: Rhs) -> Self::Output {
         Self::Output::new()
     }
 }
 
-impl<LF, RF> Sub<NFrac<RF>> for PFrac<LF>
-where
-    LF: UFraction,
-    RF: UFraction,
-    PFrac<LF>: Add<PFrac<RF>>,
-    Sum<PFrac<LF>, PFrac<RF>>: Fraction,
-{
-    type Output = Sum<PFrac<LF>, PFrac<RF>>;
+// product
 
-    fn sub(self, _rhs: NFrac<RF>) -> Self::Output {
+impl<F, Rhs> Mul<Rhs> for PFrac<F>
+where
+    (): FracMul<Self, Rhs>,
+    F: UFraction,
+    Rhs: Fraction,
+{
+    type Output = FracMulOp<Self, Rhs>;
+
+    fn mul(self, _rhs: Rhs) -> Self::Output {
         Self::Output::new()
     }
 }
 
-impl<LF, RF> Sub<PFrac<RF>> for NFrac<LF>
+impl<F, Rhs> Mul<Rhs> for NFrac<F>
 where
-    LF: UFraction,
-    RF: UFraction,
-    NFrac<RF>: Add<NFrac<LF>>,
-    Sum<NFrac<RF>, NFrac<LF>>: Fraction,
+    (): FracMul<Self, Rhs>,
+    F: UFraction,
+    Rhs: Fraction,
 {
-    type Output = Sum<NFrac<RF>, NFrac<LF>>;
+    type Output = FracMulOp<Self, Rhs>;
 
-    fn sub(self, _rhs: PFrac<RF>) -> Self::Output {
+    fn mul(self, _rhs: Rhs) -> Self::Output {
         Self::Output::new()
     }
 }
 
-// products
+// division
 
-impl<LF, RF> Mul<PFrac<RF>> for PFrac<LF>
+impl<F, Rhs> Div<Rhs> for PFrac<F>
 where
-    LF: UFraction + Mul<RF>,
-    RF: UFraction,
-    Prod<LF, RF>: UFraction,
+    (): FracDiv<Self, Rhs>,
+    F: UFraction,
+    Rhs: Fraction,
 {
-    type Output = PFrac<Prod<LF, RF>>;
+    type Output = FracDivOp<Self, Rhs>;
 
-    fn mul(self, _rhs: PFrac<RF>) -> Self::Output {
-        PFrac::new()
+    fn div(self, _rhs: Rhs) -> Self::Output {
+        Self::Output::new()
     }
 }
 
-impl<LF, RF> Mul<NFrac<RF>> for PFrac<LF>
+impl<F, Rhs> Div<Rhs> for NFrac<F>
 where
-    LF: UFraction + Mul<RF>,
-    RF: UFraction,
-    Prod<LF, RF>: UFraction,
+    (): FracDiv<Self, Rhs>,
+    F: UFraction,
+    Rhs: Fraction,
 {
-    type Output = NFrac<Prod<LF, RF>>;
+    type Output = FracDivOp<Self, Rhs>;
 
-    fn mul(self, _rhs: NFrac<RF>) -> Self::Output {
-        NFrac::new()
-    }
-}
-
-impl<LF, RF> Mul<PFrac<RF>> for NFrac<LF>
-where
-    LF: UFraction + Mul<RF>,
-    RF: UFraction,
-    Prod<LF, RF>: UFraction,
-{
-    type Output = NFrac<Prod<LF, RF>>;
-
-    fn mul(self, _rhs: PFrac<RF>) -> Self::Output {
-        NFrac::new()
-    }
-}
-
-impl<LF, RF> Mul<NFrac<RF>> for NFrac<LF>
-where
-    LF: UFraction + Mul<RF>,
-    RF: UFraction,
-    Prod<LF, RF>: UFraction,
-{
-    type Output = PFrac<Prod<LF, RF>>;
-
-    fn mul(self, _rhs: NFrac<RF>) -> Self::Output {
-        PFrac::new()
-    }
-}
-
-// division of positive/negative fractions
-
-impl<LF, RF> Div<PFrac<RF>> for PFrac<LF>
-where
-    LF: UFraction + Div<RF>,
-    RF: UFraction,
-    PFrac<RF>: NonZero,
-    Quot<LF, RF>: UFraction,
-{
-    type Output = PFrac<Quot<LF, RF>>;
-
-    fn div(self, _rhs: PFrac<RF>) -> Self::Output {
-        PFrac::new()
-    }
-}
-
-impl<LF, RF> Div<NFrac<RF>> for PFrac<LF>
-where
-    LF: UFraction + Div<RF>,
-    RF: UFraction,
-    NFrac<RF>: NonZero,
-    Quot<LF, RF>: UFraction,
-{
-    type Output = NFrac<Quot<LF, RF>>;
-
-    fn div(self, _rhs: NFrac<RF>) -> Self::Output {
-        NFrac::new()
-    }
-}
-
-impl<LF, RF> Div<PFrac<RF>> for NFrac<LF>
-where
-    LF: UFraction + Div<RF>,
-    RF: UFraction,
-    PFrac<RF>: NonZero,
-    Quot<LF, RF>: UFraction,
-{
-    type Output = NFrac<Quot<LF, RF>>;
-
-    fn div(self, _rhs: PFrac<RF>) -> Self::Output {
-        NFrac::new()
-    }
-}
-
-impl<LF, RF> Div<NFrac<RF>> for NFrac<LF>
-where
-    LF: UFraction + Div<RF>,
-    RF: UFraction,
-    NFrac<RF>: NonZero,
-    Quot<LF, RF>: UFraction,
-{
-    type Output = PFrac<Quot<LF, RF>>;
-
-    fn div(self, _rhs: NFrac<RF>) -> Self::Output {
-        PFrac::new()
+    fn div(self, _rhs: Rhs) -> Self::Output {
+        Self::Output::new()
     }
 }
 
 // is less
 
-impl<LF, RF> IsLess<PFrac<RF>> for PFrac<LF>
-where
-    LF: UFraction + IsLess<RF>,
-    RF: UFraction,
-{
-    type Output = Le<LF, RF>;
+// impl<LF, RF> IsLess<PFrac<RF>> for PFrac<LF>
+// where
+//     LF: UFraction + IsLess<RF>,
+//     RF: UFraction,
+// {
+//     type Output = Le<LF, RF>;
 
-    fn is_less(self, _rhs: PFrac<RF>) -> Self::Output {
-        // blocked by https://github.com/paholg/typenum/pull/141
-        todo!();
-    }
-}
+//     fn is_less(self, _rhs: PFrac<RF>) -> Self::Output {
+//         // blocked by https://github.com/paholg/typenum/pull/141
+//         todo!();
+//     }
+// }
 
-impl<LF, RF> IsLess<NFrac<RF>> for NFrac<LF>
-where
-    LF: UFraction + IsGreater<RF>,
-    RF: UFraction,
-{
-    type Output = Gr<LF, RF>;
+// impl<LF, RF> IsLess<NFrac<RF>> for NFrac<LF>
+// where
+//     LF: UFraction + IsGreater<RF>,
+//     RF: UFraction,
+// {
+//     type Output = Gr<LF, RF>;
 
-    fn is_less(self, _rhs: NFrac<RF>) -> Self::Output {
-        // blocked by https://github.com/paholg/typenum/pull/141
-        todo!();
-    }
-}
+//     fn is_less(self, _rhs: NFrac<RF>) -> Self::Output {
+//         // blocked by https://github.com/paholg/typenum/pull/141
+//         todo!();
+//     }
+// }
 
-impl<LD, RD> IsLess<FracT!(UTerm, RD)> for FracT!(-UTerm, LD)
-where
-    LD: Unsigned + NonZero,
-    RD: Unsigned + NonZero,
-{
-    type Output = B0;
+// impl<LD, RD> IsLess<Frac!(UTerm, RD)> for Frac!(-UTerm, LD)
+// where
+//     LD: Unsigned + NonZero,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B0;
 
-    fn is_less(self, _rhs: FracT!(UTerm, RD)) -> Self::Output {
-        B0
-    }
-}
+//     fn is_less(self, _rhs: Frac!(UTerm, RD)) -> Self::Output {
+//         B0
+//     }
+// }
 
-impl<LD, RU, RB, RD> IsLess<FracT!(UInt<RU, RB>, RD)> for FracT!(-UTerm, LD)
-where
-    LD: Unsigned + NonZero,
-    RU: Unsigned,
-    RB: Bit,
-    RD: Unsigned + NonZero,
-{
-    type Output = B1;
+// impl<LD, RU, RB, RD> IsLess<Frac!(UInt<RU, RB>, RD)> for Frac!(-UTerm, LD)
+// where
+//     LD: Unsigned + NonZero,
+//     RU: Unsigned,
+//     RB: Bit,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B1;
 
-    fn is_less(self, _rhs: FracT!(UInt<RU, RB>, RD)) -> Self::Output {
-        B1
-    }
-}
+//     fn is_less(self, _rhs: Frac!(UInt<RU, RB>, RD)) -> Self::Output {
+//         B1
+//     }
+// }
 
-impl<LU, LB, LD, RD> IsLess<FracT!(UTerm, RD)> for FracT!(- UInt<LU, LB>, LD)
-where
-    LU: Unsigned,
-    LB: Bit,
-    LD: Unsigned + NonZero,
-    RD: Unsigned + NonZero,
-{
-    type Output = B1;
+// impl<LU, LB, LD, RD> IsLess<Frac!(UTerm, RD)> for Frac!(- UInt<LU, LB>, LD)
+// where
+//     LU: Unsigned,
+//     LB: Bit,
+//     LD: Unsigned + NonZero,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B1;
 
-    fn is_less(self, _rhs: FracT!(UTerm, RD)) -> Self::Output {
-        B1
-    }
-}
+//     fn is_less(self, _rhs: Frac!(UTerm, RD)) -> Self::Output {
+//         B1
+//     }
+// }
 
-impl<LU, LB, LD, RU, RB, RD> IsLess<FracT!(UInt<RU, RB>, RD)> for FracT!(- UInt<LU, LB>, LD)
-where
-    LU: Unsigned,
-    LB: Bit,
-    LD: Unsigned + NonZero,
-    RU: Unsigned,
-    RB: Bit,
-    RD: Unsigned + NonZero,
-{
-    type Output = B1;
+// impl<LU, LB, LD, RU, RB, RD> IsLess<Frac!(UInt<RU, RB>, RD)> for Frac!(- UInt<LU, LB>, LD)
+// where
+//     LU: Unsigned,
+//     LB: Bit,
+//     LD: Unsigned + NonZero,
+//     RU: Unsigned,
+//     RB: Bit,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B1;
 
-    fn is_less(self, _rhs: FracT!(UInt<RU, RB>, RD)) -> Self::Output {
-        B1
-    }
-}
+//     fn is_less(self, _rhs: Frac!(UInt<RU, RB>, RD)) -> Self::Output {
+//         B1
+//     }
+// }
 
-impl<LN, LD, RN, RD> IsLess<FracT!(-RN, RD)> for FracT!(LN, LD)
-where
-    LN: Unsigned,
-    LD: Unsigned + NonZero,
-    RN: Unsigned,
-    RD: Unsigned + NonZero,
-{
-    type Output = B0;
+// impl<LN, LD, RN, RD> IsLess<Frac!(-RN, RD)> for Frac!(LN, LD)
+// where
+//     LN: Unsigned,
+//     LD: Unsigned + NonZero,
+//     RN: Unsigned,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B0;
 
-    fn is_less(self, _rhs: FracT!(-RN, RD)) -> Self::Output {
-        B0
-    }
-}
+//     fn is_less(self, _rhs: Frac!(-RN, RD)) -> Self::Output {
+//         B0
+//     }
+// }
 
 // is less or equal
 
-impl<LF, RF> IsLessOrEqual<PFrac<RF>> for PFrac<LF>
-where
-    LF: UFraction + IsLessOrEqual<RF>,
-    RF: UFraction,
-{
-    type Output = LeEq<LF, RF>;
+// impl<LF, RF> IsLessOrEqual<PFrac<RF>> for PFrac<LF>
+// where
+//     LF: UFraction + IsLessOrEqual<RF>,
+//     RF: UFraction,
+// {
+//     type Output = LeEq<LF, RF>;
 
-    fn is_less_or_equal(self, _rhs: PFrac<RF>) -> Self::Output {
-        // blocked by https://github.com/paholg/typenum/pull/141
-        todo!();
-    }
-}
+//     fn is_less_or_equal(self, _rhs: PFrac<RF>) -> Self::Output {
+//         // blocked by https://github.com/paholg/typenum/pull/141
+//         todo!();
+//     }
+// }
 
-impl<LF, RF> IsLessOrEqual<NFrac<RF>> for NFrac<LF>
-where
-    LF: UFraction + IsGreaterOrEqual<RF>,
-    RF: UFraction,
-{
-    type Output = GrEq<LF, RF>;
+// impl<LF, RF> IsLessOrEqual<NFrac<RF>> for NFrac<LF>
+// where
+//     LF: UFraction + IsGreaterOrEqual<RF>,
+//     RF: UFraction,
+// {
+//     type Output = GrEq<LF, RF>;
 
-    fn is_less_or_equal(self, _rhs: NFrac<RF>) -> Self::Output {
-        // blocked by https://github.com/paholg/typenum/pull/141
-        todo!();
-    }
-}
+//     fn is_less_or_equal(self, _rhs: NFrac<RF>) -> Self::Output {
+//         // blocked by https://github.com/paholg/typenum/pull/141
+//         todo!();
+//     }
+// }
 
-impl<LD, RD> IsLessOrEqual<FracT!(-UTerm, RD)> for FracT!(UTerm, LD)
-where
-    LD: Unsigned + NonZero,
-    RD: Unsigned + NonZero,
-{
-    type Output = B1;
+// impl<LD, RD> IsLessOrEqual<Frac!(-UTerm, RD)> for Frac!(UTerm, LD)
+// where
+//     LD: Unsigned + NonZero,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B1;
 
-    fn is_less_or_equal(self, _rhs: FracT!(-UTerm, RD)) -> Self::Output {
-        B1
-    }
-}
+//     fn is_less_or_equal(self, _rhs: Frac!(-UTerm, RD)) -> Self::Output {
+//         B1
+//     }
+// }
 
-impl<LD, RU, RB, RD> IsLessOrEqual<FracT!(- UInt<RU, RB>, RD)> for FracT!(UTerm, LD)
-where
-    LD: Unsigned + NonZero,
-    RU: Unsigned,
-    RB: Bit,
-    RD: Unsigned + NonZero,
-{
-    type Output = B0;
+// impl<LD, RU, RB, RD> IsLessOrEqual<Frac!(- UInt<RU, RB>, RD)> for Frac!(UTerm, LD)
+// where
+//     LD: Unsigned + NonZero,
+//     RU: Unsigned,
+//     RB: Bit,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B0;
 
-    fn is_less_or_equal(self, _rhs: FracT!(- UInt<RU, RB>, RD)) -> Self::Output {
-        B0
-    }
-}
+//     fn is_less_or_equal(self, _rhs: Frac!(- UInt<RU, RB>, RD)) -> Self::Output {
+//         B0
+//     }
+// }
 
-impl<LU, LB, LD, RD> IsLessOrEqual<FracT!(-UTerm, RD)> for FracT!(UInt<LU, LB>, LD)
-where
-    LU: Unsigned,
-    LB: Bit,
-    LD: Unsigned + NonZero,
-    RD: Unsigned + NonZero,
-{
-    type Output = B0;
+// impl<LU, LB, LD, RD> IsLessOrEqual<Frac!(-UTerm, RD)> for Frac!(UInt<LU, LB>, LD)
+// where
+//     LU: Unsigned,
+//     LB: Bit,
+//     LD: Unsigned + NonZero,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B0;
 
-    fn is_less_or_equal(self, _rhs: FracT!(-UTerm, RD)) -> Self::Output {
-        B0
-    }
-}
+//     fn is_less_or_equal(self, _rhs: Frac!(-UTerm, RD)) -> Self::Output {
+//         B0
+//     }
+// }
 
-impl<LU, LB, LD, RU, RB, RD> IsLessOrEqual<FracT!(- UInt<RU, RB>, RD)> for FracT!(UInt<LU, LB>, LD)
-where
-    LU: Unsigned,
-    LB: Bit,
-    LD: Unsigned + NonZero,
-    RU: Unsigned,
-    RB: Bit,
-    RD: Unsigned + NonZero,
-{
-    type Output = B0;
+// impl<LU, LB, LD, RU, RB, RD> IsLessOrEqual<Frac!(- UInt<RU, RB>, RD)> for Frac!(UInt<LU, LB>, LD)
+// where
+//     LU: Unsigned,
+//     LB: Bit,
+//     LD: Unsigned + NonZero,
+//     RU: Unsigned,
+//     RB: Bit,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B0;
 
-    fn is_less_or_equal(self, _rhs: FracT!(- UInt<RU, RB>, RD)) -> Self::Output {
-        B0
-    }
-}
+//     fn is_less_or_equal(self, _rhs: Frac!(- UInt<RU, RB>, RD)) -> Self::Output {
+//         B0
+//     }
+// }
 
-impl<LN, LD, RN, RD> IsLessOrEqual<FracT!(RN, RD)> for FracT!(-LN, LD)
-where
-    LN: Unsigned,
-    LD: Unsigned + NonZero,
-    RN: Unsigned,
-    RD: Unsigned + NonZero,
-{
-    type Output = B1;
+// impl<LN, LD, RN, RD> IsLessOrEqual<Frac!(RN, RD)> for Frac!(-LN, LD)
+// where
+//     LN: Unsigned,
+//     LD: Unsigned + NonZero,
+//     RN: Unsigned,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B1;
 
-    fn is_less_or_equal(self, _rhs: FracT!(RN, RD)) -> Self::Output {
-        B1
-    }
-}
+//     fn is_less_or_equal(self, _rhs: Frac!(RN, RD)) -> Self::Output {
+//         B1
+//     }
+// }
 
-// is greater
+// // is greater
 
-impl<LF, RF> IsGreater<PFrac<RF>> for PFrac<LF>
-where
-    LF: UFraction + IsGreater<RF>,
-    RF: UFraction,
-{
-    type Output = Gr<LF, RF>;
+// impl<LF, RF> IsGreater<PFrac<RF>> for PFrac<LF>
+// where
+//     LF: UFraction + IsGreater<RF>,
+//     RF: UFraction,
+// {
+//     type Output = Gr<LF, RF>;
 
-    fn is_greater(self, _rhs: PFrac<RF>) -> Self::Output {
-        // blocked by https://github.com/paholg/typenum/pull/141
-        todo!();
-    }
-}
+//     fn is_greater(self, _rhs: PFrac<RF>) -> Self::Output {
+//         // blocked by https://github.com/paholg/typenum/pull/141
+//         todo!();
+//     }
+// }
 
-impl<LF, RF> IsGreater<NFrac<RF>> for NFrac<LF>
-where
-    LF: UFraction + IsLess<RF>,
-    RF: UFraction,
-{
-    type Output = Le<LF, RF>;
+// impl<LF, RF> IsGreater<NFrac<RF>> for NFrac<LF>
+// where
+//     LF: UFraction + IsLess<RF>,
+//     RF: UFraction,
+// {
+//     type Output = Le<LF, RF>;
 
-    fn is_greater(self, _rhs: NFrac<RF>) -> Self::Output {
-        // blocked by https://github.com/paholg/typenum/pull/141
-        todo!();
-    }
-}
+//     fn is_greater(self, _rhs: NFrac<RF>) -> Self::Output {
+//         // blocked by https://github.com/paholg/typenum/pull/141
+//         todo!();
+//     }
+// }
 
-impl<LD, RD> IsGreater<FracT!(-UTerm, RD)> for FracT!(UTerm, LD)
-where
-    LD: Unsigned + NonZero,
-    RD: Unsigned + NonZero,
-{
-    type Output = B0;
+// impl<LD, RD> IsGreater<Frac!(-UTerm, RD)> for Frac!(UTerm, LD)
+// where
+//     LD: Unsigned + NonZero,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B0;
 
-    fn is_greater(self, _rhs: FracT!(-UTerm, RD)) -> Self::Output {
-        B0
-    }
-}
+//     fn is_greater(self, _rhs: Frac!(-UTerm, RD)) -> Self::Output {
+//         B0
+//     }
+// }
 
-impl<LD, RU, RB, RD> IsGreater<FracT!(- UInt<RU, RB>, RD)> for FracT!(UTerm, LD)
-where
-    LD: Unsigned + NonZero,
-    RU: Unsigned,
-    RB: Bit,
-    RD: Unsigned + NonZero,
-{
-    type Output = B1;
+// impl<LD, RU, RB, RD> IsGreater<Frac!(- UInt<RU, RB>, RD)> for Frac!(UTerm, LD)
+// where
+//     LD: Unsigned + NonZero,
+//     RU: Unsigned,
+//     RB: Bit,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B1;
 
-    fn is_greater(self, _rhs: FracT!(- UInt<RU, RB>, RD)) -> Self::Output {
-        B1
-    }
-}
+//     fn is_greater(self, _rhs: Frac!(- UInt<RU, RB>, RD)) -> Self::Output {
+//         B1
+//     }
+// }
 
-impl<LU, LB, LD, RD> IsGreater<FracT!(-UTerm, RD)> for FracT!(UInt<LU, LB>, LD)
-where
-    LU: Unsigned,
-    LB: Bit,
-    LD: Unsigned + NonZero,
-    RD: Unsigned + NonZero,
-{
-    type Output = B1;
+// impl<LU, LB, LD, RD> IsGreater<Frac!(-UTerm, RD)> for Frac!(UInt<LU, LB>, LD)
+// where
+//     LU: Unsigned,
+//     LB: Bit,
+//     LD: Unsigned + NonZero,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B1;
 
-    fn is_greater(self, _rhs: FracT!(-UTerm, RD)) -> Self::Output {
-        B1
-    }
-}
+//     fn is_greater(self, _rhs: Frac!(-UTerm, RD)) -> Self::Output {
+//         B1
+//     }
+// }
 
-impl<LU, LB, LD, RU, RB, RD> IsGreater<FracT!(- UInt<RU, RB>, RD)> for FracT!(UInt<LU, LB>, LD)
-where
-    LU: Unsigned,
-    LB: Bit,
-    LD: Unsigned + NonZero,
-    RU: Unsigned,
-    RB: Bit,
-    RD: Unsigned + NonZero,
-{
-    type Output = B1;
+// impl<LU, LB, LD, RU, RB, RD> IsGreater<Frac!(- UInt<RU, RB>, RD)> for Frac!(UInt<LU, LB>, LD)
+// where
+//     LU: Unsigned,
+//     LB: Bit,
+//     LD: Unsigned + NonZero,
+//     RU: Unsigned,
+//     RB: Bit,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B1;
 
-    fn is_greater(self, _rhs: FracT!(- UInt<RU, RB>, RD)) -> Self::Output {
-        B1
-    }
-}
+//     fn is_greater(self, _rhs: Frac!(- UInt<RU, RB>, RD)) -> Self::Output {
+//         B1
+//     }
+// }
 
-impl<LN, LD, RN, RD> IsGreater<FracT!(RN, RD)> for FracT!(-LN, LD)
-where
-    LN: Unsigned,
-    LD: Unsigned + NonZero,
-    RN: Unsigned,
-    RD: Unsigned + NonZero,
-{
-    type Output = B0;
+// impl<LN, LD, RN, RD> IsGreater<Frac!(RN, RD)> for Frac!(-LN, LD)
+// where
+//     LN: Unsigned,
+//     LD: Unsigned + NonZero,
+//     RN: Unsigned,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B0;
 
-    fn is_greater(self, _rhs: FracT!(RN, RD)) -> Self::Output {
-        B0
-    }
-}
+//     fn is_greater(self, _rhs: Frac!(RN, RD)) -> Self::Output {
+//         B0
+//     }
+// }
 
 // is greater or equal
 
-impl<LF, RF> IsGreaterOrEqual<PFrac<RF>> for PFrac<LF>
-where
-    LF: UFraction + IsGreaterOrEqual<RF>,
-    RF: UFraction,
-{
-    type Output = GrEq<LF, RF>;
+// impl<LF, RF> IsGreaterOrEqual<PFrac<RF>> for PFrac<LF>
+// where
+//     LF: UFraction + IsGreaterOrEqual<RF>,
+//     RF: UFraction,
+// {
+//     type Output = GrEq<LF, RF>;
 
-    fn is_greater_or_equal(self, _rhs: PFrac<RF>) -> Self::Output {
-        // blocked by https://github.com/paholg/typenum/pull/141
-        todo!();
-    }
-}
+//     fn is_greater_or_equal(self, _rhs: PFrac<RF>) -> Self::Output {
+//         // blocked by https://github.com/paholg/typenum/pull/141
+//         todo!();
+//     }
+// }
 
-impl<LF, RF> IsGreaterOrEqual<NFrac<RF>> for NFrac<LF>
-where
-    LF: UFraction + IsLessOrEqual<RF>,
-    RF: UFraction,
-{
-    type Output = LeEq<LF, RF>;
+// impl<LF, RF> IsGreaterOrEqual<NFrac<RF>> for NFrac<LF>
+// where
+//     LF: UFraction + IsLessOrEqual<RF>,
+//     RF: UFraction,
+// {
+//     type Output = LeEq<LF, RF>;
 
-    fn is_greater_or_equal(self, _rhs: NFrac<RF>) -> Self::Output {
-        // blocked by https://github.com/paholg/typenum/pull/141
-        todo!();
-    }
-}
+//     fn is_greater_or_equal(self, _rhs: NFrac<RF>) -> Self::Output {
+//         // blocked by https://github.com/paholg/typenum/pull/141
+//         todo!();
+//     }
+// }
 
-impl<LD, RD> IsGreaterOrEqual<FracT!(UTerm, RD)> for FracT!(-UTerm, LD)
-where
-    LD: Unsigned + NonZero,
-    RD: Unsigned + NonZero,
-{
-    type Output = B1;
+// impl<LD, RD> IsGreaterOrEqual<Frac!(UTerm, RD)> for Frac!(-UTerm, LD)
+// where
+//     LD: Unsigned + NonZero,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B1;
 
-    fn is_greater_or_equal(self, _rhs: FracT!(UTerm, RD)) -> Self::Output {
-        B1
-    }
-}
+//     fn is_greater_or_equal(self, _rhs: Frac!(UTerm, RD)) -> Self::Output {
+//         B1
+//     }
+// }
 
-impl<LD, RU, RB, RD> IsGreaterOrEqual<FracT!(UInt<RU, RB>, RD)> for FracT!(-UTerm, LD)
-where
-    LD: Unsigned + NonZero,
-    RU: Unsigned,
-    RB: Bit,
-    RD: Unsigned + NonZero,
-{
-    type Output = B0;
+// impl<LD, RU, RB, RD> IsGreaterOrEqual<Frac!(UInt<RU, RB>, RD)> for Frac!(-UTerm, LD)
+// where
+//     LD: Unsigned + NonZero,
+//     RU: Unsigned,
+//     RB: Bit,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B0;
 
-    fn is_greater_or_equal(self, _rhs: FracT!(UInt<RU, RB>, RD)) -> Self::Output {
-        B0
-    }
-}
+//     fn is_greater_or_equal(self, _rhs: Frac!(UInt<RU, RB>, RD)) -> Self::Output {
+//         B0
+//     }
+// }
 
-impl<LU, LB, LD, RD> IsGreaterOrEqual<FracT!(UTerm, RD)> for FracT!(- UInt<LU, LB>, LD)
-where
-    LU: Unsigned,
-    LB: Bit,
-    LD: Unsigned + NonZero,
-    RD: Unsigned + NonZero,
-{
-    type Output = B0;
+// impl<LU, LB, LD, RD> IsGreaterOrEqual<Frac!(UTerm, RD)> for Frac!(- UInt<LU, LB>, LD)
+// where
+//     LU: Unsigned,
+//     LB: Bit,
+//     LD: Unsigned + NonZero,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B0;
 
-    fn is_greater_or_equal(self, _rhs: FracT!(UTerm, RD)) -> Self::Output {
-        B0
-    }
-}
+//     fn is_greater_or_equal(self, _rhs: Frac!(UTerm, RD)) -> Self::Output {
+//         B0
+//     }
+// }
 
-impl<LU, LB, LD, RU, RB, RD> IsGreaterOrEqual<FracT!(UInt<RU, RB>, RD)> for FracT!(- UInt<LU, LB>, LD)
-where
-    LU: Unsigned,
-    LB: Bit,
-    LD: Unsigned + NonZero,
-    RU: Unsigned,
-    RB: Bit,
-    RD: Unsigned + NonZero,
-{
-    type Output = B0;
+// impl<LU, LB, LD, RU, RB, RD> IsGreaterOrEqual<Frac!(UInt<RU, RB>, RD)> for Frac!(- UInt<LU, LB>, LD)
+// where
+//     LU: Unsigned,
+//     LB: Bit,
+//     LD: Unsigned + NonZero,
+//     RU: Unsigned,
+//     RB: Bit,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B0;
 
-    fn is_greater_or_equal(self, _rhs: FracT!(UInt<RU, RB>, RD)) -> Self::Output {
-        B0
-    }
-}
+//     fn is_greater_or_equal(self, _rhs: Frac!(UInt<RU, RB>, RD)) -> Self::Output {
+//         B0
+//     }
+// }
 
-impl<LN, LD, RN, RD> IsGreaterOrEqual<FracT!(-RN, RD)> for FracT!(LN, LD)
-where
-    LN: Unsigned,
-    LD: Unsigned + NonZero,
-    RN: Unsigned,
-    RD: Unsigned + NonZero,
-{
-    type Output = B1;
+// impl<LN, LD, RN, RD> IsGreaterOrEqual<Frac!(-RN, RD)> for Frac!(LN, LD)
+// where
+//     LN: Unsigned,
+//     LD: Unsigned + NonZero,
+//     RN: Unsigned,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B1;
 
-    fn is_greater_or_equal(self, _rhs: FracT!(-RN, RD)) -> Self::Output {
-        B1
-    }
-}
+//     fn is_greater_or_equal(self, _rhs: Frac!(-RN, RD)) -> Self::Output {
+//         B1
+//     }
+// }
 
 // is equal
 
-impl<LF, RF> IsEqual<PFrac<RF>> for PFrac<LF>
-where
-    LF: UFraction + IsEqual<RF>,
-    RF: UFraction,
-{
-    type Output = Eq<LF, RF>;
+// impl<LF, RF> IsEqual<PFrac<RF>> for PFrac<LF>
+// where
+//     LF: UFraction + IsEqual<RF>,
+//     RF: UFraction,
+// {
+//     type Output = Eq<LF, RF>;
 
-    fn is_equal(self, _rhs: PFrac<RF>) -> Self::Output {
-        // blocked by https://github.com/paholg/typenum/pull/141
-        todo!();
-    }
-}
+//     fn is_equal(self, _rhs: PFrac<RF>) -> Self::Output {
+//         // blocked by https://github.com/paholg/typenum/pull/141
+//         todo!();
+//     }
+// }
 
-impl<LF, RF> IsEqual<NFrac<RF>> for NFrac<LF>
-where
-    LF: UFraction + IsEqual<RF>,
-    RF: UFraction,
-{
-    type Output = Eq<LF, RF>;
+// impl<LF, RF> IsEqual<NFrac<RF>> for NFrac<LF>
+// where
+//     LF: UFraction + IsEqual<RF>,
+//     RF: UFraction,
+// {
+//     type Output = Eq<LF, RF>;
 
-    fn is_equal(self, _rhs: NFrac<RF>) -> Self::Output {
-        // blocked by https://github.com/paholg/typenum/pull/141
-        todo!();
-    }
-}
+//     fn is_equal(self, _rhs: NFrac<RF>) -> Self::Output {
+//         // blocked by https://github.com/paholg/typenum/pull/141
+//         todo!();
+//     }
+// }
 
-impl<LD, RD> IsEqual<FracT!(UTerm, RD)> for FracT!(-UTerm, LD)
-where
-    LD: Unsigned + NonZero,
-    RD: Unsigned + NonZero,
-{
-    type Output = B1;
+// impl<LD, RD> IsEqual<Frac!(UTerm, RD)> for Frac!(-UTerm, LD)
+// where
+//     LD: Unsigned + NonZero,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B1;
 
-    fn is_equal(self, _rhs: FracT!(UTerm, RD)) -> Self::Output {
-        B1
-    }
-}
+//     fn is_equal(self, _rhs: Frac!(UTerm, RD)) -> Self::Output {
+//         B1
+//     }
+// }
 
-impl<LD, RD> IsEqual<FracT!(-UTerm, RD)> for FracT!(UTerm, LD)
-where
-    LD: Unsigned + NonZero,
-    RD: Unsigned + NonZero,
-{
-    type Output = B1;
+// impl<LD, RD> IsEqual<Frac!(-UTerm, RD)> for Frac!(UTerm, LD)
+// where
+//     LD: Unsigned + NonZero,
+//     RD: Unsigned + NonZero,
+// {
+//     type Output = B1;
 
-    fn is_equal(self, _rhs: FracT!(-UTerm, RD)) -> Self::Output {
-        B1
-    }
-}
+//     fn is_equal(self, _rhs: Frac!(-UTerm, RD)) -> Self::Output {
+//         B1
+//     }
+// }
