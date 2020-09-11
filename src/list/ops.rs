@@ -1,24 +1,6 @@
 use super::{Cons, List, Nil};
 use crate::common::*;
 
-// trait Wtf<A, B, C> {
-//     type Output;
-// }
-
-// impl<X> Wtf<X, X, ()> for () {
-//     type Output = ();
-// }
-
-// impl<X, Y> Wtf<X, Y, ((), ())> for () {
-//     type Output = ((), ());
-// }
-
-// type W<A, B, C> = <() as Wtf<A, B, C>>::Output;
-
-// fn wtf() {
-//     let _: W<(), (), _> = ();
-// }
-
 typ! {
     pub fn PushFront<list, value>(list: List, value: _) -> List {
         Cons::<value, list>

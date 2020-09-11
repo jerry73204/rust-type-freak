@@ -1,11 +1,3 @@
-/// Builds a type that implements [KVList](crate::kvlist::KVList).
-///
-/// ```rust
-/// use type_freak::KVListType;
-/// use typenum::consts::*;
-/// type List = KVListType![(U0, String), (U3, usize)];
-/// // Same as KVCons<U0, String, KVCons<U3, usize, KVNil>>
-/// ```
 #[macro_export]
 macro_rules! KVListT {
     {} => { $crate::kvlist::KVNil };

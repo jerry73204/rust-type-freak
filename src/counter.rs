@@ -166,7 +166,7 @@ pub mod op_aliases {
 
 pub mod macros {
     #[macro_export]
-    macro_rules! CounterT {
+    macro_rules! Counter {
         ($size:ty) => { $crate::counter::op_aliases::ToCounter<$size> };
     }
 }
@@ -174,13 +174,13 @@ pub mod macros {
 #[cfg(test)]
 mod tests {
     use super::{op_aliases::*, *};
-    use crate::{control::op_aliases::*, CounterT};
+    use crate::{control::op_aliases::*, Counter};
     use typenum::{U0, U1, U2, U3};
 
-    type Assert1 = AssertSame<CounterT![U0], Nil, ()>;
-    type Assert2 = AssertSame<CounterT![U1], Step<Nil>, ()>;
-    type Assert3 = AssertSame<CounterT![U2], Step<Step<Nil>>, ()>;
-    type Assert4 = AssertSame<CounterT![U3], Step<Step<Step<Nil>>>, ()>;
+    type Assert1 = AssertSame<Counter![U0], Nil, ()>;
+    type Assert2 = AssertSame<Counter![U1], Step<Nil>, ()>;
+    type Assert3 = AssertSame<Counter![U2], Step<Step<Nil>>, ()>;
+    type Assert4 = AssertSame<Counter![U3], Step<Step<Step<Nil>>>, ()>;
     type Assert5 = AssertSame<ToUnsigned<Nil>, U0, ()>;
     type Assert6 = AssertSame<ToUnsigned<Step<Nil>>, U1, ()>;
     type Assert7 = AssertSame<ToUnsigned<Step<Step<Nil>>>, U2, ()>;

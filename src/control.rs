@@ -59,7 +59,6 @@
 //! }
 //! ```
 
-// use crate::{boolean::Boolean,};
 use typenum::{
     Bit, Eq, False, Gr, GrEq, IsEqual, IsGreater, IsGreaterOrEqual, IsLess, IsLessOrEqual,
     IsNotEqual, Le, LeEq, NInt, NonZero, NotEq, PInt, True, UInt, UTerm, Unsigned, B0, B1, U0, Z0,

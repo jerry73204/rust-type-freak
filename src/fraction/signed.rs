@@ -2,14 +2,10 @@ use super::{
     marker::{Fraction, Irreducible, UFraction},
     op_aliases, ops,
 };
-use crate::{control, FracT};
+use crate::{common::*, control, FracT};
 use std::{
     marker::PhantomData,
     ops::{Add, Div, Mul, Sub},
-};
-use typenum::{
-    Bit, Diff, Eq, Gr, GrEq, IsEqual, IsGreater, IsGreaterOrEqual, IsLess, IsLessOrEqual, Le, LeEq,
-    NonZero, Prod, Quot, Sum, UInt, UTerm, Unsigned, B0, B1,
 };
 
 // positive fraction type
