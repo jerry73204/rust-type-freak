@@ -7,7 +7,7 @@ pub mod list;
 // pub mod kvlist;
 // pub mod tree;
 // pub mod maybe;
-// pub mod numeric;
+pub mod numeric;
 // pub mod tuple;
 // pub mod dynum;
 // pub mod floating;
