@@ -1,22 +1,22 @@
 #[macro_export]
 macro_rules! UFrac {
-    ($num:expr, $denom:expr) => {
+    ($num:literal / $denom:literal) => {
         $crate::fraction::unsigned::UFrac<typ::tyuint!($num), typ::tyuint!($denom)>
     };
 }
 
 #[macro_export]
 macro_rules! Frac {
-    ($num:expr, $denom:expr) => {
+    ($num:literal / $denom:literal) => {
         $crate::fraction::signed::PFrac<$crate::fraction::unsigned::UFrac<typ::tyuint!($num), typ::tyuint!($denom)>>
     };
-    (-$num:expr, $denom:expr) => {
+    (~ $num:literal / $denom:literal) => {
         $crate::fraction::signed::NFrac<$crate::fraction::unsigned::UFrac<typ::tyuint!($num), typ::tyuint!($denom)>>
     };
-    ($num:expr, -$denom:expr) => {
+    ($num:literal / ~ $denom:literal) => {
         $crate::fraction::signed::NFrac<$crate::fraction::unsigned::UFrac<typ::tyuint!($num), typ::tyuint!($denom)>>
     };
-    (-$num:expr, -$denom:expr) => {
+    (~ $num:literal / ~ $denom:literal) => {
         $crate::fraction::signed::PFrac<$crate::fraction::unsigned::UFrac<typ::tyuint!($num), typ::tyuint!($denom)>>
     };
 }
@@ -32,6 +32,10 @@ mod tests {
 
     #[test]
     fn frac_macros() {
-        let _: AssertSame<UFrac!(3, 4), UFrac<U3, U4>, ()> = ();
+        let _: AssertSame<UFrac!(3 / 4), UFrac<U3, U4>, ()> = ();
+        let _: AssertSame<Frac!(3 / 4), PFrac<UFrac<U3, U4>>, ()> = ();
+        let _: AssertSame<Frac!(~ 3 / 4), NFrac<UFrac<U3, U4>>, ()> = ();
+        let _: AssertSame<Frac!(3 / ~ 4), NFrac<UFrac<U3, U4>>, ()> = ();
+        let _: AssertSame<Frac!(~ 3 / ~ 4), PFrac<UFrac<U3, U4>>, ()> = ();
     }
 }

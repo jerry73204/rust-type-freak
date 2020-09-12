@@ -4,6 +4,6 @@ pub use std::{
 };
 pub use typ::{tyint, typ, tyuint};
 pub use typenum::{
-    Add1, Bit, Diff, Eq, Gr, GrEq, IsEqual, IsGreater, IsGreaterOrEqual, IsLess, IsLessOrEqual, Le,
-    LeEq, NonZero, Prod, Quot, Sub1, Sum, UInt, UTerm, Unsigned, B0, B1,
+    Add1, Bit, Cmp, Diff, Equal, Greater, IsEqual, Less, NonZero, Prod, Quot, Sub1, Sum, UInt,
+    UTerm, Unsigned, B0, B1,
 };

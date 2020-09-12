@@ -63,18 +63,18 @@ typ! {
                     PFrac::<UFrac<rn, rd>> => {
                         let num: Unsigned = ln * rd + rn * ld;
                         let deno: Unsigned + NonZero = ld * rd;
-                        Reduce(PFrac::<UFrac<num, deno>>);
+                        Reduce(PFrac::<UFrac<num, deno>>)
                     }
                     #[generics(rn: Unsigned, rd: Unsigned + NonZero)]
                     NFrac::<UFrac<rn, rd>> => {
                         if ln * rd >= rn * ld {
                             let num: Unsigned = ln * rd - rn * ld;
                             let deno: Unsigned + NonZero = ld * rd;
-                            Reduce(PFrac::<UFrac<num, deno>>);
+                            Reduce(PFrac::<UFrac<num, deno>>)
                         } else {
                             let num: Unsigned = rn * ld - ln * rd;
                             let deno: Unsigned + NonZero = ld * rd;
-                            Reduce(NFrac::<UFrac::<num, deno>>);
+                            Reduce(NFrac::<UFrac::<num, deno>>)
                         }
                     }
                 }
@@ -87,18 +87,18 @@ typ! {
                         if ln * rd >= rn * ld {
                             let num: Unsigned = ln * rd - rn * ld;
                             let deno: Unsigned + NonZero = ld * rd;
-                            Reduce(NFrac::<UFrac<num, deno>>);
+                            Reduce(NFrac::<UFrac<num, deno>>)
                         } else {
                             let num: Unsigned = rn * ld - ln * rd;
                             let deno: Unsigned + NonZero = ld * rd;
-                            Reduce(PFrac::<UFrac::<num, deno>>);
+                            Reduce(PFrac::<UFrac::<num, deno>>)
                         }
                     }
                     #[generics(rn: Unsigned, rd: Unsigned + NonZero)]
                     NFrac::<UFrac<rn, rd>> => {
                         let num: Unsigned = ln * rd + rn * ld;
                         let deno: Unsigned + NonZero = ld * rd;
-                        Reduce(NFrac::<UFrac<num, deno>>);
+                        Reduce(NFrac::<UFrac<num, deno>>)
                     }
                 }
             }
@@ -193,91 +193,95 @@ typ! {
         FracMul(lhs, reciprocal)
     }
 
-    pub fn UFracIsEqual<ln, ld, rn, rd>(UFrac::<ln, ld>: UFraction, UFrac::<rn, rd>: UFraction) -> Bit
+    pub fn UFracCmp<ln, ld, rn, rd>(UFrac::<ln, ld>: UFraction, UFrac::<rn, rd>: UFraction)
     where
         ln: Unsigned,
         ld: Unsigned + NonZero,
         rn: Unsigned,
         rd: Unsigned + NonZero,
     {
-        ln * rd == rn * ld
+        let lhs = ln * rd;
+        let rhs = rn * ld;
+
+        if lhs > rhs {
+            Greater
+        } else if lhs < rhs {
+            Less
+        } else {
+            Equal
+        }
     }
 
-    pub fn UFracIsLess<ln, ld, rn, rd>(UFrac::<ln, ld>: UFraction, UFrac::<rn, rd>: UFraction) -> Bit
-    where
-        ln: Unsigned,
-        ld: Unsigned + NonZero,
-        rn: Unsigned,
-        rd: Unsigned + NonZero,
+    pub fn FracCmp<lhs, rhs>(lhs: Fraction, rhs: Fraction)
     {
-        ln * rd < rn * ld
-    }
-
-    pub fn UFracIsLessOrEqual<ln, ld, rn, rd>(UFrac::<ln, ld>: UFraction, UFrac::<rn, rd>: UFraction) -> Bit
-    where
-        ln: Unsigned,
-        ld: Unsigned + NonZero,
-        rn: Unsigned,
-        rd: Unsigned + NonZero,
-    {
-        ln * rd <= rn * ld
-    }
-
-
-    pub fn UFracIsGreater<ln, ld, rn, rd>(UFrac::<ln, ld>: UFraction, UFrac::<rn, rd>: UFraction) -> Bit
-    where
-        ln: Unsigned,
-        ld: Unsigned + NonZero,
-        rn: Unsigned,
-        rd: Unsigned + NonZero,
-    {
-        ln * rd > rn * ld
-    }
-
-    pub fn UFracIsGreaterOrEqual<ln, ld, rn, rd>(UFrac::<ln, ld>: UFraction, UFrac::<rn, rd>: UFraction) -> Bit
-    where
-        ln: Unsigned,
-        ld: Unsigned + NonZero,
-        rn: Unsigned,
-        rd: Unsigned + NonZero,
-    {
-        ln * rd >= rn * ld
+        match (lhs, rhs) {
+            #[generics(lfrac: UFraction, rfrac: UFraction)]
+            (PFrac::<lfrac>, PFrac::<rfrac>) => {
+                UFracCmp(lfrac, rfrac)
+            }
+            #[generics(lfrac: UFraction, rfrac: UFraction)]
+            (PFrac::<lfrac>, NFrac::<rfrac>) => {
+                Greater
+            }
+            #[generics(lfrac: UFraction, rfrac: UFraction)]
+            (NFrac::<lfrac>, PFrac::<rfrac>) => {
+                Less
+            }
+            #[generics(lfrac: UFraction, rfrac: UFraction)]
+            (NFrac::<lfrac>, NFrac::<rfrac>) => {
+                let cmp = UFracCmp(lfrac, rfrac);
+                match cmp {
+                    Greater => Less,
+                    Equal => Equal,
+                    Less => Greater,
+                }
+            }
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::control::op_aliases::AssertSame;
+    use crate::{control::op_aliases::AssertSame, Frac, UFrac};
     use typenum::consts::*;
-
-    type Frac1 = UFrac<U3, U4>;
-    type Frac2 = UFrac<U2, U9>;
-    type Frac11 = UFrac<U9, U4>;
-    // type Frac3 = NaiveMul<Frac1, Frac2>;
-    // type Frac4 = NaiveDiv<Frac1, Frac11>;
-    // type Frac5 = NaiveAdd<Frac1, Frac1>;
-    type Frac7 = ReduceOp<UFrac<U2, U4>>;
-    type Frac8 = ReduceOp<UFrac<U0, U4>>;
-    type Frac9 = ReduceOp<PFrac<UFrac<U3, U9>>>;
-    type Frac10 = ReciprocalOp<UFrac<U2, U3>>;
-
-    // type Assert1 = AssertSame<Frac3, UFrac<U6, U36>, ()>;
-    // type Assert2 = AssertSame<Frac4, UFrac<U12, U36>, ()>;
-    // type Assert3 = AssertSame<Frac5, UFrac<U24, U16>, ()>;
-    type Assert5 = AssertSame<Frac7, UFrac<U1, U2>, ()>;
-    type Assert6 = AssertSame<Frac8, UFrac<U0, U1>, ()>;
-    type Assert7 = AssertSame<Frac9, PFrac<UFrac<U1, U3>>, ()>;
-    type Assert8 = AssertSame<Frac10, UFrac<U3, U2>, ()>;
 
     #[test]
     fn frac_test() {
-        // let _: Assert1 = ();
-        // let _: Assert2 = ();
-        // let _: Assert3 = ();
-        let _: Assert5 = ();
-        let _: Assert6 = ();
-        let _: Assert7 = ();
-        let _: Assert8 = ();
+        let _: AssertSame<ReduceOp<UFrac!(2 / 4)>, UFrac!(1 / 2), ()> = ();
+        let _: AssertSame<ReduceOp<UFrac!(0 / 4)>, UFrac!(0 / 1), ()> = ();
+        let _: AssertSame<ReduceOp<Frac!(3 / 9)>, Frac!(1 / 3), ()> = ();
+        let _: AssertSame<ReduceOp<Frac!(3 / ~9)>, Frac!(~1 / 3), ()> = ();
+        let _: AssertSame<ReciprocalOp<UFrac!(3 / 2)>, UFrac!(2 / 3), ()> = ();
+        let _: AssertSame<ReciprocalOp<Frac!(3 / 2)>, Frac!(2 / 3), ()> = ();
+        let _: AssertSame<ReciprocalOp<Frac!(~3 / 2)>, Frac!(~2 / 3), ()> = ();
+        let _: AssertSame<UFracAddOp<UFrac!(1 / 2), UFrac!(1 / 3)>, UFrac!(5 / 6), ()> = ();
+        let _: AssertSame<FracAddOp<Frac!(1 / 2), Frac!(1 / 3)>, Frac!(5 / 6), ()> = ();
+        let _: AssertSame<FracAddOp<Frac!(1 / 2), Frac!(~1 / 3)>, Frac!(1 / 6), ()> = ();
+        let _: AssertSame<FracAddOp<Frac!(~1 / 2), Frac!(1 / 3)>, Frac!(~1 / 6), ()> = ();
+        let _: AssertSame<FracAddOp<Frac!(~1 / 2), Frac!(~1 / 3)>, Frac!(~5 / 6), ()> = ();
+        let _: AssertSame<UFracSubOp<UFrac!(1 / 2), UFrac!(1 / 3)>, UFrac!(1 / 6), ()> = ();
+        let _: AssertSame<FracSubOp<Frac!(1 / 2), Frac!(1 / 3)>, Frac!(1 / 6), ()> = ();
+        let _: AssertSame<FracSubOp<Frac!(1 / 2), Frac!(~1 / 3)>, Frac!(5 / 6), ()> = ();
+        let _: AssertSame<FracSubOp<Frac!(~1 / 2), Frac!(1 / 3)>, Frac!(~5 / 6), ()> = ();
+        let _: AssertSame<FracSubOp<Frac!(~1 / 2), Frac!(~1 / 3)>, Frac!(~1 / 6), ()> = ();
+        let _: AssertSame<UFracMulOp<UFrac!(2 / 3), UFrac!(9 / 4)>, UFrac!(3 / 2), ()> = ();
+        let _: AssertSame<FracMulOp<Frac!(2 / 3), Frac!(9 / 4)>, Frac!(3 / 2), ()> = ();
+        let _: AssertSame<FracMulOp<Frac!(~2 / 3), Frac!(9 / 4)>, Frac!(~3 / 2), ()> = ();
+        let _: AssertSame<FracMulOp<Frac!(2 / 3), Frac!(~9 / 4)>, Frac!(~3 / 2), ()> = ();
+        let _: AssertSame<FracMulOp<Frac!(~2 / 3), Frac!(~9 / 4)>, Frac!(3 / 2), ()> = ();
+        let _: AssertSame<UFracDivOp<UFrac!(2 / 3), UFrac!(4 / 9)>, UFrac!(3 / 2), ()> = ();
+        let _: AssertSame<FracDivOp<Frac!(2 / 3), Frac!(4 / 9)>, Frac!(3 / 2), ()> = ();
+        let _: AssertSame<FracDivOp<Frac!(~2 / 3), Frac!(4 / 9)>, Frac!(~3 / 2), ()> = ();
+        let _: AssertSame<FracDivOp<Frac!(2 / 3), Frac!(~4 / 9)>, Frac!(~3 / 2), ()> = ();
+        let _: AssertSame<FracDivOp<Frac!(~2 / 3), Frac!(~4 / 9)>, Frac!(3 / 2), ()> = ();
+        let _: AssertSame<UFracCmpOp<UFrac!(1 / 3), UFrac!(1 / 2)>, Less, ()> = ();
+        let _: AssertSame<UFracCmpOp<UFrac!(1 / 2), UFrac!(1 / 3)>, Greater, ()> = ();
+        let _: AssertSame<UFracCmpOp<UFrac!(3 / 7), UFrac!(3 / 7)>, Equal, ()> = ();
+        let _: AssertSame<UFracCmpOp<UFrac!(3 / 7), UFrac!(6 / 14)>, Equal, ()> = ();
+        let _: AssertSame<FracCmpOp<Frac!(1 / 3), Frac!(1 / 2)>, Less, ()> = ();
+        let _: AssertSame<FracCmpOp<Frac!(1 / 3), Frac!(~1 / 2)>, Greater, ()> = ();
+        let _: AssertSame<FracCmpOp<Frac!(~1 / 3), Frac!(1 / 2)>, Less, ()> = ();
+        let _: AssertSame<FracCmpOp<Frac!(~1 / 3), Frac!(~1 / 2)>, Greater, ()> = ();
     }
 }
