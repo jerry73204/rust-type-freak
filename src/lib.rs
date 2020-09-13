@@ -4,7 +4,7 @@ pub mod counter;
 pub mod dim;
 pub mod functional;
 pub mod list;
-// pub mod kvlist;
+// pub mod dict;
 // pub mod tree;
 // pub mod maybe;
 pub mod numeric;

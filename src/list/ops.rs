@@ -120,13 +120,19 @@ typ! {
     }
 
     pub fn Reverse<list>(list: List) -> List {
-        match list {
+        ReverseRecursive(Nil, list)
+    }
+
+    fn ReverseRecursive<saved, remaining>(saved: List, remaining: List) -> List {
+        match remaining {
             #[generics(head, tail: List)]
             Cons::<head, tail> => {
-                let prefix = Reverse(tail);
-                PushBack(tail, head)
+                let new_saved = Cons::<head, saved>;
+                ReverseRecursive(new_saved, tail)
             }
-            Nil => Nil,
+            Nil => {
+                saved
+            }
         }
     }
 
@@ -187,6 +193,116 @@ typ! {
             }
         }
     }
+
+    pub fn Index<list, index>(list: List, index: _) {
+        match index {
+            UTerm => NumIndex(list, UTerm),
+            #[generics(uint: Unsigned, bit: Bit)]
+            UInt::<uint, bit> => NumIndex(list, index),
+            #[generics(range_index)]
+            Range::<range_index> => RangeIndex(list, index),
+            #[generics(range_index)]
+            RangeInclusive::<range_index> => RangeInclusiveIndex(list, index),
+            #[generics(range_index)]
+            RangeTo::<range_index> => RangeToIndex(list, index),
+            #[generics(range_index)]
+            RangeToInclusive::<range_index> => RangeToInclusiveIndex(list, index),
+            #[generics(range_index)]
+            RangeFrom::<range_index> => RangeFromIndex(list, index),
+            RangeFull => list,
+        }
+    }
+
+    pub fn NumIndex<list, index>(list: List, index: Unsigned) {
+        match (list, index) {
+            #[generics(head, tail: List)]
+            (Cons::<head, tail>, UTerm) => head,
+            #[generics(head, tail: List, uint: Unsigned, bit: Bit)]
+            (Cons::<head, tail>, UInt::<uint, bit>) => {
+                let new_index = index - 1u;
+                NumIndex(tail, new_index)
+            }
+        }
+    }
+
+    pub fn RangeIndex<list, range>(list: List, range: _) -> List {
+        match (list, range) {
+            #[generics(head, tail: List, uint: Unsigned, bit: Bit, upper: Unsigned)]
+            (Cons::<head, tail>, Range::<(UInt<uint, bit>, upper)>) => {
+                let lower = UInt::<uint, bit>;
+                let new_lower = lower - 1u;
+                let new_upper = upper - 1u;
+                let new_range = Range::<(new_lower, new_upper)>;
+                RangeIndex(tail, new_range)
+            }
+            #[generics(upper: Unsigned)]
+            #[capture(list)]
+            (list, Range::<(UTerm, upper)>) => {
+                let new_range = RangeTo::<upper>;
+                RangeToIndex(list, new_range)
+            }
+        }
+    }
+
+    pub fn RangeInclusiveIndex<list, range>(list: List, range: _) -> List {
+        match range {
+            #[generics(from: Unsigned, to: Unsigned)]
+            RangeInclusive::<(from, to)> => {
+                let new_to = to + 1u;
+                let new_range = Range::<(from, new_to)>;
+                RangeIndex(list, new_range)
+            }
+        }
+    }
+
+
+    pub fn RangeFromIndex<list, range>(list: List, range: _) -> List {
+        match (list, range) {
+            #[generics(head, tail: List, uint: Unsigned, bit: Bit)]
+            (Cons::<head, tail>, RangeFrom::<UInt<uint, bit>>) => {
+                let lower = UInt::<uint, bit>;
+                let new_lower = lower - 1u;
+                let new_range = RangeFrom::<new_lower>;
+                RangeFromIndex(tail, new_range)
+            }
+            #[capture(list)]
+            (list, RangeFrom::<UTerm>) => {
+                list
+            }
+        }
+    }
+
+    pub fn RangeToIndex<list, range>(list: List, range: _) -> List {
+        RangeToIndexRecursive(Nil, list, range)
+    }
+
+    pub fn RangeToInclusiveIndex<list, range>(list: List, range: _) -> List {
+        match range {
+            #[generics(index: Unsigned)]
+            RangeToInclusive::<index> => {
+                let new_index = index + 1u;
+                let new_range = RangeTo::<new_index>;
+                RangeToIndexRecursive(Nil, list, new_range)
+            }
+        }
+    }
+
+    fn RangeToIndexRecursive<saved, remaining, range>(saved: List, remaining: List, range: _) -> List {
+        match (remaining, range) {
+            #[generics(head, tail: List, uint: Unsigned, bit: Bit)]
+            (Cons::<head, tail>, RangeTo::<UInt<uint, bit>>) => {
+                let new_saved = Cons::<head, saved>;
+                let upper = UInt::<uint, bit>;
+                let new_upper = upper - 1u;
+                let new_range = RangeTo::<new_upper>;
+                RangeToIndexRecursive(new_saved, tail, new_range)
+            }
+            #[capture(remaining)]
+            (remaining, RangeTo::<UTerm>) => {
+                Reverse(saved)
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -224,37 +340,9 @@ mod tests {
     type Assert23 = AssertSame<FirstOp<List![B, C]>, B, ()>;
     type Assert24 = AssertSame<LastOp<List![B, C]>, C, ()>;
     type Assert25<Stepper> = AssertSame<ReplaceItemOp<List![B, C], B, D, Stepper>, List![D, C], ()>;
-    // type Assert27 = AssertSame<RangeTo<List![A, B, C], U0>, List![], ()>;
-    // type Assert28 = AssertSame<RangeTo<List![A, B, C], U1>, List![A], ()>;
-    // type Assert29 = AssertSame<RangeTo<List![A, B, C], U2>, List![A, B], ()>;
-    // type Assert30 = AssertSame<RangeTo<List![A, B, C], U3>, List![A, B, C], ()>;
-    // type Assert31 = AssertSame<Range<List![A, B, C], U0, U0>, List![], ()>;
-    // type Assert32 = AssertSame<Range<List![A, B, C], U0, U1>, List![A], ()>;
-    // type Assert33 = AssertSame<Range<List![A, B, C], U0, U2>, List![A, B], ()>;
-    // type Assert34 = AssertSame<Range<List![A, B, C], U0, U3>, List![A, B, C], ()>;
-    // type Assert35 = AssertSame<Range<List![A, B, C], U1, U1>, List![], ()>;
-    // type Assert36 = AssertSame<Range<List![A, B, C], U1, U2>, List![B], ()>;
-    // type Assert37 = AssertSame<Range<List![A, B, C], U1, U3>, List![B, C], ()>;
-    // type Assert38 = AssertSame<Range<List![A, B, C], U2, U2>, List![], ()>;
-    // type Assert39 = AssertSame<Range<List![A, B, C], U2, U3>, List![C], ()>;
-    // type Assert40 = AssertSame<Range<List![A, B, C], U3, U3>, List![], ()>;
-    // type Assert41 = AssertSame<RangeFrom<List![A, B, C], U0>, List![A, B, C], ()>;
-    // type Assert42 = AssertSame<RangeFrom<List![A, B, C], U1>, List![B, C], ()>;
-    // type Assert43 = AssertSame<RangeFrom<List![A, B, C], U2>, List![C], ()>;
-    // type Assert44 = AssertSame<RangeFrom<List![A, B, C], U3>, List![], ()>;
     type Assert45 = AssertSame<ZipOp<List![A, B], List![C, D]>, List![(A, C), (B, D)], ()>;
-    // type Assert46<Count> = AssertSame<Insert<List![B, C], B, Count, A>, List![A, B, C], ()>;
-    // type Assert47<Count> = AssertSame<Insert<List![B, C], C, Count, A>, List![B, A, C], ()>;
     type Assert48 = AssertSame<PopFrontOp<List![A, B, C]>, List![B, C], ()>;
     type Assert49 = AssertSame<PopBackOp<List![A, B, C]>, List![A, B], ()>;
-    // type Assert50<Counters> = AssertSame<RemoveMany<List![A], List![], Counters>, List![A], ()>;
-    // type Assert51<Counters> = AssertSame<RemoveMany<List![A], List![A], Counters>, List![], ()>;
-    // type Assert52<Counters> =
-    //     AssertSame<RemoveMany<List![A, B, C], List![A, C], Counters>, List![B], ()>;
-    // type Assert53<Counters> = AssertSame<Swap<List![A, B, C], A, B, Counters>, List![B, A, C], ()>;
-    // type Assert54<Counters> = AssertSame<Swap<List![A, B, C], A, C, Counters>, List![C, B, A], ()>;
-
-    // TODO: test ForEach and Fold
 
     #[test]
     fn list_test() {
@@ -270,7 +358,6 @@ mod tests {
         let _: Assert10 = ();
         let _: Assert11<_> = ();
         let _: Assert12<_> = ();
-        // let _: Assert13<_> = ();
         let _: Assert14 = ();
         let _: Assert15 = ();
         let _: Assert16 = ();
@@ -283,37 +370,39 @@ mod tests {
         let _: Assert23 = ();
         let _: Assert24 = ();
         let _: Assert25<_> = ();
-        // let _: Assert26<_> = ();
-        // let _: Assert27 = ();
-        // let _: Assert28 = ();
-        // let _: Assert29 = ();
-        // let _: Assert30 = ();
-        // let _: Assert31 = ();
-        // let _: Assert32 = ();
-        // let _: Assert33 = ();
-        // let _: Assert34 = ();
-        // let _: Assert35 = ();
-        // let _: Assert36 = ();
-        // let _: Assert37 = ();
-        // let _: Assert38 = ();
-        // let _: Assert39 = ();
-        // let _: Assert40 = ();
-        // let _: Assert41 = ();
-        // let _: Assert42 = ();
-        // let _: Assert43 = ();
-        // let _: Assert44 = ();
         let _: Assert45 = ();
-        // let _: Assert46<_> = ();
-        // let _: Assert47<_> = ();
         let _: Assert48 = ();
         let _: Assert49 = ();
-        // let _: Assert50<_> = ();
-        // let _: Assert51<_> = ();
-        // let _: Assert52<_> = ();
-        // let _: Assert53<_> = ();
-        // let _: Assert54<_> = ();
+        let _: AssertSame<ReverseOp<List![A, B, C]>, List![C, B, A], ()> = ();
         let _: AssertSame<IsEmptyOp<List![]>, B1, ()> = ();
         let _: AssertSame<IsEmptyOp<List![A]>, B0, ()> = ();
         let _: AssertSame<IsEmptyOp<List![A, B, C]>, B0, ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], U0>, A, ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], U1>, B, ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], U2>, C, ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], RangeFull>, List![A, B, C], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], Range<(U0, U0)>>, List![], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], Range<(U1, U1)>>, List![], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], Range<(U2, U2)>>, List![], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], Range<(U0, U1)>>, List![A], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], Range<(U2, U3)>>, List![C], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], Range<(U1, U3)>>, List![B, C], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], RangeInclusive<(U0, U0)>>, List![A], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], RangeInclusive<(U1, U1)>>, List![B], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], RangeInclusive<(U2, U2)>>, List![C], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], RangeInclusive<(U0, U1)>>, List![A, B], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], RangeInclusive<(U0, U2)>>, List![A, B, C], ()> =
+            ();
+        let _: AssertSame<IndexOp<List![A, B, C], RangeInclusive<(U1, U2)>>, List![B, C], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], RangeTo<U0>>, List![], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], RangeTo<U1>>, List![A], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], RangeTo<U2>>, List![A, B], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], RangeTo<U3>>, List![A, B, C], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], RangeToInclusive<U0>>, List![A], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], RangeToInclusive<U1>>, List![A, B], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], RangeToInclusive<U2>>, List![A, B, C], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], RangeFrom<U0>>, List![A, B, C], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], RangeFrom<U1>>, List![B, C], ()> = ();
+        let _: AssertSame<IndexOp<List![A, B, C], RangeFrom<U2>>, List![C], ()> = ();
     }
 }
