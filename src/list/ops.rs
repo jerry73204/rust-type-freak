@@ -303,13 +303,33 @@ typ! {
             }
         }
     }
+
+    fn ReduceSum<head1, tail1: List>(Cons::<head1, tail1>: List) {
+        match tail1 {
+            #[generics(head2, tail2: List)]
+            Cons::<head2, tail2> => {
+                head1 + ReduceSum(tail1)
+            }
+            Nil => head1,
+        }
+    }
+
+    fn ReduceProduct<head1, tail1: List>(Cons::<head1, tail1>: List) {
+        match tail1 {
+            #[generics(head2, tail2: List)]
+            Cons::<head2, tail2> => {
+                head1 * ReduceProduct(tail1)
+            }
+            Nil => head1,
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::{control::op_aliases::*, List};
-    use typenum::{U0, U1, U2, U3};
+    use typenum::consts::*;
 
     struct A;
     struct B;
@@ -404,5 +424,7 @@ mod tests {
         let _: AssertSame<IndexOp<List![A, B, C], RangeFrom<U0>>, List![A, B, C], ()> = ();
         let _: AssertSame<IndexOp<List![A, B, C], RangeFrom<U1>>, List![B, C], ()> = ();
         let _: AssertSame<IndexOp<List![A, B, C], RangeFrom<U2>>, List![C], ()> = ();
+        let _: AssertSame<ReduceSumOp<List![U3, U2, U7]>, U12, ()> = ();
+        let _: AssertSame<ReduceProductOp<List![U3, U2, U7]>, U42, ()> = ();
     }
 }
