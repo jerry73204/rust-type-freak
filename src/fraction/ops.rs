@@ -244,7 +244,6 @@ typ! {
 mod tests {
     use super::*;
     use crate::{control::op_aliases::AssertSame, Frac, UFrac};
-    use typenum::consts::*;
 
     #[test]
     fn frac_test() {
