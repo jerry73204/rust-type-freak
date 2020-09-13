@@ -5,15 +5,27 @@ use crate::{
 
 /// Marks the list of dimensions.
 pub trait Dimensions {}
-
 impl Dimensions for DynDimensions {}
 impl<Head, Tail> Dimensions for Cons<Head, Tail>
 where
     Head: Dim,
-    Tail: List + Dimensions,
+    Tail: DimsList,
 {
 }
 impl Dimensions for Nil {}
+
+pub trait DimsList
+where
+    Self: List,
+{
+}
+impl<Head, Tail> DimsList for Cons<Head, Tail>
+where
+    Head: Dim,
+    Tail: DimsList,
+{
+}
+impl DimsList for Nil {}
 
 /// Marks a single dimension.
 pub trait Dim {}
@@ -28,31 +40,4 @@ pub struct DynDimensions(Vec<usize>);
 /// Single dynamic dimension.
 pub struct Dyn(pub usize);
 
-typ! {
-    fn PushFront<dims, dim>(dims: Dimensions, dim: Dim) -> Dimensions {
-        match dims {
-            DynDimensions => DynDimensions,
-            #[generics(head: Dim, tail: Dimensions + List)]
-            Cons::<head, tail> => {
-                Cons::<dim, Cons<head, tail>>
-            }
-            Nil => {
-                Cons::<dim, Nil>
-            }
-        }
-    }
-
-    fn PushBack<dims, dim>(dims: Dimensions, dim: Dim) -> Dimensions {
-        match dims {
-            DynDimensions => DynDimensions,
-            #[generics(head: Dim, tail: Dimensions + List)]
-            Cons::<head, tail> => {
-                let new_tail: List = PushBack(tail, dim);
-                Cons::<head, new_tail>
-            }
-            Nil => {
-                Cons::<dim, Nil>
-            }
-        }
-    }
-}
+pub type Dims2D<P, Q> = Cons<P, Cons<Q, Nil>>;
