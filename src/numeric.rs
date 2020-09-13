@@ -50,6 +50,63 @@ pub mod ops {
                 UInt::<U, B1> => PopCount(U) + 1u,
             }
         }
+
+        pub fn UnsignedIntegerDiv<lhs, rhs>(lhs: Unsigned, rhs: Unsigned + NonZero) -> Unsigned {
+            (lhs - (lhs % rhs)) / rhs
+        }
+
+        pub fn SignedIntegerDiv<lhs, rhs>(lhs: Integer, rhs: Integer + NonZero) -> Integer {
+            match (lhs, rhs) {
+                #[generics(lint: Unsigned + NonZero, rint: Unsigned + NonZero)]
+                (PInt::<lint>, PInt::<rint>) => {
+                    let quot = UnsignedIntegerDiv(lint, rint);
+                    match quot {
+                        UTerm => UTerm,
+                        #[generics(uint: Unsigned, bit: Bit)]
+                        UInt::<uint, bit> => {
+                            let quot: NonZero = quot;
+                            PInt::<quot>
+                        }
+                    }
+                }
+                #[generics(lint: Unsigned + NonZero, rint: Unsigned + NonZero)]
+                (NInt::<lint>, PInt::<rint>) => {
+                    let quot = UnsignedIntegerDiv(lint, rint);
+                    match quot {
+                        UTerm => UTerm,
+                        #[generics(uint: Unsigned, bit: Bit)]
+                        UInt::<uint, bit> => {
+                            let quot: NonZero = quot;
+                            NInt::<quot>
+                        }
+                    }
+                }
+                #[generics(lint: Unsigned + NonZero, rint: Unsigned + NonZero)]
+                (PInt::<lint>, NInt::<rint>) => {
+                    let quot = UnsignedIntegerDiv(lint, rint);
+                    match quot {
+                        UTerm => UTerm,
+                        #[generics(uint: Unsigned, bit: Bit)]
+                        UInt::<uint, bit> => {
+                            let quot: NonZero = quot;
+                            NInt::<quot>
+                        }
+                    }
+                }
+                #[generics(lint: Unsigned + NonZero, rint: Unsigned + NonZero)]
+                (NInt::<lint>, NInt::<rint>) => {
+                    let quot = UnsignedIntegerDiv(lint, rint);
+                    match quot {
+                        UTerm => UTerm,
+                        #[generics(uint: Unsigned, bit: Bit)]
+                        UInt::<uint, bit> => {
+                            let quot: NonZero = quot;
+                            PInt::<quot>
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // to uint
