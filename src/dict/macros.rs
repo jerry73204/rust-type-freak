@@ -1,43 +1,43 @@
 #[macro_export]
-macro_rules! KVListT {
-    {} => { $crate::kvlist::KVNil };
+macro_rules! Dict {
+    {} => { $crate::dict::Nil };
     { $name:ty : $value:ty $(, $names:ty : $values:ty)* $(,)? } => {
-        $crate::kvlist::KVCons<$name, $value, $crate::KVListT![$($names : $values),*]>
+        $crate::dict::DictCons<$name, $value, $crate::Dict!{ $($names : $values),* }>
     };
 }
 
 #[macro_export]
-macro_rules! KVList {
+macro_rules! dict {
     {} => { $crate::list::Nil };
     { $name:expr => $value:expr $(, $names:expr => $values:expr)* $(,)? } => {
-        $crate::list::Cons(($name, $value), $crate::KVList![$($names => $values),*])
+        $crate::list::Cons { head: ($name, $value), tail: $crate::dict!{ $($names => $values),* } }
     };
 }
 
 #[macro_export]
-macro_rules! KVListWithTailT {
+macro_rules! PrependDict {
     {; $tail:ty} => {
         $tail
     };
     { $name:ty : $value:ty $(, $names:ty : $values:ty)* $(,)?; $tail:ty } => {
-        $crate::kvlist::KVCons<$name, $value, $crate::KVListWithTailT![$($names : $values),*; $tail]>
+        $crate::dict::DictCons<$name, $value, $crate::PrependDict![$($names : $values),*; $tail]>
     };
 }
 
 #[macro_export]
-macro_rules! KVListWithTail {
+macro_rules! prepend_dict {
     {; $tail:expr} => {
         $tail
     };
     { $name:expr => $value:expr $(, $names:expr => $values:expr)* $(,)?; $tail:expr } => {
-        $crate::list::Cons(($name, $value), $crate::KVListWithTail![$($names => $values),*; $tail])
+        $crate::list::Cons { head: ($name, $value), tail: $crate::prepend_dict![$($names => $values),*; $tail] }
     };
 }
 
 #[cfg(test)]
 mod tests {
     use crate::control::op_aliases::AssertSame;
-    use crate::kvlist::{KVCons, KVNil};
+    use crate::dict::{DictCons, Nil};
 
     struct Ka;
     struct Kb;
@@ -47,32 +47,32 @@ mod tests {
     struct Vb(String);
     struct Vc(bool);
 
-    type List1 = KVListT! {};
-    type List2 = KVListT! {
+    type List1 = Dict! {};
+    type List2 = Dict! {
         Ka: Va,
         Kb: Vb,
     };
-    type List3 = KVListWithTailT! {
+    type List3 = PrependDict! {
         Kc: Vc; List2
     };
 
-    type Assert1 = AssertSame<List1, KVNil, ()>;
-    type Assert2 = AssertSame<List2, KVCons<Ka, Va, KVCons<Kb, Vb, KVNil>>, ()>;
-    type Assert3 = AssertSame<List3, KVCons<Kc, Vc, KVCons<Ka, Va, KVCons<Kb, Vb, KVNil>>>, ()>;
+    type Assert1 = AssertSame<List1, Nil, ()>;
+    type Assert2 = AssertSame<List2, DictCons<Ka, Va, DictCons<Kb, Vb, Nil>>, ()>;
+    type Assert3 = AssertSame<List3, DictCons<Kc, Vc, DictCons<Ka, Va, DictCons<Kb, Vb, Nil>>>, ()>;
 
     #[test]
-    fn kvlist_macros() {
+    fn dict_macros() {
         let _: Assert1 = ();
         let _: Assert2 = ();
         let _: Assert3 = ();
 
         {
-            let _: List1 = KVList! {};
-            let tail: List2 = KVList! {
+            let _: List1 = dict! {};
+            let tail: List2 = dict! {
                 Ka => Va(8),
                 Kb => Vb("string".into()),
             };
-            let _: List3 = KVListWithTail! {
+            let _: List3 = prepend_dict! {
                 Kc => Vc(true); tail
             };
         }

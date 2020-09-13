@@ -1,0 +1,3 @@
+use crate::common::*;
+
+typ! {}
