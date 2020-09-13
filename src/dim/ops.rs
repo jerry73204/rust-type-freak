@@ -2,6 +2,7 @@ use super::{Dim, Dimensions, Dims2D, DimsList, Dyn, DynDimensions};
 use crate::{
     common::*,
     list::{Cons, List, Nil, Reverse},
+    numeric::UnsignedIntegerDiv,
 };
 use typenum::U1;
 
@@ -77,7 +78,7 @@ typ! {
         }
     }
 
-    pub fn PyTorchBroadcastRecursive<lhs, rhs>(lhs: Dimensions, rhs: Dimensions) -> Dimensions
+    pub fn PyTorchBroadcastRecursive<lhs, rhs>(lhs: DimsList, rhs: DimsList) -> DimsList
     {
         match (lhs, rhs) {
             (Nil, Nil) => Nil,
@@ -103,5 +104,9 @@ typ! {
                 Cons::<dim, tail>
             }
         }
+    }
+
+    pub fn ConvDim<size, padding, dilation, ksize, stride>(size: Unsigned, padding: Unsigned, dilation: Unsigned, ksize: Unsigned, stride: Unsigned) -> Unsigned {
+        UnsignedIntegerDiv(size + 2u * padding - dilation * (ksize - 1u) - 1u, stride) + 1u
     }
 }
