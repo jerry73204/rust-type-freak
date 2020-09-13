@@ -1,7 +1,7 @@
 use super::{Cons, List, Nil};
 use crate::{
     common::*,
-    counter::{Counter, Curr, Next},
+    stepper::{Curr, Next, Stepper},
 };
 
 typ! {
@@ -70,14 +70,14 @@ typ! {
         }
     }
 
-    pub fn RemoveItem<list, item, step>(list: List, item: _, step: Counter) -> List {
+    pub fn RemoveItem<list, item, step>(list: List, item: _, step: Stepper) -> List {
         match (list, step) {
             #[generics(tail: List)]
             #[capture(item)]
             (Cons::<item, tail>, Curr) => {
                 tail
             }
-            #[generics(head, tail: List, remaining: Counter)]
+            #[generics(head, tail: List, remaining: Stepper)]
             (Cons::<head, tail>, Next::<remaining>) => {
                 let new_tail = RemoveItem(tail, item, remaining);
                 Cons::<head, new_tail>
@@ -85,14 +85,14 @@ typ! {
         }
     }
 
-    pub fn ReplaceItem<list, prev, new, step>(list: List, prev: _, new: _, step: Counter) -> List {
+    pub fn ReplaceItem<list, prev, new, step>(list: List, prev: _, new: _, step: Stepper) -> List {
         match (list, step) {
             #[generics(tail: List)]
             #[capture(prev)]
             (Cons::<prev, tail>, Curr) => {
                 Cons::<new, tail>
             }
-            #[generics(head, tail: List, remaining: Counter)]
+            #[generics(head, tail: List, remaining: Stepper)]
             (Cons::<head, tail>, Next::<remaining>) => {
                 let new_tail = ReplaceItem(tail, prev, new, remaining);
                 Cons::<head, new_tail>
@@ -136,14 +136,14 @@ typ! {
         }
     }
 
-    pub fn IndexOf<list, item, step>(list: List, item: _, step: Counter) -> Unsigned {
+    pub fn IndexOf<list, item, step>(list: List, item: _, step: Stepper) -> Unsigned {
         match (list, step) {
             #[generics(tail: List)]
             #[capture(item)]
             (Cons::<item, tail>, Curr) => {
                 0u
             }
-            #[generics(head, tail: List, remaining: Counter)]
+            #[generics(head, tail: List, remaining: Stepper)]
             (Cons::<head, tail>, Next::<remaining>) => {
                 IndexOf(tail, item, remaining) + 1u
             }
