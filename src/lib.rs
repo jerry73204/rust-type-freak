@@ -9,5 +9,5 @@ pub mod list;
 // pub mod maybe;
 pub mod numeric;
 // pub mod tuple;
-// pub mod floating;
+pub mod floating;
 pub mod fraction;

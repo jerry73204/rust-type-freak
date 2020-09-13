@@ -1,7 +1,18 @@
 use super::{Cons, List, Nil};
-use crate::common::*;
+use crate::{
+    common::*,
+    counter::{Counter, Curr, Next},
+};
 
 typ! {
+    pub fn IsEmpty<list>(list: List) -> Bit {
+        match list {
+            #[generics(head, tail: List)]
+            Cons::<head, tail> => false,
+            Nil => true,
+        }
+    }
+
     pub fn PushFront<list, value>(list: List, value: _) -> List {
         Cons::<value, list>
     }
@@ -59,6 +70,36 @@ typ! {
         }
     }
 
+    pub fn RemoveItem<list, item, step>(list: List, item: _, step: Counter) -> List {
+        match (list, step) {
+            #[generics(tail: List)]
+            #[capture(item)]
+            (Cons::<item, tail>, Curr) => {
+                tail
+            }
+            #[generics(head, tail: List, remaining: Counter)]
+            (Cons::<head, tail>, Next::<remaining>) => {
+                let new_tail = RemoveItem(tail, item, remaining);
+                Cons::<head, new_tail>
+            }
+        }
+    }
+
+    pub fn ReplaceItem<list, prev, new, step>(list: List, prev: _, new: _, step: Counter) -> List {
+        match (list, step) {
+            #[generics(tail: List)]
+            #[capture(prev)]
+            (Cons::<prev, tail>, Curr) => {
+                Cons::<new, tail>
+            }
+            #[generics(head, tail: List, remaining: Counter)]
+            (Cons::<head, tail>, Next::<remaining>) => {
+                let new_tail = ReplaceItem(tail, prev, new, remaining);
+                Cons::<head, new_tail>
+            }
+        }
+    }
+
     pub fn Extend<lhs, rhs>(lhs: List, rhs: List) -> List {
         match lhs {
             #[generics(head, tail: List)]
@@ -86,6 +127,20 @@ typ! {
                 PushBack(tail, head)
             }
             Nil => Nil,
+        }
+    }
+
+    pub fn IndexOf<list, item, step>(list: List, item: _, step: Counter) -> Unsigned {
+        match (list, step) {
+            #[generics(tail: List)]
+            #[capture(item)]
+            (Cons::<item, tail>, Curr) => {
+                0u
+            }
+            #[generics(head, tail: List, remaining: Counter)]
+            (Cons::<head, tail>, Next::<remaining>) => {
+                IndexOf(tail, item, remaining) + 1u
+            }
         }
     }
 
@@ -155,22 +210,20 @@ mod tests {
     type Assert8 = AssertSame<InsertOp<List![B, C], U0, A>, List![A, B, C], ()>;
     type Assert9 = AssertSame<InsertOp<List![B, C], U1, A>, List![B, A, C], ()>;
     type Assert10 = AssertSame<InsertOp<List![B, C], U2, A>, List![B, C, A], ()>;
-    // type Assert11<Index> = AssertSame<Remove<List![A], A, Index>, List![], ()>;
-    // type Assert12<Index> = AssertSame<Remove<List![B, C], C, Index>, List![B], ()>;
-    // type Assert13<Element> = AssertSame<Remove<List![B, C], Element, U0>, List![C], ()>;
+    type Assert11<Index> = AssertSame<RemoveItemOp<List![A], A, Index>, List![], ()>;
+    type Assert12<Index> = AssertSame<RemoveItemOp<List![B, C], C, Index>, List![B], ()>;
     type Assert14 = AssertSame<ExtendOp<List![A], List![B, C]>, List![A, B, C], ()>;
     type Assert15 = AssertSame<GetOp<List![B, C], U0>, B, ()>;
     type Assert16 = AssertSame<GetOp<List![B, C], U1>, C, ()>;
-    // type Assert17<Index> = AssertSame<IndexOf<List![B, C], B, Index>, U0, ()>;
-    // type Assert18<Index> = AssertSame<IndexOf<List![B, C], C, Index>, U1, ()>;
+    type Assert17<Index> = AssertSame<IndexOfOp<List![B, C], B, Index>, U0, ()>;
+    type Assert18<Index> = AssertSame<IndexOfOp<List![B, C], C, Index>, U1, ()>;
     type Assert19 = AssertSame<ReverseOp<List![B, C]>, List![C, B], ()>;
     type Assert20 = AssertSame<LenOp<List![]>, U0, ()>;
     type Assert21 = AssertSame<LenOp<List![A]>, U1, ()>;
     type Assert22 = AssertSame<LenOp<List![B, C]>, U2, ()>;
     type Assert23 = AssertSame<FirstOp<List![B, C]>, B, ()>;
     type Assert24 = AssertSame<LastOp<List![B, C]>, C, ()>;
-    // type Assert25<Target> = AssertSame<Replace<List![B, C], Target, U1, A>, List![B, A], ()>;
-    // type Assert26<Index> = AssertSame<Replace<List![B, C], C, Index, A>, List![B, A], ()>;
+    type Assert25<Stepper> = AssertSame<ReplaceItemOp<List![B, C], B, D, Stepper>, List![D, C], ()>;
     // type Assert27 = AssertSame<RangeTo<List![A, B, C], U0>, List![], ()>;
     // type Assert28 = AssertSame<RangeTo<List![A, B, C], U1>, List![A], ()>;
     // type Assert29 = AssertSame<RangeTo<List![A, B, C], U2>, List![A, B], ()>;
@@ -215,21 +268,21 @@ mod tests {
         let _: Assert8 = ();
         let _: Assert9 = ();
         let _: Assert10 = ();
-        // let _: Assert11<_> = ();
-        // let _: Assert12<_> = ();
+        let _: Assert11<_> = ();
+        let _: Assert12<_> = ();
         // let _: Assert13<_> = ();
         let _: Assert14 = ();
         let _: Assert15 = ();
         let _: Assert16 = ();
-        // let _: Assert17<_> = ();
-        // let _: Assert18<_> = ();
+        let _: Assert17<_> = ();
+        let _: Assert18<_> = ();
         let _: Assert19 = ();
         let _: Assert20 = ();
         let _: Assert21 = ();
         let _: Assert22 = ();
         let _: Assert23 = ();
         let _: Assert24 = ();
-        // let _: Assert25<_> = ();
+        let _: Assert25<_> = ();
         // let _: Assert26<_> = ();
         // let _: Assert27 = ();
         // let _: Assert28 = ();
@@ -259,5 +312,8 @@ mod tests {
         // let _: Assert52<_> = ();
         // let _: Assert53<_> = ();
         // let _: Assert54<_> = ();
+        let _: AssertSame<IsEmptyOp<List![]>, B1, ()> = ();
+        let _: AssertSame<IsEmptyOp<List![A]>, B0, ()> = ();
+        let _: AssertSame<IsEmptyOp<List![A, B, C]>, B0, ()> = ();
     }
 }

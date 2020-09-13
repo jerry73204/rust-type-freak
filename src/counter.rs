@@ -91,6 +91,10 @@ pub mod base {
     impl<Tail> Counter for Step<Tail> where Tail: Counter {}
 
     impl Counter for Nil {}
+
+    pub type Next<Tail> = Cons<(), Tail>;
+    pub type Curr = Nil;
+
 }
 
 pub use base::*;
