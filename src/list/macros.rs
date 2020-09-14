@@ -9,20 +9,20 @@
 #[macro_export]
 macro_rules! List {
     [] => {
-        $crate::list::base::Nil
+        $crate::list::Nil
     };
     [$name:ty $(, $names:ty)* $(,)?] => {
-        $crate::list::base::Cons<$name, $crate::List![$($names),*]>
+        $crate::list::Cons<$name, $crate::List![$($names),*]>
     };
 }
 
 #[macro_export]
 macro_rules! list {
     [] => {
-        $crate::list::base::Nil
+        $crate::list::Nil
     };
     [$name:expr $(, $names:expr)* $(,)?] => {
-        $crate::list::base::Cons { head: $name, tail: $crate::list![$($names),*] }
+        $crate::list::Cons { head: $name, tail: $crate::list![$($names),*] }
     };
 }
 
@@ -40,7 +40,7 @@ macro_rules! PrependList {
         $tail
     };
     [$name:ty $(, $names:ty)* $(,)?; $tail:ty] => {
-        $crate::list::base::Cons<$name, $crate::PrependList![$($names),*; $tail]>
+        $crate::list::Cons<$name, $crate::PrependList![$($names),*; $tail]>
     };
 }
 
@@ -50,33 +50,33 @@ macro_rules! prepend_list {
         $tail
     };
     [$name:expr $(, $names:expr)* $(,)?; $tail:expr] => {
-        $crate::list::base::Cons { head: $name, tail: $crate::prepend_list![$($names),*; $tail] }
+        $crate::list::Cons { head: $name, tail: $crate::prepend_list![$($names),*; $tail] }
     };
 }
 
 #[macro_export]
 macro_rules! ListFromTuple {
     () => {
-        $crate::list::base::Nil
+        $crate::list::Nil
     };
     ($head:ty $(, $elems:ty)* $(,)?) => {
-        $crate::list::base::Cons<$head, $crate::ListFromTuple!($($elems),*)>
+        $crate::list::Cons<$head, $crate::ListFromTuple!($($elems),*)>
     };
 }
 
 #[macro_export]
 macro_rules! list_from_tuple {
     () => {
-        $crate::list::base::Nil
+        $crate::list::Nil
     };
     ($head:expr $(, $elems:expr)* $(,)?) => {
-        $crate::list::base::Cons { head: $head, tail: $crate::list_from_tuple!($($elems),*) }
+        $crate::list::Cons { head: $head, tail: $crate::list_from_tuple!($($elems),*) }
     };
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::control::op_aliases::AssertSame;
+    use crate::control::SameOp;
     use crate::list::{Cons, Nil};
 
     struct A(usize);
@@ -91,8 +91,8 @@ mod tests {
     type List1 = List![A, B, C];
     type List2 = PrependList![D, E; List1];
 
-    type Assert1 = AssertSame<List1, Cons<A, Cons<B, Cons<C, Nil>>>, ()>;
-    type Assert2 = AssertSame<List2, Cons<D, Cons<E, Cons<A, Cons<B, Cons<C, Nil>>>>>, ()>;
+    type Assert1 = SameOp<List1, Cons<A, Cons<B, Cons<C, Nil>>>>;
+    type Assert2 = SameOp<List2, Cons<D, Cons<E, Cons<A, Cons<B, Cons<C, Nil>>>>>>;
 
     #[test]
     fn list_macros() {

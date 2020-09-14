@@ -1,18 +1,16 @@
-use crate::common::*;
-
 #[macro_export]
 macro_rules! Dims {
     [] => {
-        $crate::list::base::Nil
+        $crate::list::Nil
     };
     [?] => {
         $crate::dim::DynDimensions
     };
     [$dim:literal $(, $remaining:tt)* $(,)?] => {
-        $crate::list::base::Cons<tyuint!($dim), $crate::Dims![$($remaining),*]>
+        $crate::list::Cons<tyuint!($dim), $crate::Dims![$($remaining),*]>
     };
     [_ $(, $remaining:tt)* $(,)?] => {
-        $crate::list::base::Cons<$crate::dim::Dyn, $crate::Dims![$($remaining),*]>
+        $crate::list::Cons<$crate::dim::Dyn, $crate::Dims![$($remaining),*]>
     };
 }
 
@@ -20,9 +18,9 @@ macro_rules! Dims {
 #[macro_export]
 macro_rules! dims {
     [] => {
-        $crate::list::base::Nil
+        $crate::list::Nil
     };
     [$dim:literal $(, $remaining:tt)* $(,)?] => {
-        $crate::list::base::Cons { head: tyuint!($dim), tail: $crate::dims![$($remaining),*] }
+        $crate::list::Cons { head: tyuint!($dim), tail: $crate::dims![$($remaining),*] }
     };
 }

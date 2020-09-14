@@ -4,7 +4,7 @@ use super::{
 };
 use crate::{
     common::*,
-    control::ops::AssertSame,
+    control::Same,
     numeric::{Gcd, GcdOp},
 };
 use typenum::U1;
@@ -37,7 +37,7 @@ where
 
 impl<N, D> Irreducible for UFrac<N, D>
 where
-    (): AssertSame<GcdOp<N, D>, U1, ()> + Gcd<N, D>,
+    (): Same<GcdOp<N, D>, U1, ()> + Gcd<N, D>,
     N: Unsigned,
     D: Unsigned + NonZero,
 {

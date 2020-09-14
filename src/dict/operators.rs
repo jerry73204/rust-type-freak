@@ -393,40 +393,40 @@ mod tests {
     type DoubleList = KVListT! {Ka: Va, Kb: Vb};
     type TripleList = KVListT! {Ka: Va, Kb: Vb, Kc: Vc};
 
-    type Assert1<Index> = AssertSame<InsertAt<EmptyList, Ka, Va, Index>, KVListT! {Ka: Va}, ()>;
-    type Assert2 = AssertSame<InsertAt<SingleList, Kb, Vb, U0>, KVListT! {Kb: Vb, Ka: Va}, ()>;
-    type Assert3 = AssertSame<InsertAt<SingleList, Kb, Vb, U1>, KVListT! {Ka: Va, Kb: Vb}, ()>;
+    type Assert1<Index> = SameOp<InsertAt<EmptyList, Ka, Va, Index>, KVListT! {Ka: Va}, ()>;
+    type Assert2 = SameOp<InsertAt<SingleList, Kb, Vb, U0>, KVListT! {Kb: Vb, Ka: Va}, ()>;
+    type Assert3 = SameOp<InsertAt<SingleList, Kb, Vb, U1>, KVListT! {Ka: Va, Kb: Vb}, ()>;
     type Assert4 =
-        AssertSame<InsertAt<DoubleList, Kc, Vc, U1>, KVListT! {Ka: Va, Kc: Vc, Kb: Vb}, ()>;
+        SameOp<InsertAt<DoubleList, Kc, Vc, U1>, KVListT! {Ka: Va, Kc: Vc, Kb: Vb}, ()>;
     type Assert8 =
-        AssertSame<InsertAt<DoubleList, Kc, Vc, U2>, KVListT! {Ka: Va, Kb: Vb, Kc: Vc}, ()>;
-    type Assert5<Index> = AssertSame<Remove<TripleList, Kb, Index>, KVListT! {Ka: Va, Kc: Vc}, ()>;
-    type Assert6<Key> = AssertSame<Remove<TripleList, Key, U2>, KVListT! {Ka: Va, Kb: Vb}, ()>;
-    type Assert7 = AssertSame<Keys<TripleList>, ListT![Ka, Kb, Kc], ()>;
-    type Assert9 = AssertSame<Values<TripleList>, ListT![Va, Vb, Vc], ()>;
-    type Assert10<Index> = AssertSame<IndexOf<TripleList, Kb, Index>, U1, ()>;
-    type Assert11 = AssertSame<KeyAt<TripleList, U2>, Kc, ()>;
-    type Assert12 = AssertSame<ValueAt<TripleList, U2>, Vc, ()>;
-    type Assert13<Counter> = AssertSame<Get<TripleList, Kc, Counter>, Vc, ()>;
+        SameOp<InsertAt<DoubleList, Kc, Vc, U2>, KVListT! {Ka: Va, Kb: Vb, Kc: Vc}, ()>;
+    type Assert5<Index> = SameOp<Remove<TripleList, Kb, Index>, KVListT! {Ka: Va, Kc: Vc}, ()>;
+    type Assert6<Key> = SameOp<Remove<TripleList, Key, U2>, KVListT! {Ka: Va, Kb: Vb}, ()>;
+    type Assert7 = SameOp<Keys<TripleList>, ListT![Ka, Kb, Kc], ()>;
+    type Assert9 = SameOp<Values<TripleList>, ListT![Va, Vb, Vc], ()>;
+    type Assert10<Index> = SameOp<IndexOf<TripleList, Kb, Index>, U1, ()>;
+    type Assert11 = SameOp<KeyAt<TripleList, U2>, Kc, ()>;
+    type Assert12 = SameOp<ValueAt<TripleList, U2>, Vc, ()>;
+    type Assert13<Counter> = SameOp<Get<TripleList, Kc, Counter>, Vc, ()>;
     type Assert14<Indexes> =
-        AssertSame<Permute<SingleList, ListT![Ka], Indexes>, KVListT! {Ka: Va}, ()>;
+        SameOp<Permute<SingleList, ListT![Ka], Indexes>, KVListT! {Ka: Va}, ()>;
     type Assert15<Indexes> =
-        AssertSame<Permute<DoubleList, ListT![Kb, Ka], Indexes>, KVListT! {Kb: Vb, Ka: Va}, ()>;
-    type Assert16<Indexes> = AssertSame<
+        SameOp<Permute<DoubleList, ListT![Kb, Ka], Indexes>, KVListT! {Kb: Vb, Ka: Va}, ()>;
+    type Assert16<Indexes> = SameOp<
         Permute<TripleList, ListT![Kc, Ka, Kb], Indexes>,
         KVListT! {Kc: Vc, Ka: Va, Kb: Vb},
         (),
     >;
     type Assert17<Count> =
-        AssertSame<Insert<SingleList, Ka, Count, Kb, Vb>, KVListT! {Kb: Vb, Ka: Va}, ()>;
+        SameOp<Insert<SingleList, Ka, Count, Kb, Vb>, KVListT! {Kb: Vb, Ka: Va}, ()>;
     type Assert18<Count> =
-        AssertSame<Insert<DoubleList, Kb, Count, Kc, Vc>, KVListT! {Ka: Va, Kc: Vc, Kb: Vb}, ()>;
+        SameOp<Insert<DoubleList, Kb, Count, Kc, Vc>, KVListT! {Ka: Va, Kc: Vc, Kb: Vb}, ()>;
     type Assert19<Counters> =
-        AssertSame<RemoveMany<SingleList, ListT![], Counters>, KVListT! {Ka: Va}, ()>;
+        SameOp<RemoveMany<SingleList, ListT![], Counters>, KVListT! {Ka: Va}, ()>;
     type Assert20<Counters> =
-        AssertSame<RemoveMany<SingleList, ListT![Ka], Counters>, KVListT! {}, ()>;
+        SameOp<RemoveMany<SingleList, ListT![Ka], Counters>, KVListT! {}, ()>;
     type Assert21<Counters> =
-        AssertSame<RemoveMany<TripleList, ListT![Kc, Ka], Counters>, KVListT! {Kb: Vb}, ()>;
+        SameOp<RemoveMany<TripleList, ListT![Kc, Ka], Counters>, KVListT! {Kb: Vb}, ()>;
 
     #[test]
     fn kvlist_ops_test() {

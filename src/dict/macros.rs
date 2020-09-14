@@ -36,8 +36,10 @@ macro_rules! prepend_dict {
 
 #[cfg(test)]
 mod tests {
-    use crate::control::op_aliases::AssertSame;
-    use crate::dict::{DictCons, Nil};
+    use crate::{
+        control::SameOp,
+        dict::{DictCons, Nil},
+    };
 
     struct Ka;
     struct Kb;
@@ -56,9 +58,9 @@ mod tests {
         Kc: Vc; List2
     };
 
-    type Assert1 = AssertSame<List1, Nil, ()>;
-    type Assert2 = AssertSame<List2, DictCons<Ka, Va, DictCons<Kb, Vb, Nil>>, ()>;
-    type Assert3 = AssertSame<List3, DictCons<Kc, Vc, DictCons<Ka, Va, DictCons<Kb, Vb, Nil>>>, ()>;
+    type Assert1 = SameOp<List1, Nil>;
+    type Assert2 = SameOp<List2, DictCons<Ka, Va, DictCons<Kb, Vb, Nil>>>;
+    type Assert3 = SameOp<List3, DictCons<Kc, Vc, DictCons<Ka, Va, DictCons<Kb, Vb, Nil>>>>;
 
     #[test]
     fn dict_macros() {

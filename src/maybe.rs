@@ -86,11 +86,11 @@ mod tests {
     // type Opt1 = Just<U3>;
     // type Opt2 = Nothing;
 
-    // type AssertSame<Lhs, Rhs> = IfSameOutput<(), Lhs, Rhs>;
+    // type SameOp<Lhs, Rhs> = IfSameOutput<(), Lhs, Rhs>;
 
-    // type Assert1 = AssertSame<Unwrap<Opt1>, U3>;
-    // type Assert2 = AssertSame<UnwrapOr<Opt1, U0>, U3>;
-    // type Assert3 = AssertSame<UnwrapOr<Opt2, U0>, U0>;
+    // type Assert1 = SameOp<Unwrap<Opt1>, U3>;
+    // type Assert2 = SameOp<UnwrapOr<Opt1, U0>, U3>;
+    // type Assert3 = SameOp<UnwrapOr<Opt2, U0>, U0>;
 
     // // map
     // struct BoxFunc;

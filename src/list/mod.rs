@@ -1,4 +1,4 @@
-pub mod base;
+mod base;
 mod convert;
 mod macros;
 mod ops;

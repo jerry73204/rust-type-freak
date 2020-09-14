@@ -281,39 +281,29 @@ typ! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{control::op_aliases::AssertSame, Dims, List};
+    use crate::{control::SameOp, Dims, List};
     use typenum::consts::*;
 
     fn test() {
-        // let _: AssertSame<FlattenOp<Dims![1, 2, 3], U0, U3>, U6, ()> = ();
-        let _: AssertSame<
-            CatOp<List![Dims![1, 2, 3], DynDimensions], tyuint!(1)>,
-            DynDimensions,
-            (),
-        > = ();
-        let _: AssertSame<CatOp<List![Dims![1, 2, 3], Dims![1, 5, 3]], Dyn>, Dims![?], ()> = ();
-        let _: AssertSame<CatOp<List![Dims![2], Dims![3]], tyuint!(0)>, Dims![5], ()> = ();
-        let _: AssertSame<CatOp<List![Dims![2], Dims![_]], tyuint!(0)>, Dims![_], ()> = ();
-        let _: AssertSame<CatOp<List![Dims![_], Dims![_]], tyuint!(0)>, Dims![_], ()> = ();
-        let _: AssertSame<
-            CatOp<List![Dims![2, 5, 3], Dims![2, 1, 3]], tyuint!(1)>,
-            Dims![2, 6, 3],
-            (),
-        > = ();
-        let _: AssertSame<
+        // let _: SameOp<FlattenOp<Dims![1, 2, 3], U0, U3>, U6, ()> = ();
+        let _: SameOp<CatOp<List![Dims![1, 2, 3], DynDimensions], tyuint!(1)>, DynDimensions> = ();
+        let _: SameOp<CatOp<List![Dims![1, 2, 3], Dims![1, 5, 3]], Dyn>, Dims![?]> = ();
+        let _: SameOp<CatOp<List![Dims![2], Dims![3]], tyuint!(0)>, Dims![5]> = ();
+        let _: SameOp<CatOp<List![Dims![2], Dims![_]], tyuint!(0)>, Dims![_]> = ();
+        let _: SameOp<CatOp<List![Dims![_], Dims![_]], tyuint!(0)>, Dims![_]> = ();
+        let _: SameOp<CatOp<List![Dims![2, 5, 3], Dims![2, 1, 3]], tyuint!(1)>, Dims![2, 6, 3]> =
+            ();
+        let _: SameOp<
             CatOp<List![Dims![_, 5, _, 3], Dims![2, 1, _, _]], tyuint!(1)>,
             Dims![2, 6, _, 3],
-            (),
         > = ();
-        let _: AssertSame<
+        let _: SameOp<
             CatOp<List![Dims![_, 7, _, 3], Dims![2, 7, 8, _]], tyuint!(2)>,
             Dims![2, 7, _, 3],
-            (),
         > = ();
-        let _: AssertSame<
+        let _: SameOp<
             CatOp<List![Dims![_, 7, 1, 3], Dims![2, _, 8, _], Dims![2, 7, 4, _]], tyuint!(2)>,
             Dims![2, 7, 13, 3],
-            (),
         > = ();
     }
 }

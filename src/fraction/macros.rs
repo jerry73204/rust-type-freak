@@ -25,17 +25,17 @@ macro_rules! Frac {
 mod tests {
     use super::*;
     use crate::{
-        control::op_aliases::AssertSame,
+        control::SameOp,
         fraction::{NFrac, PFrac, UFrac},
     };
     use typenum::consts::*;
 
     #[test]
     fn frac_macros() {
-        let _: AssertSame<UFrac!(3 / 4), UFrac<U3, U4>, ()> = ();
-        let _: AssertSame<Frac!(3 / 4), PFrac<UFrac<U3, U4>>, ()> = ();
-        let _: AssertSame<Frac!(~ 3 / 4), NFrac<UFrac<U3, U4>>, ()> = ();
-        let _: AssertSame<Frac!(3 / ~ 4), NFrac<UFrac<U3, U4>>, ()> = ();
-        let _: AssertSame<Frac!(~ 3 / ~ 4), PFrac<UFrac<U3, U4>>, ()> = ();
+        let _: SameOp<UFrac!(3 / 4), UFrac<U3, U4>> = ();
+        let _: SameOp<Frac!(3 / 4), PFrac<UFrac<U3, U4>>> = ();
+        let _: SameOp<Frac!(~ 3 / 4), NFrac<UFrac<U3, U4>>> = ();
+        let _: SameOp<Frac!(3 / ~ 4), NFrac<UFrac<U3, U4>>> = ();
+        let _: SameOp<Frac!(~ 3 / ~ 4), PFrac<UFrac<U3, U4>>> = ();
     }
 }

@@ -21,7 +21,7 @@ impl Dict for Nil {}
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{control::op_aliases::*, Dict};
+    use crate::{control::SameOp, Dict};
 
     struct Ka;
     struct Kb;
@@ -30,15 +30,14 @@ mod tests {
     struct Vb;
     struct Vc;
 
-    type Assert1 = AssertSame<Dict! {}, Nil, ()>;
-    type Assert2 = AssertSame<Dict! {Ka: Va}, DictCons<Ka, Va, Nil>, ()>;
-    type Assert3 = AssertSame<Dict! {Ka: Va, Kb: Vb}, DictCons<Ka, Va, DictCons<Kb, Vb, Nil>>, ()>;
-    type Assert4 = AssertSame<
+    type Assert1 = SameOp<Dict! {}, Nil>;
+    type Assert2 = SameOp<Dict! {Ka: Va}, DictCons<Ka, Va, Nil>>;
+    type Assert3 = SameOp<Dict! {Ka: Va, Kb: Vb}, DictCons<Ka, Va, DictCons<Kb, Vb, Nil>>>;
+    type Assert4 = SameOp<
         Dict! {Ka: Va, Kb: Vb, Kc: Vc},
         DictCons<Ka, Va, DictCons<Kb, Vb, DictCons<Kc, Vc, Nil>>>,
-        (),
     >;
-    type Assert5 = AssertSame<Dict! {Ka: Va, Kb: Va}, DictCons<Ka, Va, DictCons<Kb, Va, Nil>>, ()>;
+    type Assert5 = SameOp<Dict! {Ka: Va, Kb: Va}, DictCons<Ka, Va, DictCons<Kb, Va, Nil>>>;
 
     #[test]
     fn dict_type_test() {

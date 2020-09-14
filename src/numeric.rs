@@ -113,33 +113,33 @@ mod ops {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::control::op_aliases::*;
+    use crate::control::SameOp;
     use typenum::consts::*;
 
-    type Assert1 = AssertSame<PopCountOp<U0>, U0, ()>;
-    type Assert2 = AssertSame<PopCountOp<U1>, U1, ()>;
-    type Assert3 = AssertSame<PopCountOp<U2>, U1, ()>;
-    type Assert4 = AssertSame<PopCountOp<U3>, U2, ()>;
-    type Assert22 = AssertSame<GcdOp<U0, U3>, U3, ()>;
-    type Assert23 = AssertSame<GcdOp<U1, U3>, U1, ()>;
-    type Assert24 = AssertSame<GcdOp<U2, U3>, U1, ()>;
-    type Assert25 = AssertSame<GcdOp<U3, U3>, U3, ()>;
-    type Assert26 = AssertSame<GcdOp<U3, U2>, U1, ()>;
-    type Assert27 = AssertSame<GcdOp<U3, U1>, U1, ()>;
-    type Assert28 = AssertSame<GcdOp<U3, U0>, U3, ()>;
-    type Assert29 = AssertSame<GcdOp<U21, U6>, U3, ()>;
-    type Assert30 = AssertSame<GcdOp<U0, U4>, U4, ()>;
-    type Assert31 = AssertSame<GcdOp<U1, U4>, U1, ()>;
-    type Assert32 = AssertSame<GcdOp<U2, U4>, U2, ()>;
-    type Assert33 = AssertSame<GcdOp<U3, U4>, U1, ()>;
-    type Assert34 = AssertSame<GcdOp<U4, U4>, U4, ()>;
-    type Assert35 = AssertSame<GcdOp<U4, U3>, U1, ()>;
-    type Assert36 = AssertSame<GcdOp<U4, U2>, U2, ()>;
-    type Assert37 = AssertSame<GcdOp<U4, U1>, U1, ()>;
-    type Assert38 = AssertSame<GcdOp<U4, U0>, U4, ()>;
-    type Assert39 = AssertSame<GcdOp<U1, U1>, U1, ()>;
-    type Assert40 = AssertSame<GcdOp<U84, U126>, U42, ()>;
-    type Assert41 = AssertSame<LcmOp<U84, U126>, U252, ()>;
+    type Assert1 = SameOp<PopCountOp<U0>, U0>;
+    type Assert2 = SameOp<PopCountOp<U1>, U1>;
+    type Assert3 = SameOp<PopCountOp<U2>, U1>;
+    type Assert4 = SameOp<PopCountOp<U3>, U2>;
+    type Assert22 = SameOp<GcdOp<U0, U3>, U3>;
+    type Assert23 = SameOp<GcdOp<U1, U3>, U1>;
+    type Assert24 = SameOp<GcdOp<U2, U3>, U1>;
+    type Assert25 = SameOp<GcdOp<U3, U3>, U3>;
+    type Assert26 = SameOp<GcdOp<U3, U2>, U1>;
+    type Assert27 = SameOp<GcdOp<U3, U1>, U1>;
+    type Assert28 = SameOp<GcdOp<U3, U0>, U3>;
+    type Assert29 = SameOp<GcdOp<U21, U6>, U3>;
+    type Assert30 = SameOp<GcdOp<U0, U4>, U4>;
+    type Assert31 = SameOp<GcdOp<U1, U4>, U1>;
+    type Assert32 = SameOp<GcdOp<U2, U4>, U2>;
+    type Assert33 = SameOp<GcdOp<U3, U4>, U1>;
+    type Assert34 = SameOp<GcdOp<U4, U4>, U4>;
+    type Assert35 = SameOp<GcdOp<U4, U3>, U1>;
+    type Assert36 = SameOp<GcdOp<U4, U2>, U2>;
+    type Assert37 = SameOp<GcdOp<U4, U1>, U1>;
+    type Assert38 = SameOp<GcdOp<U4, U0>, U4>;
+    type Assert39 = SameOp<GcdOp<U1, U1>, U1>;
+    type Assert40 = SameOp<GcdOp<U84, U126>, U42>;
+    type Assert41 = SameOp<LcmOp<U84, U126>, U252>;
 
     #[test]
     fn numeric_test() {

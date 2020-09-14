@@ -243,44 +243,44 @@ typ! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{control::op_aliases::AssertSame, Frac, UFrac};
+    use crate::{control::SameOp, Frac, UFrac};
 
     #[test]
     fn frac_test() {
-        let _: AssertSame<ReduceOp<UFrac!(2 / 4)>, UFrac!(1 / 2), ()> = ();
-        let _: AssertSame<ReduceOp<UFrac!(0 / 4)>, UFrac!(0 / 1), ()> = ();
-        let _: AssertSame<ReduceOp<Frac!(3 / 9)>, Frac!(1 / 3), ()> = ();
-        let _: AssertSame<ReduceOp<Frac!(3 / ~9)>, Frac!(~1 / 3), ()> = ();
-        let _: AssertSame<ReciprocalOp<UFrac!(3 / 2)>, UFrac!(2 / 3), ()> = ();
-        let _: AssertSame<ReciprocalOp<Frac!(3 / 2)>, Frac!(2 / 3), ()> = ();
-        let _: AssertSame<ReciprocalOp<Frac!(~3 / 2)>, Frac!(~2 / 3), ()> = ();
-        let _: AssertSame<UFracAddOp<UFrac!(1 / 2), UFrac!(1 / 3)>, UFrac!(5 / 6), ()> = ();
-        let _: AssertSame<FracAddOp<Frac!(1 / 2), Frac!(1 / 3)>, Frac!(5 / 6), ()> = ();
-        let _: AssertSame<FracAddOp<Frac!(1 / 2), Frac!(~1 / 3)>, Frac!(1 / 6), ()> = ();
-        let _: AssertSame<FracAddOp<Frac!(~1 / 2), Frac!(1 / 3)>, Frac!(~1 / 6), ()> = ();
-        let _: AssertSame<FracAddOp<Frac!(~1 / 2), Frac!(~1 / 3)>, Frac!(~5 / 6), ()> = ();
-        let _: AssertSame<UFracSubOp<UFrac!(1 / 2), UFrac!(1 / 3)>, UFrac!(1 / 6), ()> = ();
-        let _: AssertSame<FracSubOp<Frac!(1 / 2), Frac!(1 / 3)>, Frac!(1 / 6), ()> = ();
-        let _: AssertSame<FracSubOp<Frac!(1 / 2), Frac!(~1 / 3)>, Frac!(5 / 6), ()> = ();
-        let _: AssertSame<FracSubOp<Frac!(~1 / 2), Frac!(1 / 3)>, Frac!(~5 / 6), ()> = ();
-        let _: AssertSame<FracSubOp<Frac!(~1 / 2), Frac!(~1 / 3)>, Frac!(~1 / 6), ()> = ();
-        let _: AssertSame<UFracMulOp<UFrac!(2 / 3), UFrac!(9 / 4)>, UFrac!(3 / 2), ()> = ();
-        let _: AssertSame<FracMulOp<Frac!(2 / 3), Frac!(9 / 4)>, Frac!(3 / 2), ()> = ();
-        let _: AssertSame<FracMulOp<Frac!(~2 / 3), Frac!(9 / 4)>, Frac!(~3 / 2), ()> = ();
-        let _: AssertSame<FracMulOp<Frac!(2 / 3), Frac!(~9 / 4)>, Frac!(~3 / 2), ()> = ();
-        let _: AssertSame<FracMulOp<Frac!(~2 / 3), Frac!(~9 / 4)>, Frac!(3 / 2), ()> = ();
-        let _: AssertSame<UFracDivOp<UFrac!(2 / 3), UFrac!(4 / 9)>, UFrac!(3 / 2), ()> = ();
-        let _: AssertSame<FracDivOp<Frac!(2 / 3), Frac!(4 / 9)>, Frac!(3 / 2), ()> = ();
-        let _: AssertSame<FracDivOp<Frac!(~2 / 3), Frac!(4 / 9)>, Frac!(~3 / 2), ()> = ();
-        let _: AssertSame<FracDivOp<Frac!(2 / 3), Frac!(~4 / 9)>, Frac!(~3 / 2), ()> = ();
-        let _: AssertSame<FracDivOp<Frac!(~2 / 3), Frac!(~4 / 9)>, Frac!(3 / 2), ()> = ();
-        let _: AssertSame<UFracCmpOp<UFrac!(1 / 3), UFrac!(1 / 2)>, Less, ()> = ();
-        let _: AssertSame<UFracCmpOp<UFrac!(1 / 2), UFrac!(1 / 3)>, Greater, ()> = ();
-        let _: AssertSame<UFracCmpOp<UFrac!(3 / 7), UFrac!(3 / 7)>, Equal, ()> = ();
-        let _: AssertSame<UFracCmpOp<UFrac!(3 / 7), UFrac!(6 / 14)>, Equal, ()> = ();
-        let _: AssertSame<FracCmpOp<Frac!(1 / 3), Frac!(1 / 2)>, Less, ()> = ();
-        let _: AssertSame<FracCmpOp<Frac!(1 / 3), Frac!(~1 / 2)>, Greater, ()> = ();
-        let _: AssertSame<FracCmpOp<Frac!(~1 / 3), Frac!(1 / 2)>, Less, ()> = ();
-        let _: AssertSame<FracCmpOp<Frac!(~1 / 3), Frac!(~1 / 2)>, Greater, ()> = ();
+        let _: SameOp<ReduceOp<UFrac!(2 / 4)>, UFrac!(1 / 2)> = ();
+        let _: SameOp<ReduceOp<UFrac!(0 / 4)>, UFrac!(0 / 1)> = ();
+        let _: SameOp<ReduceOp<Frac!(3 / 9)>, Frac!(1 / 3)> = ();
+        let _: SameOp<ReduceOp<Frac!(3 / ~9)>, Frac!(~1 / 3)> = ();
+        let _: SameOp<ReciprocalOp<UFrac!(3 / 2)>, UFrac!(2 / 3)> = ();
+        let _: SameOp<ReciprocalOp<Frac!(3 / 2)>, Frac!(2 / 3)> = ();
+        let _: SameOp<ReciprocalOp<Frac!(~3 / 2)>, Frac!(~2 / 3)> = ();
+        let _: SameOp<UFracAddOp<UFrac!(1 / 2), UFrac!(1 / 3)>, UFrac!(5 / 6)> = ();
+        let _: SameOp<FracAddOp<Frac!(1 / 2), Frac!(1 / 3)>, Frac!(5 / 6)> = ();
+        let _: SameOp<FracAddOp<Frac!(1 / 2), Frac!(~1 / 3)>, Frac!(1 / 6)> = ();
+        let _: SameOp<FracAddOp<Frac!(~1 / 2), Frac!(1 / 3)>, Frac!(~1 / 6)> = ();
+        let _: SameOp<FracAddOp<Frac!(~1 / 2), Frac!(~1 / 3)>, Frac!(~5 / 6)> = ();
+        let _: SameOp<UFracSubOp<UFrac!(1 / 2), UFrac!(1 / 3)>, UFrac!(1 / 6)> = ();
+        let _: SameOp<FracSubOp<Frac!(1 / 2), Frac!(1 / 3)>, Frac!(1 / 6)> = ();
+        let _: SameOp<FracSubOp<Frac!(1 / 2), Frac!(~1 / 3)>, Frac!(5 / 6)> = ();
+        let _: SameOp<FracSubOp<Frac!(~1 / 2), Frac!(1 / 3)>, Frac!(~5 / 6)> = ();
+        let _: SameOp<FracSubOp<Frac!(~1 / 2), Frac!(~1 / 3)>, Frac!(~1 / 6)> = ();
+        let _: SameOp<UFracMulOp<UFrac!(2 / 3), UFrac!(9 / 4)>, UFrac!(3 / 2)> = ();
+        let _: SameOp<FracMulOp<Frac!(2 / 3), Frac!(9 / 4)>, Frac!(3 / 2)> = ();
+        let _: SameOp<FracMulOp<Frac!(~2 / 3), Frac!(9 / 4)>, Frac!(~3 / 2)> = ();
+        let _: SameOp<FracMulOp<Frac!(2 / 3), Frac!(~9 / 4)>, Frac!(~3 / 2)> = ();
+        let _: SameOp<FracMulOp<Frac!(~2 / 3), Frac!(~9 / 4)>, Frac!(3 / 2)> = ();
+        let _: SameOp<UFracDivOp<UFrac!(2 / 3), UFrac!(4 / 9)>, UFrac!(3 / 2)> = ();
+        let _: SameOp<FracDivOp<Frac!(2 / 3), Frac!(4 / 9)>, Frac!(3 / 2)> = ();
+        let _: SameOp<FracDivOp<Frac!(~2 / 3), Frac!(4 / 9)>, Frac!(~3 / 2)> = ();
+        let _: SameOp<FracDivOp<Frac!(2 / 3), Frac!(~4 / 9)>, Frac!(~3 / 2)> = ();
+        let _: SameOp<FracDivOp<Frac!(~2 / 3), Frac!(~4 / 9)>, Frac!(3 / 2)> = ();
+        let _: SameOp<UFracCmpOp<UFrac!(1 / 3), UFrac!(1 / 2)>, Less> = ();
+        let _: SameOp<UFracCmpOp<UFrac!(1 / 2), UFrac!(1 / 3)>, Greater> = ();
+        let _: SameOp<UFracCmpOp<UFrac!(3 / 7), UFrac!(3 / 7)>, Equal> = ();
+        let _: SameOp<UFracCmpOp<UFrac!(3 / 7), UFrac!(6 / 14)>, Equal> = ();
+        let _: SameOp<FracCmpOp<Frac!(1 / 3), Frac!(1 / 2)>, Less> = ();
+        let _: SameOp<FracCmpOp<Frac!(1 / 3), Frac!(~1 / 2)>, Greater> = ();
+        let _: SameOp<FracCmpOp<Frac!(~1 / 3), Frac!(1 / 2)>, Less> = ();
+        let _: SameOp<FracCmpOp<Frac!(~1 / 3), Frac!(~1 / 2)>, Greater> = ();
     }
 }
