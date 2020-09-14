@@ -323,6 +323,28 @@ typ! {
             Nil => head1,
         }
     }
+
+    pub fn ReduceMax<head1, tail1: List>(Cons::<head1, tail1>: List) {
+        match tail1 {
+            #[generics(head2, tail2: List)]
+            Cons::<head2, tail2> => {
+                let tail_max = ReduceMax(tail1);
+                <head1 as Max<tail_max>>::Output
+            }
+            Nil => head1,
+        }
+    }
+
+    pub fn ReduceMin<head1, tail1: List>(Cons::<head1, tail1>: List) {
+        match tail1 {
+            #[generics(head2, tail2: List)]
+            Cons::<head2, tail2> => {
+                let tail_max = ReduceMax(tail1);
+                <head1 as Min<tail_max>>::Output
+            }
+            Nil => head1,
+        }
+    }
 }
 
 #[cfg(test)]
