@@ -12,15 +12,11 @@ pub mod base {
     {
     }
 
-    pub type Step<Tail> = Cons<(), Tail>;
-
-    impl<Tail> Stepper for Step<Tail> where Tail: Stepper {}
-
-    impl Stepper for Nil {}
-
     pub type Next<Tail> = Cons<(), Tail>;
     pub type Curr = Nil;
 
+    impl<Tail> Stepper for Next<Tail> where Tail: Stepper {}
+    impl Stepper for Nil {}
 }
 
 pub use base::*;
