@@ -1,6 +1,8 @@
 use super::{Cons, List, Nil};
 use crate::{
     common::*,
+    functional::Func,
+    maybe::{Just, Maybe, Nothing},
     stepper::{Curr, Next, Stepper},
 };
 
@@ -343,6 +345,90 @@ typ! {
                 <head1 as Min<tail_max>>::Output
             }
             Nil => head1,
+        }
+    }
+
+    pub fn All<list>(list: List) -> Bit {
+        match list {
+            #[generics(head: Bit, tail: List)]
+            Cons::<head, tail> => {
+                if head {
+                    All(tail)
+                } else {
+                    false
+                }
+            }
+            Nil => true,
+        }
+    }
+
+    pub fn Any<list>(list: List) -> Bit {
+        match list {
+            #[generics(head: Bit, tail: List)]
+            Cons::<head, tail> => {
+                if head {
+                    true
+                } else {
+                    Any(tail)
+                }
+            }
+            Nil => false,
+        }
+    }
+
+    pub fn Map<list, func>(list: List, func: _) -> List {
+        match list {
+            #[generics(head, tail: List)]
+            Cons::<head, tail> => {
+                let new_head = <func as Func<head>>::Output;
+                let new_tail = Map(tail, func);
+                Cons::<new_head, new_tail>
+            }
+            Nil => Nil,
+        }
+    }
+
+    pub fn Filter<list, func>(list: List, func: _) -> List {
+        match list {
+            #[generics(head, tail: List)]
+            Cons::<head, tail> => {
+                let keep: Bit = <func as Func<head>>::Output;
+                let new_tail = Filter(tail, func);
+                if keep {
+                    Cons::<head, new_tail>
+                } else {
+                    new_tail
+                }
+            }
+            Nil => Nil,
+        }
+    }
+
+    pub fn FilterMap<list, func>(list: List, func: _) -> List {
+        match list {
+            #[generics(head, tail: List)]
+            Cons::<head, tail> => {
+                let maybe: Maybe = <func as Func<head>>::Output;
+                let new_tail = Filter(tail, func);
+
+                match maybe {
+                    #[generics(new_head)]
+                    Just::<new_head> => Cons::<new_head, new_tail>,
+                    Nothing => new_tail
+                }
+            }
+            Nil => Nil,
+        }
+    }
+
+    pub fn Fold<list, init, func>(list: List, init: _, func: _) {
+        match list {
+            #[generics(head, tail: List)]
+            Cons::<head, tail> => {
+                let new_init = <func as Func<(init, head)>>::Output;
+                Fold(tail, new_init, func)
+            }
+            Nil => init,
         }
     }
 }
