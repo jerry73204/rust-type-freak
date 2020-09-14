@@ -3,7 +3,7 @@ use crate::{
     list::base::{Cons, List, Nil},
 };
 
-pub mod base {
+mod base {
     use super::*;
 
     pub trait Stepper
@@ -21,7 +21,7 @@ pub mod base {
 
 pub use base::*;
 
-pub mod macros {
+mod macros {
     // TODO
     // #[macro_export]
     // macro_rules! Stepper {

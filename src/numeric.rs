@@ -4,7 +4,7 @@ use crate::common::*;
 
 pub use ops::*;
 
-pub mod ops {
+mod ops {
     use super::*;
 
     typ! {
