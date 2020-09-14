@@ -2,24 +2,38 @@ use super::{Float, Floating};
 use crate::common::*;
 
 typ! {
-    // TODO: fix missing predicates in typ
-    // pub fn FloatAdd<lhs, rhs>(lhs: Floating, rhs: Floating) -> Floating {
-    //     match (lhs, rhs) {
-    //         #[generics(base: Unsigned + NonZero, lsig: Integer, lexp: Integer, rsig: Integer, rexp: Integer)]
-    //         (Float::<base, lsig, lexp>, Float::<base, rsig, rexp>) => {
-    //             let min_exp = <lexp as Min<rexp>>::Output;
+    pub fn Reduce<input>(input: Floating) -> Floating {
+        match input {
+            #[generics(base: Unsigned + NonZero, sig: Integer, exp: Integer)]
+            Float::<base, sig, exp> => {
+                if sig != 0 && sig % base == 0 {
+                    let new_sig: Integer = sig / base;
+                    let new_exp: Integer = exp + 1;
+                    Reduce(Float::<base, new_sig, new_exp>)
+                } else {
+                    input
+                }
+            }
+        }
+    }
 
-    //             let lpower = lexp - min_exp;
-    //             let rpower = rexp - min_exp;
+    pub fn FloatAdd<lhs, rhs>(lhs: Floating, rhs: Floating) -> Floating {
+        match (lhs, rhs) {
+            #[generics(base: Unsigned + NonZero, lsig: Integer, lexp: Integer, rsig: Integer, rexp: Integer)]
+            (Float::<base, lsig, lexp>, Float::<base, rsig, rexp>) => {
+                let min_exp: Integer = <lexp as Min<rexp>>::Output;
 
-    //             let lsig = lsig * <base as Pow<lpower>>::Output;
-    //             let rsig = rsig * <base as Pow<rpower>>::Output;
+                let lpower = lexp - min_exp;
+                let rpower = rexp - min_exp;
 
-    //             let out_sig = lsig + rsig;
-    //             Float::<base, out_sig, min_exp>
-    //         }
-    //     }
-    // }
+                let lsig = lsig * <base as Pow<lpower>>::Output;
+                let rsig = rsig * <base as Pow<rpower>>::Output;
+
+                let out_sig: Integer = lsig + rsig;
+                Reduce(Float::<base, out_sig, min_exp>)
+            }
+        }
+    }
 
     pub fn FloatMul<lhs, rhs>(lhs: Floating, rhs: Floating) -> Floating {
         match (lhs, rhs) {
@@ -27,7 +41,7 @@ typ! {
             (Float::<base, lsig, lexp>, Float::<base, rsig, rexp>) => {
                 let sig: Integer = lsig * rsig;
                 let exp: Integer = lexp + rexp;
-                Float::<base, sig, exp>
+                Reduce(Float::<base, sig, exp>)
             }
         }
     }
