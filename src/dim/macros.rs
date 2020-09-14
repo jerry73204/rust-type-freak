@@ -5,20 +5,21 @@ macro_rules! Dims {
     [] => {
         $crate::list::base::Nil
     };
-    [$dim:literal $(, $remaining:ty)* $(,)?] => {
+    [$dim:literal $(, $remaining:tt)* $(,)?] => {
         $crate::list::base::Cons<tyuint!($dim), $crate::Dims![$($remaining),*]>
     };
-    [_ $(, $remaining:ty)* $(,)?] => {
-        $crate::list::base::Cons<$crate::dims::Dyn, $crate::Dims![$($remaining),*]>
+    [_ $(, $remaining:tt)* $(,)?] => {
+        $crate::list::base::Cons<$crate::dim::Dyn, $crate::Dims![$($remaining),*]>
     };
 }
 
+// TODO: dynamic dim
 #[macro_export]
 macro_rules! dims {
     [] => {
         $crate::list::base::Nil
     };
-    [$dim:literal $(, $remaining:literal)* $(,)?] => {
+    [$dim:literal $(, $remaining:tt)* $(,)?] => {
         $crate::list::base::Cons { head: tyuint!($dim), tail: $crate::dims![$($remaining),*] }
     };
 }
