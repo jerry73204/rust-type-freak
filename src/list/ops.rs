@@ -304,7 +304,7 @@ typ! {
         }
     }
 
-    fn ReduceSum<head1, tail1: List>(Cons::<head1, tail1>: List) {
+    pub fn ReduceSum<head1, tail1: List>(Cons::<head1, tail1>: List) {
         match tail1 {
             #[generics(head2, tail2: List)]
             Cons::<head2, tail2> => {
@@ -314,7 +314,7 @@ typ! {
         }
     }
 
-    fn ReduceProduct<head1, tail1: List>(Cons::<head1, tail1>: List) {
+    pub fn ReduceProduct<head1, tail1: List>(Cons::<head1, tail1>: List) {
         match tail1 {
             #[generics(head2, tail2: List)]
             Cons::<head2, tail2> => {
