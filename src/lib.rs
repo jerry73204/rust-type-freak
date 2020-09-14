@@ -5,7 +5,6 @@ pub mod dim;
 pub mod functional;
 pub mod list;
 pub mod stepper;
-// pub mod tree;
 // pub mod maybe;
 pub mod numeric;
 // pub mod tuple;
