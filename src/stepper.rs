@@ -1,7 +1,4 @@
-use crate::{
-    common::*,
-    list::{Cons, List, Nil},
-};
+use crate::list::{Cons, List, Nil};
 
 mod base {
     use super::*;
@@ -31,7 +28,7 @@ mod macros {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    // use super::*;
 
     // type Assert1 = SameOp<Stepper![U0], Nil, ()>;
     // type Assert2 = SameOp<Stepper![U1], Step<Nil>, ()>;

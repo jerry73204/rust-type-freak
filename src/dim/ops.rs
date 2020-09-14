@@ -1,7 +1,7 @@
 use super::{Dim, Dimensions, Dims2D, DimsList, Dyn, DynDimensions};
 use crate::{
     common::*,
-    list::{Cons, Extend, Index, Len, List, Nil, ReduceProduct, Reverse},
+    list::{Cons, List, Nil, Reverse},
     numeric::UnsignedIntegerDiv,
 };
 use typenum::U1;
@@ -282,8 +282,8 @@ typ! {
 mod tests {
     use super::*;
     use crate::{control::SameOp, Dims, List};
-    use typenum::consts::*;
 
+    #[test]
     fn test() {
         // let _: SameOp<FlattenOp<Dims![1, 2, 3], U0, U3>, U6, ()> = ();
         let _: SameOp<CatOp<List![Dims![1, 2, 3], Dims![?]], tyuint!(1)>, Dims![?]> = ();

@@ -73,7 +73,7 @@ mod ops {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    // use super::*;
     // use crate::{
     //     boolean::Boolean,
     //     control::{IfElsePredicate, IfElsePredicateOutput, IfSameOutput},

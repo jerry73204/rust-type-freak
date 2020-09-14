@@ -1,8 +1,8 @@
 use super::{
-    FracAdd, FracAddOp, FracCmp, FracCmpOp, FracDiv, FracDivOp, FracMul, FracMulOp, FracSub,
-    FracSubOp, Fraction, Irreducible, UFraction,
+    FracAdd, FracAddOp, FracDiv, FracDivOp, FracMul, FracMulOp, FracSub, FracSubOp, Fraction,
+    Irreducible, UFraction,
 };
-use crate::{common::*, Frac};
+use crate::common::*;
 
 // positive fraction type
 

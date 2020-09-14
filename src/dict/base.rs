@@ -30,21 +30,15 @@ mod tests {
     struct Vb;
     struct Vc;
 
-    type Assert1 = SameOp<Dict! {}, Nil>;
-    type Assert2 = SameOp<Dict! {Ka: Va}, DictCons<Ka, Va, Nil>>;
-    type Assert3 = SameOp<Dict! {Ka: Va, Kb: Vb}, DictCons<Ka, Va, DictCons<Kb, Vb, Nil>>>;
-    type Assert4 = SameOp<
-        Dict! {Ka: Va, Kb: Vb, Kc: Vc},
-        DictCons<Ka, Va, DictCons<Kb, Vb, DictCons<Kc, Vc, Nil>>>,
-    >;
-    type Assert5 = SameOp<Dict! {Ka: Va, Kb: Va}, DictCons<Ka, Va, DictCons<Kb, Va, Nil>>>;
-
     #[test]
-    fn dict_type_test() {
-        let _: Assert1 = ();
-        let _: Assert2 = ();
-        let _: Assert3 = ();
-        let _: Assert4 = ();
-        let _: Assert5 = ();
+    fn dict_test() {
+        let _: SameOp<Dict! {}, Nil> = ();
+        let _: SameOp<Dict! { Ka: Va }, DictCons<Ka, Va, Nil>> = ();
+        let _: SameOp<Dict! { Ka: Va, Kb: Vb }, DictCons<Ka, Va, DictCons<Kb, Vb, Nil>>> = ();
+        let _: SameOp<
+            Dict! { Ka: Va, Kb: Vb, Kc: Vc },
+            DictCons<Ka, Va, DictCons<Kb, Vb, DictCons<Kc, Vc, Nil>>>,
+        > = ();
+        let _: SameOp<Dict! { Ka: Va, Kb: Va }, DictCons<Ka, Va, DictCons<Kb, Va, Nil>>> = ();
     }
 }

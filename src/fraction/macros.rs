@@ -23,7 +23,6 @@ macro_rules! Frac {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::{
         control::SameOp,
         fraction::{NFrac, PFrac, UFrac},

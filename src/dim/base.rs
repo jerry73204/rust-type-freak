@@ -60,7 +60,7 @@ mod dyn_dim {
     {
         type Output = Dyn;
 
-        fn add(self, rhs: UInt<U, B>) -> Self::Output {
+        fn add(self, _rhs: UInt<U, B>) -> Self::Output {
             todo!()
         }
     }
@@ -68,7 +68,7 @@ mod dyn_dim {
     impl Add<UTerm> for Dyn {
         type Output = Dyn;
 
-        fn add(self, rhs: UTerm) -> Self::Output {
+        fn add(self, _rhs: UTerm) -> Self::Output {
             self
         }
     }
@@ -88,7 +88,7 @@ mod dyn_dim {
     {
         type Output = Dyn;
 
-        fn sub(self, rhs: UInt<U, B>) -> Self::Output {
+        fn sub(self, _rhs: UInt<U, B>) -> Self::Output {
             todo!()
         }
     }
@@ -96,7 +96,7 @@ mod dyn_dim {
     impl Sub<UTerm> for Dyn {
         type Output = Dyn;
 
-        fn sub(self, rhs: UTerm) -> Self::Output {
+        fn sub(self, _rhs: UTerm) -> Self::Output {
             self
         }
     }
@@ -116,7 +116,7 @@ mod dyn_dim {
     {
         type Output = Dyn;
 
-        fn mul(self, rhs: UInt<U, B>) -> Self::Output {
+        fn mul(self, _rhs: UInt<U, B>) -> Self::Output {
             todo!()
         }
     }
@@ -124,7 +124,7 @@ mod dyn_dim {
     impl Mul<UTerm> for Dyn {
         type Output = Dyn;
 
-        fn mul(self, rhs: UTerm) -> Self::Output {
+        fn mul(self, _rhs: UTerm) -> Self::Output {
             self
         }
     }
@@ -143,7 +143,7 @@ mod dyn_dim {
     {
         type Output = Dyn;
 
-        fn div(self, rhs: UInt<U, B>) -> Self::Output {
+        fn div(self, _rhs: UInt<U, B>) -> Self::Output {
             todo!()
         }
     }
@@ -151,7 +151,7 @@ mod dyn_dim {
     impl Div<UTerm> for Dyn {
         type Output = Dyn;
 
-        fn div(self, rhs: UTerm) -> Self::Output {
+        fn div(self, _rhs: UTerm) -> Self::Output {
             self
         }
     }

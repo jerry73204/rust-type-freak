@@ -49,32 +49,22 @@ mod tests {
     struct Vb(String);
     struct Vc(bool);
 
-    type List1 = Dict! {};
-    type List2 = Dict! {
-        Ka: Va,
-        Kb: Vb,
-    };
-    type List3 = PrependDict! {
-        Kc: Vc; List2
-    };
-
-    type Assert1 = SameOp<List1, Nil>;
-    type Assert2 = SameOp<List2, DictCons<Ka, Va, DictCons<Kb, Vb, Nil>>>;
-    type Assert3 = SameOp<List3, DictCons<Kc, Vc, DictCons<Ka, Va, DictCons<Kb, Vb, Nil>>>>;
-
     #[test]
     fn dict_macros() {
-        let _: Assert1 = ();
-        let _: Assert2 = ();
-        let _: Assert3 = ();
+        let _: SameOp<Dict! {}, Nil> = ();
+        let _: SameOp<Dict! { Ka: Va, Kb: Vb }, DictCons<Ka, Va, DictCons<Kb, Vb, Nil>>> = ();
+        let _: SameOp<
+            PrependDict! { Kc: Vc; Dict! { Ka: Va, Kb: Vb } },
+            DictCons<Kc, Vc, DictCons<Ka, Va, DictCons<Kb, Vb, Nil>>>,
+        > = ();
 
         {
-            let _: List1 = dict! {};
-            let tail: List2 = dict! {
+            let _: Dict! {} = dict! {};
+            let tail: Dict! { Ka: Va, Kb: Vb } = dict! {
                 Ka => Va(8),
                 Kb => Vb("string".into()),
             };
-            let _: List3 = prepend_dict! {
+            let _: PrependDict! { Kc: Vc; Dict! { Ka: Va, Kb: Vb } } = prepend_dict! {
                 Kc => Vc(true); tail
             };
         }
