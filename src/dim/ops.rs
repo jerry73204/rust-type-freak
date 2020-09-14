@@ -286,7 +286,7 @@ mod tests {
 
     fn test() {
         // let _: SameOp<FlattenOp<Dims![1, 2, 3], U0, U3>, U6, ()> = ();
-        let _: SameOp<CatOp<List![Dims![1, 2, 3], DynDimensions], tyuint!(1)>, DynDimensions> = ();
+        let _: SameOp<CatOp<List![Dims![1, 2, 3], Dims![?]], tyuint!(1)>, Dims![?]> = ();
         let _: SameOp<CatOp<List![Dims![1, 2, 3], Dims![1, 5, 3]], Dyn>, Dims![?]> = ();
         let _: SameOp<CatOp<List![Dims![2], Dims![3]], tyuint!(0)>, Dims![5]> = ();
         let _: SameOp<CatOp<List![Dims![2], Dims![_]], tyuint!(0)>, Dims![_]> = ();
