@@ -1,21 +1,20 @@
-use std::marker::PhantomData;
-
 // map trait
 
-pub trait Map<Inputs> {
+pub trait Func<Inputs> {
     type Output;
 }
 
-pub type Apply<MapType, Inputs> = <MapType as Map<Inputs>>::Output;
-
 // compose maps
 
-pub struct Compose<Lhs, Rhs>(PhantomData<(Lhs, Rhs)>);
+pub struct Compose<First, Second> {
+    pub lhs: First,
+    pub rhs: Second,
+}
 
-impl<Inputs, Lhs, Rhs> Map<Inputs> for Compose<Lhs, Rhs>
+impl<Inputs, First, Second> Func<Inputs> for Compose<First, Second>
 where
-    Lhs: Map<Inputs>,
-    Rhs: Map<Apply<Lhs, Inputs>>,
+    First: Func<Inputs>,
+    Second: Func<<First as Func<Inputs>>::Output>,
 {
-    type Output = Apply<Rhs, Apply<Lhs, Inputs>>;
+    type Output = <Second as Func<<First as Func<Inputs>>::Output>>::Output;
 }

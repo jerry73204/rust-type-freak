@@ -1,3 +1,3 @@
-pub mod base;
+mod base;
 
 pub use base::*;
