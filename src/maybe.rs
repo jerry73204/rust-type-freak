@@ -40,6 +40,22 @@ mod ops {
             }
         }
 
+        pub fn IsJust<maybe>(maybe: Maybe) -> Bit {
+            match maybe {
+                #[generics(value)]
+                Just::<value> => true,
+                Nothing => false,
+            }
+        }
+
+        pub fn IsNothing<maybe>(maybe: Maybe) -> Bit {
+            match maybe {
+                #[generics(value)]
+                Just::<value> => false,
+                Nothing => true,
+            }
+        }
+
         pub fn Map<maybe, func>(maybe: Maybe, func: _) -> Maybe {
             match maybe {
                 #[generics(value)]
