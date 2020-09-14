@@ -5,6 +5,9 @@ macro_rules! Dims {
     [] => {
         $crate::list::base::Nil
     };
+    [?] => {
+        $crate::dim::DynDimensions
+    };
     [$dim:literal $(, $remaining:tt)* $(,)?] => {
         $crate::list::base::Cons<tyuint!($dim), $crate::Dims![$($remaining),*]>
     };

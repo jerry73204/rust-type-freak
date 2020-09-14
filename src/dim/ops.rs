@@ -259,13 +259,13 @@ mod tests {
     use typenum::consts::*;
 
     fn test() {
+        // let _: AssertSame<FlattenOp<Dims![1, 2, 3], U0, U3>, U6, ()> = ();
         let _: AssertSame<
             CatOp<List![Dims![1, 2, 3], DynDimensions], tyuint!(1)>,
             DynDimensions,
             (),
         > = ();
-        let _: AssertSame<CatOp<List![Dims![1, 2, 3], Dims![1, 5, 3]], Dyn>, DynDimensions, ()> =
-            ();
+        let _: AssertSame<CatOp<List![Dims![1, 2, 3], Dims![1, 5, 3]], Dyn>, Dims![?], ()> = ();
         let _: AssertSame<CatOp<List![Dims![2], Dims![3]], tyuint!(0)>, Dims![5], ()> = ();
         let _: AssertSame<CatOp<List![Dims![2], Dims![_]], tyuint!(0)>, Dims![_], ()> = ();
         let _: AssertSame<CatOp<List![Dims![_], Dims![_]], tyuint!(0)>, Dims![_], ()> = ();
