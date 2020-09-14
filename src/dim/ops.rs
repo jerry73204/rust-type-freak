@@ -1,7 +1,7 @@
 use super::{Dim, Dimensions, Dims2D, DimsList, Dyn, DynDimensions};
 use crate::{
     common::*,
-    list::{Cons, List, Nil, Reverse},
+    list::{Cons, Extend, Index, Len, List, Nil, ReduceProduct, Reverse},
     numeric::UnsignedIntegerDiv,
 };
 use typenum::U1;
@@ -66,11 +66,37 @@ typ! {
         }
     }
 
-    // pub fn Flatten<start, end>(input: Dimensions, start: Unsigned, end: Unsigned) -> Dimensions {
-    //     match input {
-    //         DynDimensions => DynDimensions,
-    //         #[generics(dim: Dim, tail: DimsList)]
-    //         Cons::<dim, tail> => {}
+    // buggy
+    // pub fn Flatten<input, start, end>(input: Dimensions, start: Dim, end: Dim) -> Dimensions {
+    //     let is_dyn = match (input, start, end) {
+    //         #[capture(start, end)]
+    //         (DynDimensions, start, end) => true,
+    //         #[generics(head: Dim, tail: DimsList)]
+    //         #[capture(end)]
+    //         (Cons::<head, tail>, Dyn, end) => true,
+    //         #[generics(head: Dim, tail: DimsList)]
+    //         (Cons::<head, tail>, UTerm, Dyn) => true,
+    //         #[generics(head: Dim, tail: DimsList)]
+    //         (Cons::<head, tail>, UTerm, UTerm) => false,
+    //         #[generics(head: Dim, tail: DimsList, uint: Unsigned, bit: Bit)]
+    //         (Cons::<head, tail>, UTerm, UInt::<uint, bit>) => false,
+    //         #[generics(head: Dim, tail: DimsList, uint: Unsigned, bit: Bit)]
+    //         (Cons::<head, tail>, UInt::<uint, bit>, Dyn) => true,
+    //         #[generics(head: Dim, tail: DimsList, uint1: Unsigned, bit1: Bit, uint2: Unsigned, bit2: Bit)]
+    //         (Cons::<head, tail>, UInt::<uint1, bit1>, UInt::<uint2, bit2>) => false,
+    //     };
+
+    //     if is_dyn {
+    //         DynDimensions
+    //     } else {
+    //         let heading: DimsList = Index(input, RangeTo::<start>);
+    //         let trailing: DimsList = if end == Len(input) {
+    //             Nil
+    //         } else {
+    //             Index(input, RangeFrom::<end>)
+    //         };
+    //         let product: Dim = ReduceProduct(Index(input, Range::<(start, end)>));
+    //         Extend(heading, Cons::<product, trailing>)
     //     }
     // }
 
