@@ -76,9 +76,7 @@ typ! {
         match (list, step) {
             #[generics(tail: List)]
             #[capture(item)]
-            (Cons::<item, tail>, Curr) => {
-                tail
-            }
+            (Cons::<item, tail>, Curr) => tail,
             #[generics(head, tail: List, remaining: Stepper)]
             (Cons::<head, tail>, Next::<remaining>) => {
                 let new_tail = RemoveItem(tail, item, remaining);
@@ -444,63 +442,35 @@ mod tests {
     struct C;
     struct D;
 
-    type Assert1 = SameOp<PushBackOp<List![], A>, List![A]>;
-    type Assert2 = SameOp<PushBackOp<List![A], B>, List![A, B]>;
-    type Assert3 = SameOp<PushBackOp<List![B, C], A>, List![B, C, A]>;
-    type Assert4 = SameOp<PushFrontOp<List![], A>, List![A]>;
-    type Assert5 = SameOp<PushFrontOp<List![A], B>, List![B, A]>;
-    type Assert6 = SameOp<PushFrontOp<List![B, C], A>, List![A, B, C]>;
-    type Assert7 = SameOp<InsertOp<List![], U0, A>, List![A]>;
-    type Assert8 = SameOp<InsertOp<List![B, C], U0, A>, List![A, B, C]>;
-    type Assert9 = SameOp<InsertOp<List![B, C], U1, A>, List![B, A, C]>;
-    type Assert10 = SameOp<InsertOp<List![B, C], U2, A>, List![B, C, A]>;
-    type Assert11<Index> = SameOp<RemoveItemOp<List![A], A, Index>, List![]>;
-    type Assert12<Index> = SameOp<RemoveItemOp<List![B, C], C, Index>, List![B]>;
-    type Assert14 = SameOp<ExtendOp<List![A], List![B, C]>, List![A, B, C]>;
-    type Assert15 = SameOp<GetOp<List![B, C], U0>, B>;
-    type Assert16 = SameOp<GetOp<List![B, C], U1>, C>;
-    type Assert17<Index> = SameOp<IndexOfOp<List![B, C], B, Index>, U0>;
-    type Assert18<Index> = SameOp<IndexOfOp<List![B, C], C, Index>, U1>;
-    type Assert19 = SameOp<ReverseOp<List![B, C]>, List![C, B]>;
-    type Assert20 = SameOp<LenOp<List![]>, U0>;
-    type Assert21 = SameOp<LenOp<List![A]>, U1>;
-    type Assert22 = SameOp<LenOp<List![B, C]>, U2>;
-    type Assert23 = SameOp<FirstOp<List![B, C]>, B>;
-    type Assert24 = SameOp<LastOp<List![B, C]>, C>;
-    type Assert25<Stepper> = SameOp<ReplaceItemOp<List![B, C], B, D, Stepper>, List![D, C]>;
-    type Assert45 = SameOp<ZipOp<List![A, B], List![C, D]>, List![(A, C), (B, D)]>;
-    type Assert48 = SameOp<PopFrontOp<List![A, B, C]>, List![B, C]>;
-    type Assert49 = SameOp<PopBackOp<List![A, B, C]>, List![A, B]>;
-
     #[test]
     fn list_test() {
-        let _: Assert1 = ();
-        let _: Assert2 = ();
-        let _: Assert3 = ();
-        let _: Assert4 = ();
-        let _: Assert5 = ();
-        let _: Assert6 = ();
-        let _: Assert7 = ();
-        let _: Assert8 = ();
-        let _: Assert9 = ();
-        let _: Assert10 = ();
-        let _: Assert11<_> = ();
-        let _: Assert12<_> = ();
-        let _: Assert14 = ();
-        let _: Assert15 = ();
-        let _: Assert16 = ();
-        let _: Assert17<_> = ();
-        let _: Assert18<_> = ();
-        let _: Assert19 = ();
-        let _: Assert20 = ();
-        let _: Assert21 = ();
-        let _: Assert22 = ();
-        let _: Assert23 = ();
-        let _: Assert24 = ();
-        let _: Assert25<_> = ();
-        let _: Assert45 = ();
-        let _: Assert48 = ();
-        let _: Assert49 = ();
+        let _: SameOp<PushBackOp<List![], A>, List![A]> = ();
+        let _: SameOp<PushBackOp<List![A], B>, List![A, B]> = ();
+        let _: SameOp<PushBackOp<List![B, C], A>, List![B, C, A]> = ();
+        let _: SameOp<PushFrontOp<List![], A>, List![A]> = ();
+        let _: SameOp<PushFrontOp<List![A], B>, List![B, A]> = ();
+        let _: SameOp<PushFrontOp<List![B, C], A>, List![A, B, C]> = ();
+        let _: SameOp<InsertOp<List![], U0, A>, List![A]> = ();
+        let _: SameOp<InsertOp<List![B, C], U0, A>, List![A, B, C]> = ();
+        let _: SameOp<InsertOp<List![B, C], U1, A>, List![B, A, C]> = ();
+        let _: SameOp<InsertOp<List![B, C], U2, A>, List![B, C, A]> = ();
+        let _: SameOp<RemoveItemOp<List![A], A, _>, List![]> = ();
+        let _: SameOp<RemoveItemOp<List![B, C], C, _>, List![B]> = ();
+        let _: SameOp<ExtendOp<List![A], List![B, C]>, List![A, B, C]> = ();
+        let _: SameOp<GetOp<List![B, C], U0>, B> = ();
+        let _: SameOp<GetOp<List![B, C], U1>, C> = ();
+        let _: SameOp<IndexOfOp<List![B, C], B, _>, U0> = ();
+        let _: SameOp<IndexOfOp<List![B, C], C, _>, U1> = ();
+        let _: SameOp<ReverseOp<List![B, C]>, List![C, B]> = ();
+        let _: SameOp<LenOp<List![]>, U0> = ();
+        let _: SameOp<LenOp<List![A]>, U1> = ();
+        let _: SameOp<LenOp<List![B, C]>, U2> = ();
+        let _: SameOp<FirstOp<List![B, C]>, B> = ();
+        let _: SameOp<LastOp<List![B, C]>, C> = ();
+        let _: SameOp<ReplaceItemOp<List![B, C], B, D, _>, List![D, C]> = ();
+        let _: SameOp<ZipOp<List![A, B], List![C, D]>, List![(A, C), (B, D)]> = ();
+        let _: SameOp<PopFrontOp<List![A, B, C]>, List![B, C]> = ();
+        let _: SameOp<PopBackOp<List![A, B, C]>, List![A, B]> = ();
         let _: SameOp<ReverseOp<List![A, B, C]>, List![C, B, A]> = ();
         let _: SameOp<IsEmptyOp<List![]>, B1> = ();
         let _: SameOp<IsEmptyOp<List![A]>, B0> = ();
