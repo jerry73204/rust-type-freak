@@ -1,7 +1,7 @@
 use super::{Dim, Dimensions, Dims2D, DimsList, Dyn, DynDimensions};
 use crate::{
     common::*,
-    list::{Cons, List, Nil, Reverse},
+    list::{Cons, Extend, Index, Len, List, Nil, ReduceProduct, Reverse},
     numeric::UnsignedIntegerDiv,
 };
 use typenum::U1;
@@ -67,38 +67,39 @@ typ! {
     }
 
     // buggy
-    // pub fn Flatten<input, start, end>(input: Dimensions, start: Dim, end: Dim) -> Dimensions {
-    //     let is_dyn = match (input, start, end) {
-    //         #[capture(start, end)]
-    //         (DynDimensions, start, end) => true,
-    //         #[generics(head: Dim, tail: DimsList)]
-    //         #[capture(end)]
-    //         (Cons::<head, tail>, Dyn, end) => true,
-    //         #[generics(head: Dim, tail: DimsList)]
-    //         (Cons::<head, tail>, UTerm, Dyn) => true,
-    //         #[generics(head: Dim, tail: DimsList)]
-    //         (Cons::<head, tail>, UTerm, UTerm) => false,
-    //         #[generics(head: Dim, tail: DimsList, uint: Unsigned, bit: Bit)]
-    //         (Cons::<head, tail>, UTerm, UInt::<uint, bit>) => false,
-    //         #[generics(head: Dim, tail: DimsList, uint: Unsigned, bit: Bit)]
-    //         (Cons::<head, tail>, UInt::<uint, bit>, Dyn) => true,
-    //         #[generics(head: Dim, tail: DimsList, uint1: Unsigned, bit1: Bit, uint2: Unsigned, bit2: Bit)]
-    //         (Cons::<head, tail>, UInt::<uint1, bit1>, UInt::<uint2, bit2>) => false,
-    //     };
+    pub fn Flatten<input, start, end>(input: Dimensions, start: Dim, end: Dim) -> Dimensions {
+        let is_dyn = match (input, start, end) {
+            #[capture(start, end)]
+            (DynDimensions, start, end) => true,
+            #[generics(head: Dim, tail: DimsList)]
+            #[capture(end)]
+            (Cons::<head, tail>, Dyn, end) => true,
+            #[generics(head: Dim, tail: DimsList)]
+            (Cons::<head, tail>, UTerm, Dyn) => true,
+            #[generics(head: Dim, tail: DimsList)]
+            (Cons::<head, tail>, UTerm, UTerm) => false,
+            #[generics(head: Dim, tail: DimsList, uint: Unsigned, bit: Bit)]
+            (Cons::<head, tail>, UTerm, UInt::<uint, bit>) => false,
+            #[generics(head: Dim, tail: DimsList, uint: Unsigned, bit: Bit)]
+            (Cons::<head, tail>, UInt::<uint, bit>, Dyn) => true,
+            #[generics(head: Dim, tail: DimsList, uint1: Unsigned, bit1: Bit, uint2: Unsigned, bit2: Bit)]
+            (Cons::<head, tail>, UInt::<uint1, bit1>, UInt::<uint2, bit2>) => false,
+        };
 
-    //     if is_dyn {
-    //         DynDimensions
-    //     } else {
-    //         let heading: DimsList = Index(input, RangeTo::<start>);
-    //         let trailing: DimsList = if end == Len(input) {
-    //             Nil
-    //         } else {
-    //             Index(input, RangeFrom::<end>)
-    //         };
-    //         let product: Dim = ReduceProduct(Index(input, Range::<(start, end)>));
-    //         Extend(heading, Cons::<product, trailing>)
-    //     }
-    // }
+        if is_dyn {
+            DynDimensions
+        } else {
+            let heading: DimsList = Index(input, RangeTo::<start>);
+            let trailing: DimsList = if end + 1u == Len(input) {
+                Nil
+            } else {
+                let end_plus_1 = end + 1u;
+                Index(input, RangeFrom::<end_plus_1>)
+            };
+            let product: Dim = ReduceProduct(Index(input, RangeInclusive::<(start, end)>));
+            Extend(heading, Cons::<product, trailing>)
+        }
+    }
 
     pub fn PyTorchBroadcast<lhs, rhs>(lhs: Dimensions, rhs: Dimensions) -> Dimensions {
         match (lhs, rhs) {
@@ -282,10 +283,15 @@ typ! {
 mod tests {
     use super::*;
     use crate::{control::SameOp, Dims, List};
+    use typenum::consts::*;
 
     #[test]
     fn test() {
-        // let _: SameOp<FlattenOp<Dims![1, 2, 3], U0, U3>, U6, ()> = ();
+        let _: SameOp<FlattenOp<Dims![1, 2, 3], U0, U2>, Dims![6]> = ();
+        let _: SameOp<FlattenOp<Dims![1, 2, 3], U1, U2>, Dims![1, 6]> = ();
+        let _: SameOp<FlattenOp<Dims![1, 2, 3], U0, U1>, Dims![2, 3]> = ();
+        let _: SameOp<FlattenOp<Dims![1, 2, 3], U1, U1>, Dims![1, 2, 3]> = ();
+        let _: SameOp<FlattenOp<Dims![1, _, 3], U0, U1>, Dims![_, 3]> = ();
         let _: SameOp<CatOp<List![Dims![1, 2, 3], Dims![?]], tyuint!(1)>, Dims![?]> = ();
         let _: SameOp<CatOp<List![Dims![1, 2, 3], Dims![1, 5, 3]], Dyn>, Dims![?]> = ();
         let _: SameOp<CatOp<List![Dims![2], Dims![3]], tyuint!(0)>, Dims![5]> = ();
