@@ -73,14 +73,14 @@ mod ops {
     }
 
     impl<E0, E1, E2, E3> Get1 for (E0, E1, E2, E3) {
-        type Output = E0;
+        type Output = E1;
     }
 
     impl<E0, E1, E2, E3> Get2 for (E0, E1, E2, E3) {
-        type Output = E0;
+        type Output = E2;
     }
 
     impl<E0, E1, E2, E3> Get3 for (E0, E1, E2, E3) {
-        type Output = E0;
+        type Output = E3;
     }
 }
