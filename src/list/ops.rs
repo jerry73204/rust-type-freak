@@ -57,7 +57,8 @@ typ! {
             match list {
                 #[generics(head, tail: List)]
                 Cons::<head, tail> => {
-                    let new_tail = Insert(tail, index - 1u, value);
+                    let new_index: Unsigned = index - 1u;
+                    let new_tail = Insert(tail, new_index, value);
                     Cons::<head, new_tail>
                 }
             }
@@ -68,7 +69,8 @@ typ! {
         if index == 0u {
             tail
         } else {
-            let new_tail = Remove(tail, index - 1u);
+            let new_index: Unsigned = index - 1u;
+            let new_tail = Remove(tail, new_index);
             Cons::<head, new_tail>
         }
     }
@@ -116,7 +118,8 @@ typ! {
         if index == 0u {
             head
         } else {
-            Get(tail, index - 1u)
+            let new_index: Unsigned = index - 1u;
+            Get(tail, new_index)
         }
     }
 
@@ -141,9 +144,7 @@ typ! {
         match (list, step) {
             #[generics(tail: List)]
             #[capture(item)]
-            (Cons::<item, tail>, Curr) => {
-                0u
-            }
+            (Cons::<item, tail>, Curr) => 0u,
             #[generics(head, tail: List, remaining: Stepper)]
             (Cons::<head, tail>, Next::<remaining>) => {
                 IndexOf(tail, item, remaining) + 1u
@@ -199,7 +200,10 @@ typ! {
         match index {
             UTerm => NumIndex(list, UTerm),
             #[generics(uint: Unsigned, bit: Bit)]
-            UInt::<uint, bit> => NumIndex(list, index),
+            UInt::<uint, bit> => {
+                let index: Unsigned = index;
+                NumIndex(list, index)
+            }
             #[generics(range_index)]
             Range::<range_index> => RangeIndex(list, index),
             #[generics(range_index)]
@@ -220,7 +224,7 @@ typ! {
             (Cons::<head, tail>, UTerm) => head,
             #[generics(head, tail: List, uint: Unsigned, bit: Bit)]
             (Cons::<head, tail>, UInt::<uint, bit>) => {
-                let new_index = index - 1u;
+                let new_index: Unsigned = index - 1u;
                 NumIndex(tail, new_index)
             }
         }
@@ -456,8 +460,8 @@ typ! {
             #[generics(item, tail1: List, tail2: List)]
             Cons::<Cons::<item, tail1>, tail2> => {
                 let tuple = Step(Nil, Nil, remaining);
-                let zipped = <tuple as Get0>::Output;
-                let new_remaining = <tuple as Get1>::Output;
+                let zipped: List = <tuple as Get0>::Output;
+                let new_remaining: List = <tuple as Get1>::Output;
                 let new_saved = Cons::<zipped, saved>;
                 Recursive(new_saved, new_remaining)
            }
@@ -587,6 +591,7 @@ mod tests {
         impl<Value> Func<Value> for PlusOneFunc
         where
             (): PlusOne<Value>,
+            Value: Unsigned,
         {
             type Output = PlusOneOp<Value>;
         }
@@ -606,6 +611,8 @@ mod tests {
         impl<Lhs, Rhs> Func<(Lhs, Rhs)> for SumUpFunc
         where
             (): SumUp<Lhs, Rhs>,
+            Lhs: Unsigned,
+            Rhs: Unsigned,
         {
             type Output = SumUpOp<Lhs, Rhs>;
         }
@@ -622,11 +629,13 @@ mod tests {
         }
 
         struct DiffFunc;
-        impl<Lhs, Rhs> Func<(Lhs, Rhs)> for DiffFunc
+        impl<Prev, Curr> Func<(Prev, Curr)> for DiffFunc
         where
-            (): Diff<Lhs, Rhs>,
+            (): Diff<Prev, Curr>,
+            Prev: Unsigned,
+            Curr: Unsigned,
         {
-            type Output = DiffOp<Lhs, Rhs>;
+            type Output = DiffOp<Prev, Curr>;
         }
 
         let _: SameOp<ScanOp<List![U1, U3, U8], U0, DiffFunc>, List![U1, U2, U5]> = ();
@@ -644,6 +653,7 @@ mod tests {
         impl<Value> Func<Value> for IsNonZeroFunc
         where
             (): IsNonZero<Value>,
+            Value: Integer,
         {
             type Output = IsNonZeroOp<Value>;
         }
@@ -668,6 +678,7 @@ mod tests {
         impl<Value> Func<Value> for FlipNegativeFunc
         where
             (): FlipNegative<Value>,
+            Value: Integer,
         {
             type Output = FlipNegativeOp<Value>;
         }

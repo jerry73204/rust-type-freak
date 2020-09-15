@@ -19,19 +19,25 @@ mod ops {
                 if lhs % 2u == 1u {
                     if rhs % 2u == 1u {
                         if lhs > rhs {
-                            Gcd(lhs - rhs, rhs)
+                            let sub: Unsigned = lhs - rhs;
+                            Gcd(sub, rhs)
                         } else {
-                            Gcd(rhs - lhs, lhs)
+                            let sub: Unsigned = rhs - lhs;
+                            Gcd(sub, lhs)
                         }
                     } else {
-                        Gcd(lhs, rhs / 2u)
+                        let div: Unsigned = rhs / 2u;
+                        Gcd(lhs, div)
 
                     }
                 } else {
                     if rhs % 2u == 1u {
-                        Gcd(lhs / 2u, rhs)
+                        let div: Unsigned = lhs / 2u;
+                        Gcd(div, rhs)
                     } else {
-                        Gcd(lhs / 2u, rhs / 2u) * 2u
+                        let ldiv: Unsigned = lhs / 2u;
+                        let rdiv: Unsigned = rhs / 2u;
+                        Gcd(ldiv, rdiv) * 2u
                     }
                 }
             }

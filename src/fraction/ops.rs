@@ -120,7 +120,8 @@ typ! {
 
     pub fn FracSub<lhs, rhs>(lhs: Fraction, rhs: Fraction) -> Fraction
     {
-        FracAdd(lhs, -rhs)
+        let neg_rhs: Fraction = -rhs;
+        FracAdd(lhs, neg_rhs)
     }
 
     pub fn UFracMul<ln, ld, rn, rd>(UFrac::<ln, ld>: UFraction, UFrac::<rn, rd>: UFraction) -> UFraction
@@ -130,8 +131,8 @@ typ! {
         rn: Unsigned,
         rd: Unsigned + NonZero,
     {
-        let num = ln * rn;
-        let deno = ld * rd;
+        let num: Unsigned = ln * rn;
+        let deno: Unsigned = ld * rd;
         let gcd = Gcd(num, deno);
         let num: Unsigned = num / gcd;
         let deno: Unsigned + NonZero = deno / gcd;
@@ -183,13 +184,13 @@ typ! {
 
     pub fn UFracDiv<lhs, rhs>(lhs: UFraction, rhs: UFraction) -> UFraction
     {
-        let reciprocal = Reciprocal(rhs);
+        let reciprocal: UFraction = Reciprocal(rhs);
         UFracMul(lhs, reciprocal)
     }
 
     pub fn FracDiv<lhs, rhs>(lhs: Fraction, rhs: Fraction) -> Fraction
     {
-        let reciprocal = Reciprocal(rhs);
+        let reciprocal: Fraction = Reciprocal(rhs);
         FracMul(lhs, reciprocal)
     }
 
