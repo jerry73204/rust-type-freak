@@ -4,6 +4,7 @@ use crate::{
     functional::Func,
     maybe::{Just, Maybe, Nothing},
     stepper::{Curr, Next, Stepper},
+    tuple::{Get0, Get1, Tuple2},
 };
 
 typ! {
@@ -431,6 +432,52 @@ typ! {
     }
 }
 
+typ! {
+    pub fn ZipEx<lists>(lists: List) -> List {
+        Recursive(Nil, lists)
+    }
+
+    fn Recursive<saved, remaining>(saved: List, remaining: List) -> List {
+        match remaining {
+            #[generics(item, tail1: List, tail2: List)]
+            Cons::<Cons::<item, tail1>, tail2> => {
+                let tuple = Step(Nil, Nil, remaining);
+                let zipped = <tuple as Get0>::Output;
+                let new_remaining = <tuple as Get1>::Output;
+                let new_saved = Cons::<zipped, saved>;
+                Recursive(new_saved, new_remaining)
+           }
+            #[generics(tail: List)]
+            Cons::<Nil, tail> => {
+                AssertEnd(remaining);
+                Reverse(saved)
+            }
+            Nil => Nil,
+        }
+    }
+
+    fn Step<zipped, saved, remaining>(zipped: List, saved: List, remaining: List) -> Tuple2 {
+        match remaining {
+            #[generics(item, tail1: List, tail2: List)]
+            Cons::<Cons::<item, tail1>, tail2> => {
+                let new_zipped = Cons::<item, zipped>;
+                let new_saved = Cons::<tail1, saved>;
+                let new_remaining = tail2;
+                Step(new_zipped, new_saved, new_remaining)
+            }
+            Nil => (Reverse(zipped), Reverse(saved)),
+        }
+    }
+
+    fn AssertEnd<remaining>(remaining: List) {
+        match remaining {
+            #[generics(tail: List)]
+            Cons::<Nil, tail> => AssertEnd(tail),
+            Nil => ()
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -503,5 +550,10 @@ mod tests {
         let _: SameOp<IndexOp<List![A, B, C], RangeFrom<U2>>, List![C]> = ();
         let _: SameOp<ReduceSumOp<List![U3, U2, U7]>, U12> = ();
         let _: SameOp<ReduceProductOp<List![U3, U2, U7]>, U42> = ();
+        let _: SameOp<ZipExOp<List![]>, List![]> = ();
+        let _: SameOp<ZipExOp<List![List![], List![], List![], List![]]>, List![]> = ();
+        let _: SameOp<ZipExOp<List![List![A], List![B], List![C]]>, List![List![A, B, C]]> = ();
+        let _: SameOp<ZipExOp<List![List![A, B], List![C, D]]>, List![List![A, C], List![B, D]]> =
+            ();
     }
 }
