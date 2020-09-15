@@ -408,7 +408,7 @@ typ! {
             #[generics(head, tail: List)]
             Cons::<head, tail> => {
                 let maybe: Maybe = <func as Func<head>>::Output;
-                let new_tail = Filter(tail, func);
+                let new_tail = FilterMap(tail, func);
 
                 match maybe {
                     #[generics(new_head)]
@@ -428,6 +428,20 @@ typ! {
                 Fold(tail, new_init, func)
             }
             Nil => init,
+        }
+    }
+
+    pub fn Scan<list, state, func>(list: List, state: _, func: _) -> List {
+        match list {
+            #[generics(item, tail: List)]
+            Cons::<item, tail> => {
+                let tuple: Tuple2 = <func as Func<(state, item)>>::Output;
+                let new_state = <tuple as Get0>::Output;
+                let new_item = <tuple as Get1>::Output;
+                let new_tail = Scan(tail, new_state, func);
+                Cons::<new_item, new_tail>
+            }
+            Nil => Nil,
         }
     }
 }
@@ -481,7 +495,11 @@ typ! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{control::SameOp, List};
+    use crate::{
+        control::SameOp,
+        maybe::{Just, Maybe, Nothing},
+        List,
+    };
     use typenum::consts::*;
 
     struct A;
@@ -555,5 +573,105 @@ mod tests {
         let _: SameOp<ZipExOp<List![List![A], List![B], List![C]]>, List![List![A, B, C]]> = ();
         let _: SameOp<ZipExOp<List![List![A, B], List![C, D]]>, List![List![A, C], List![B, D]]> =
             ();
+    }
+
+    #[test]
+    fn map_test() {
+        typ! {
+            fn PlusOne<value>(value: Unsigned) -> Unsigned {
+                value + 1u
+            }
+        }
+
+        struct PlusOneFunc;
+        impl<Value> Func<Value> for PlusOneFunc
+        where
+            (): PlusOne<Value>,
+        {
+            type Output = PlusOneOp<Value>;
+        }
+
+        let _: SameOp<MapOp<List![U1, U2, U3], PlusOneFunc>, List![U2, U3, U4]> = ();
+    }
+
+    #[test]
+    fn fold_test() {
+        typ! {
+            fn SumUp<lhs, rhs>(lhs: Unsigned, rhs: Unsigned) -> Unsigned {
+                lhs + rhs
+            }
+        }
+
+        struct SumUpFunc;
+        impl<Lhs, Rhs> Func<(Lhs, Rhs)> for SumUpFunc
+        where
+            (): SumUp<Lhs, Rhs>,
+        {
+            type Output = SumUpOp<Lhs, Rhs>;
+        }
+
+        let _: SameOp<FoldOp<List![U1, U2, U3], U4, SumUpFunc>, U10> = ();
+    }
+
+    #[test]
+    fn scan_test() {
+        typ! {
+            fn Diff<prev, curr>(prev: Unsigned, curr: Unsigned) -> Tuple2 {
+                (curr, curr - prev)
+            }
+        }
+
+        struct DiffFunc;
+        impl<Lhs, Rhs> Func<(Lhs, Rhs)> for DiffFunc
+        where
+            (): Diff<Lhs, Rhs>,
+        {
+            type Output = DiffOp<Lhs, Rhs>;
+        }
+
+        let _: SameOp<ScanOp<List![U1, U3, U8], U0, DiffFunc>, List![U1, U2, U5]> = ();
+    }
+
+    #[test]
+    fn filter_test() {
+        typ! {
+            fn IsNonZero<value>(value: Integer) -> Bit {
+                value != 0
+            }
+        }
+
+        struct IsNonZeroFunc;
+        impl<Value> Func<Value> for IsNonZeroFunc
+        where
+            (): IsNonZero<Value>,
+        {
+            type Output = IsNonZeroOp<Value>;
+        }
+
+        let _: SameOp<FilterOp<List![P1, Z0, N2, Z0], IsNonZeroFunc>, List![P1, N2]> = ();
+    }
+
+    #[test]
+    fn filter_map_test() {
+        typ! {
+            fn FlipNegative<value>(value: Integer) -> Maybe {
+                if value < 0 {
+                    let neg = -value;
+                    Just::<neg>
+                } else {
+                    Nothing
+                }
+            }
+        }
+
+        struct FlipNegativeFunc;
+        impl<Value> Func<Value> for FlipNegativeFunc
+        where
+            (): FlipNegative<Value>,
+        {
+            type Output = FlipNegativeOp<Value>;
+        }
+
+        let _: SameOp<FilterMapOp<List![P1, Z0, N2, Z0], FlipNegativeFunc>, List![P2]> = ();
     }
 }
