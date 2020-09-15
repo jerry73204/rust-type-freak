@@ -1,7 +1,6 @@
 pub mod common;
 pub mod control;
 pub mod dict;
-pub mod dim;
 pub mod floating;
 pub mod fraction;
 pub mod functional;
