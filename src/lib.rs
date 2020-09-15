@@ -9,3 +9,4 @@ pub mod list;
 pub mod maybe;
 pub mod numeric;
 pub mod stepper;
+pub mod tuple;
