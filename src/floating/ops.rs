@@ -21,13 +21,13 @@ typ! {
         match (lhs, rhs) {
             #[generics(base: Unsigned + NonZero, lsig: Integer, lexp: Integer, rsig: Integer, rexp: Integer)]
             (Float::<base, lsig, lexp>, Float::<base, rsig, rexp>) => {
-                let min_exp: Integer = <lexp as Min<rexp>>::Output;
+                let min_exp: Integer = lexp.Min(rexp);
 
                 let lpower = lexp - min_exp;
                 let rpower = rexp - min_exp;
 
-                let lsig = lsig * <base as Pow<lpower>>::Output;
-                let rsig = rsig * <base as Pow<rpower>>::Output;
+                let lsig = lsig * base.Pow(lpower);
+                let rsig = rsig * base.Pow(rpower);
 
                 let out_sig: Integer = lsig + rsig;
                 Reduce(Float::<base, out_sig, min_exp>)

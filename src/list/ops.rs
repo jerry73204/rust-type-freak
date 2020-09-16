@@ -334,7 +334,7 @@ typ! {
             #[generics(head2, tail2: List)]
             Cons::<head2, tail2> => {
                 let tail_max = ReduceMax(tail1);
-                <head1 as Max<tail_max>>::Output
+                head1.Max(tail_max)
             }
             Nil => head1,
         }
@@ -344,8 +344,8 @@ typ! {
         match tail1 {
             #[generics(head2, tail2: List)]
             Cons::<head2, tail2> => {
-                let tail_max = ReduceMax(tail1);
-                <head1 as Min<tail_max>>::Output
+                let tail_min = ReduceMax(tail1);
+                head1.Min(tail_min)
             }
             Nil => head1,
         }
@@ -383,7 +383,7 @@ typ! {
         match list {
             #[generics(head, tail: List)]
             Cons::<head, tail> => {
-                let new_head = <func as Func<head>>::Output;
+                let new_head = func.Func(head);
                 let new_tail = Map(tail, func);
                 Cons::<new_head, new_tail>
             }
@@ -395,7 +395,7 @@ typ! {
         match list {
             #[generics(head, tail: List)]
             Cons::<head, tail> => {
-                let keep: Bit = <func as Func<head>>::Output;
+                let keep: Bit = func.Func(head);
                 let new_tail = Filter(tail, func);
                 if keep {
                     Cons::<head, new_tail>
@@ -411,7 +411,7 @@ typ! {
         match list {
             #[generics(head, tail: List)]
             Cons::<head, tail> => {
-                let maybe: Maybe = <func as Func<head>>::Output;
+                let maybe: Maybe = func.Func(head);
                 let new_tail = FilterMap(tail, func);
 
                 match maybe {
@@ -428,7 +428,7 @@ typ! {
         match list {
             #[generics(head, tail: List)]
             Cons::<head, tail> => {
-                let new_init = <func as Func<(init, head)>>::Output;
+                let new_init = func.Func((init, head));
                 Fold(tail, new_init, func)
             }
             Nil => init,
@@ -439,9 +439,9 @@ typ! {
         match list {
             #[generics(item, tail: List)]
             Cons::<item, tail> => {
-                let tuple: Tuple2 = <func as Func<(state, item)>>::Output;
-                let new_state = <tuple as Get0>::Output;
-                let new_item = <tuple as Get1>::Output;
+                let tuple: Tuple2 = func.Func((state, item));
+                let new_state = tuple.Get0();
+                let new_item = tuple.Get1();
                 let new_tail = Scan(tail, new_state, func);
                 Cons::<new_item, new_tail>
             }
@@ -460,8 +460,8 @@ typ! {
             #[generics(item, tail1: List, tail2: List)]
             Cons::<Cons::<item, tail1>, tail2> => {
                 let tuple = Step(Nil, Nil, remaining);
-                let zipped: List = <tuple as Get0>::Output;
-                let new_remaining: List = <tuple as Get1>::Output;
+                let zipped: List = tuple.Get0();
+                let new_remaining: List = tuple.Get1();
                 let new_saved = Cons::<zipped, saved>;
                 Recursive(new_saved, new_remaining)
            }

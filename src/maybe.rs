@@ -60,7 +60,7 @@ mod ops {
             match maybe {
                 #[generics(value)]
                 Just::<value> => {
-                    let new_value = <func as Func<value>>::Output;
+                    let new_value = func.Func(value);
                     Just::<new_value>
                 }
                 Nothing => Nothing
