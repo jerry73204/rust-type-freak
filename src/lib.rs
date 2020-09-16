@@ -1,3 +1,4 @@
+pub mod bitset;
 pub mod common;
 pub mod control;
 pub mod dict;
