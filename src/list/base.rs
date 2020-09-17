@@ -6,6 +6,7 @@ pub trait List {}
 // intermediate node
 
 /// Represents an intermediate node.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Cons<Head, Tail>
 where
     Tail: List,
@@ -19,6 +20,7 @@ impl<Head, Tail> List for Cons<Head, Tail> where Tail: List {}
 // end of list
 
 /// Represents the end of list.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Nil;
 
 impl List for Nil {}
