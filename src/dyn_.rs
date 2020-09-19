@@ -415,7 +415,13 @@ macro_rules! typenum_signed_impl {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Dyn<T>(pub T);
 
-// general ipls
+impl<T> Dyn<T> {
+    pub fn new(value: T) -> Self {
+        Self(value)
+    }
+}
+
+// general impls
 
 impl<T> Add<Dyn<T>> for Dyn<T>
 where
