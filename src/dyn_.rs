@@ -8,7 +8,15 @@ macro_rules! typenum_unsigned_impl {
             type Output = Dyn<$ty>;
 
             fn add(self, _rhs: UTerm) -> Self::Output {
-                Dyn(self.0 + UTerm::$output)
+                Dyn(self.0.add(UTerm::$output))
+            }
+        }
+
+        impl Add<Dyn<$ty>> for UTerm {
+            type Output = Dyn<$ty>;
+
+            fn add(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.add(rhs.0))
             }
         }
 
@@ -20,7 +28,19 @@ macro_rules! typenum_unsigned_impl {
             type Output = Dyn<$ty>;
 
             fn add(self, _rhs: UInt<U, B>) -> Self::Output {
-                Dyn(self.0 + UInt::<U, B>::$output)
+                Dyn(self.0.add(UInt::<U, B>::$output))
+            }
+        }
+
+        impl<U, B> Add<Dyn<$ty>> for UInt<U, B>
+        where
+            U: Unsigned,
+            B: Bit,
+        {
+            type Output = Dyn<$ty>;
+
+            fn add(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.add(rhs.0))
             }
         }
 
@@ -28,7 +48,15 @@ macro_rules! typenum_unsigned_impl {
             type Output = Dyn<$ty>;
 
             fn sub(self, _rhs: UTerm) -> Self::Output {
-                Dyn(self.0 - UTerm::$output)
+                Dyn(self.0.sub(UTerm::$output))
+            }
+        }
+
+        impl Sub<Dyn<$ty>> for UTerm {
+            type Output = Dyn<$ty>;
+
+            fn sub(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.sub(rhs.0))
             }
         }
 
@@ -40,7 +68,19 @@ macro_rules! typenum_unsigned_impl {
             type Output = Dyn<$ty>;
 
             fn sub(self, _rhs: UInt<U, B>) -> Self::Output {
-                Dyn(self.0 - UInt::<U, B>::$output)
+                Dyn(self.0.sub(UInt::<U, B>::$output))
+            }
+        }
+
+        impl<U, B> Sub<Dyn<$ty>> for UInt<U, B>
+        where
+            U: Unsigned,
+            B: Bit,
+        {
+            type Output = Dyn<$ty>;
+
+            fn sub(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.sub(rhs.0))
             }
         }
 
@@ -48,7 +88,15 @@ macro_rules! typenum_unsigned_impl {
             type Output = Dyn<$ty>;
 
             fn mul(self, _rhs: UTerm) -> Self::Output {
-                Dyn(self.0 * UTerm::$output)
+                Dyn(self.0.mul(UTerm::$output))
+            }
+        }
+
+        impl Mul<Dyn<$ty>> for UTerm {
+            type Output = Dyn<$ty>;
+
+            fn mul(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.mul(rhs.0))
             }
         }
 
@@ -60,7 +108,35 @@ macro_rules! typenum_unsigned_impl {
             type Output = Dyn<$ty>;
 
             fn mul(self, _rhs: UInt<U, B>) -> Self::Output {
-                Dyn(self.0 * UInt::<U, B>::$output)
+                Dyn(self.0.mul(UInt::<U, B>::$output))
+            }
+        }
+
+        impl<U, B> Mul<Dyn<$ty>> for UInt<U, B>
+        where
+            U: Unsigned,
+            B: Bit,
+        {
+            type Output = Dyn<$ty>;
+
+            fn mul(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.mul(rhs.0))
+            }
+        }
+
+        impl Div<UTerm> for Dyn<$ty> {
+            type Output = Dyn<$ty>;
+
+            fn div(self, _rhs: UTerm) -> Self::Output {
+                Dyn(self.0.div(UTerm::$output))
+            }
+        }
+
+        impl Div<Dyn<$ty>> for UTerm {
+            type Output = Dyn<$ty>;
+
+            fn div(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.div(rhs.0))
             }
         }
 
@@ -72,7 +148,19 @@ macro_rules! typenum_unsigned_impl {
             type Output = Dyn<$ty>;
 
             fn div(self, _rhs: UInt<U, B>) -> Self::Output {
-                Dyn(self.0 / UInt::<U, B>::$output)
+                Dyn(self.0.div(UInt::<U, B>::$output))
+            }
+        }
+
+        impl<U, B> Div<Dyn<$ty>> for UInt<U, B>
+        where
+            U: Unsigned,
+            B: Bit,
+        {
+            type Output = Dyn<$ty>;
+
+            fn div(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.div(rhs.0))
             }
         }
     };
@@ -87,7 +175,18 @@ macro_rules! typenum_signed_impl {
             type Output = Dyn<$ty>;
 
             fn add(self, _rhs: PInt<U>) -> Self::Output {
-                Dyn(self.0 + PInt::<U>::$output)
+                Dyn(self.0.add(PInt::<U>::$output))
+            }
+        }
+
+        impl<U> Add<Dyn<$ty>> for PInt<U>
+        where
+            U: Unsigned + NonZero,
+        {
+            type Output = Dyn<$ty>;
+
+            fn add(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.add(rhs.0))
             }
         }
 
@@ -98,7 +197,18 @@ macro_rules! typenum_signed_impl {
             type Output = Dyn<$ty>;
 
             fn add(self, _rhs: NInt<U>) -> Self::Output {
-                Dyn(self.0 + NInt::<U>::$output)
+                Dyn(self.0.add(NInt::<U>::$output))
+            }
+        }
+
+        impl<U> Add<Dyn<$ty>> for NInt<U>
+        where
+            U: Unsigned + NonZero,
+        {
+            type Output = Dyn<$ty>;
+
+            fn add(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.add(rhs.0))
             }
         }
 
@@ -106,7 +216,15 @@ macro_rules! typenum_signed_impl {
             type Output = Dyn<$ty>;
 
             fn add(self, _rhs: Z0) -> Self::Output {
-                Dyn(self.0 + Z0::$output)
+                Dyn(self.0.add(Z0::$output))
+            }
+        }
+
+        impl Add<Dyn<$ty>> for Z0 {
+            type Output = Dyn<$ty>;
+
+            fn add(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.add(rhs.0))
             }
         }
 
@@ -117,7 +235,18 @@ macro_rules! typenum_signed_impl {
             type Output = Dyn<$ty>;
 
             fn sub(self, _rhs: PInt<U>) -> Self::Output {
-                Dyn(self.0 - PInt::<U>::$output)
+                Dyn(self.0.sub(PInt::<U>::$output))
+            }
+        }
+
+        impl<U> Sub<Dyn<$ty>> for PInt<U>
+        where
+            U: Unsigned + NonZero,
+        {
+            type Output = Dyn<$ty>;
+
+            fn sub(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.sub(rhs.0))
             }
         }
 
@@ -128,7 +257,18 @@ macro_rules! typenum_signed_impl {
             type Output = Dyn<$ty>;
 
             fn sub(self, _rhs: NInt<U>) -> Self::Output {
-                Dyn(self.0 - NInt::<U>::$output)
+                Dyn(self.0.sub(NInt::<U>::$output))
+            }
+        }
+
+        impl<U> Sub<Dyn<$ty>> for NInt<U>
+        where
+            U: Unsigned + NonZero,
+        {
+            type Output = Dyn<$ty>;
+
+            fn sub(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.sub(rhs.0))
             }
         }
 
@@ -136,7 +276,15 @@ macro_rules! typenum_signed_impl {
             type Output = Dyn<$ty>;
 
             fn sub(self, _rhs: Z0) -> Self::Output {
-                Dyn(self.0 - Z0::$output)
+                Dyn(self.0.sub(Z0::$output))
+            }
+        }
+
+        impl Sub<Dyn<$ty>> for Z0 {
+            type Output = Dyn<$ty>;
+
+            fn sub(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.sub(rhs.0))
             }
         }
 
@@ -147,7 +295,18 @@ macro_rules! typenum_signed_impl {
             type Output = Dyn<$ty>;
 
             fn mul(self, _rhs: PInt<U>) -> Self::Output {
-                Dyn(self.0 * PInt::<U>::$output)
+                Dyn(self.0.mul(PInt::<U>::$output))
+            }
+        }
+
+        impl<U> Mul<Dyn<$ty>> for PInt<U>
+        where
+            U: Unsigned + NonZero,
+        {
+            type Output = Dyn<$ty>;
+
+            fn mul(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.mul(rhs.0))
             }
         }
 
@@ -158,7 +317,18 @@ macro_rules! typenum_signed_impl {
             type Output = Dyn<$ty>;
 
             fn mul(self, _rhs: NInt<U>) -> Self::Output {
-                Dyn(self.0 * NInt::<U>::$output)
+                Dyn(self.0.mul(NInt::<U>::$output))
+            }
+        }
+
+        impl<U> Mul<Dyn<$ty>> for NInt<U>
+        where
+            U: Unsigned + NonZero,
+        {
+            type Output = Dyn<$ty>;
+
+            fn mul(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.mul(rhs.0))
             }
         }
 
@@ -166,7 +336,15 @@ macro_rules! typenum_signed_impl {
             type Output = Dyn<$ty>;
 
             fn mul(self, _rhs: Z0) -> Self::Output {
-                Dyn(self.0 * Z0::$output)
+                Dyn(self.0.mul(Z0::$output))
+            }
+        }
+
+        impl Mul<Dyn<$ty>> for Z0 {
+            type Output = Dyn<$ty>;
+
+            fn mul(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.mul(rhs.0))
             }
         }
 
@@ -177,7 +355,18 @@ macro_rules! typenum_signed_impl {
             type Output = Dyn<$ty>;
 
             fn div(self, _rhs: PInt<U>) -> Self::Output {
-                Dyn(self.0 / PInt::<U>::$output)
+                Dyn(self.0.div(PInt::<U>::$output))
+            }
+        }
+
+        impl<U> Div<Dyn<$ty>> for PInt<U>
+        where
+            U: Unsigned + NonZero,
+        {
+            type Output = Dyn<$ty>;
+
+            fn div(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.div(rhs.0))
             }
         }
 
@@ -188,7 +377,34 @@ macro_rules! typenum_signed_impl {
             type Output = Dyn<$ty>;
 
             fn div(self, _rhs: NInt<U>) -> Self::Output {
-                Dyn(self.0 / NInt::<U>::$output)
+                Dyn(self.0.div(NInt::<U>::$output))
+            }
+        }
+
+        impl<U> Div<Dyn<$ty>> for NInt<U>
+        where
+            U: Unsigned + NonZero,
+        {
+            type Output = Dyn<$ty>;
+
+            fn div(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.div(rhs.0))
+            }
+        }
+
+        impl Div<Z0> for Dyn<$ty> {
+            type Output = Dyn<$ty>;
+
+            fn div(self, _rhs: Z0) -> Self::Output {
+                Dyn(self.0.div(Z0::$output))
+            }
+        }
+
+        impl Div<Dyn<$ty>> for Z0 {
+            type Output = Dyn<$ty>;
+
+            fn div(self, rhs: Dyn<$ty>) -> Self::Output {
+                Dyn(Self::$output.div(rhs.0))
             }
         }
     };
@@ -208,7 +424,7 @@ where
     type Output = Dyn<<T as Add<T>>::Output>;
 
     fn add(self, rhs: Dyn<T>) -> Self::Output {
-        Dyn(self.0 + rhs.0)
+        Dyn(self.0.add(rhs.0))
     }
 }
 
@@ -219,7 +435,7 @@ where
     type Output = Dyn<<T as Sub<T>>::Output>;
 
     fn sub(self, rhs: Dyn<T>) -> Self::Output {
-        Dyn(self.0 - rhs.0)
+        Dyn(self.0.sub(rhs.0))
     }
 }
 
@@ -230,7 +446,7 @@ where
     type Output = Dyn<<T as Mul<T>>::Output>;
 
     fn mul(self, rhs: Dyn<T>) -> Self::Output {
-        Dyn(self.0 * rhs.0)
+        Dyn(self.0.mul(rhs.0))
     }
 }
 
@@ -241,7 +457,7 @@ where
     type Output = Dyn<<T as Div<T>>::Output>;
 
     fn div(self, rhs: Dyn<T>) -> Self::Output {
-        Dyn(self.0 / rhs.0)
+        Dyn(self.0.div(rhs.0))
     }
 }
 
