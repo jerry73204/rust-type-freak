@@ -230,48 +230,40 @@ typ! {
         }
     }
 
-    pub fn RangeIndex<list, range>(list: List, range: _) -> List {
-        match (list, range) {
-            #[generics(head, tail: List, uint: Unsigned, bit: Bit, upper: Unsigned)]
-            (Cons::<head, tail>, Range::<(UInt<uint, bit>, upper)>) => {
-                let lower = UInt::<uint, bit>;
-                let new_lower = lower - 1u;
-                let new_upper = upper - 1u;
-                let new_range = Range::<(new_lower, new_upper)>;
+    pub fn RangeIndex<list, from: Unsigned, to: Unsigned>(list: List, Range::<(from, to)>: _) -> List {
+        match (list, from) {
+            #[generics(head, tail: List, uint: Unsigned, bit: Bit)]
+            (Cons::<head, tail>, UInt::<uint, bit>) => {
+                let new_from: Unsigned = from - 1u;
+                let new_to: Unsigned = to - 1u;
+                let new_range = Range::<(new_from, new_to)>;
                 RangeIndex(tail, new_range)
             }
-            #[generics(upper: Unsigned)]
             #[capture(list)]
-            (list, Range::<(UTerm, upper)>) => {
-                let new_range = RangeTo::<upper>;
+            (list, UTerm) => {
+                let new_range = RangeTo::<to>;
                 RangeToIndex(list, new_range)
             }
         }
     }
 
-    pub fn RangeInclusiveIndex<list, range>(list: List, range: _) -> List {
-        match range {
-            #[generics(from: Unsigned, to: Unsigned)]
-            RangeInclusive::<(from, to)> => {
-                let new_to = to + 1u;
-                let new_range = Range::<(from, new_to)>;
-                RangeIndex(list, new_range)
-            }
-        }
+    pub fn RangeInclusiveIndex<list, from: Unsigned, to: Unsigned>(list: List, RangeInclusive::<(from, to)>: _) -> List {
+        let new_to: Unsigned = to + 1u;
+        let new_range = Range::<(from, new_to)>;
+        RangeIndex(list, new_range)
     }
 
 
-    pub fn RangeFromIndex<list, range>(list: List, range: _) -> List {
-        match (list, range) {
+    pub fn RangeFromIndex<list, index: Unsigned>(list: List, RangeFrom::<index>: _) -> List {
+        match (list, index) {
             #[generics(head, tail: List, uint: Unsigned, bit: Bit)]
-            (Cons::<head, tail>, RangeFrom::<UInt<uint, bit>>) => {
-                let lower = UInt::<uint, bit>;
-                let new_lower = lower - 1u;
-                let new_range = RangeFrom::<new_lower>;
+            (Cons::<head, tail>, UInt::<uint, bit>) => {
+                let new_index: Unsigned = index - 1u;
+                let new_range = RangeFrom::<new_index>;
                 RangeFromIndex(tail, new_range)
             }
             #[capture(list)]
-            (list, RangeFrom::<UTerm>) => {
+            (list, UTerm) => {
                 list
             }
         }
@@ -281,29 +273,23 @@ typ! {
         RangeToIndexRecursive(Nil, list, range)
     }
 
-    pub fn RangeToInclusiveIndex<list, range>(list: List, range: _) -> List {
-        match range {
-            #[generics(index: Unsigned)]
-            RangeToInclusive::<index> => {
-                let new_index = index + 1u;
-                let new_range = RangeTo::<new_index>;
-                RangeToIndexRecursive(Nil, list, new_range)
-            }
-        }
+    pub fn RangeToInclusiveIndex<list, index: Unsigned>(list: List, RangeToInclusive::<index>: _) -> List {
+        let new_index: Unsigned = index + 1u;
+        let new_range = RangeTo::<new_index>;
+        RangeToIndexRecursive(Nil, list, new_range)
     }
 
-    fn RangeToIndexRecursive<saved, remaining, range>(saved: List, remaining: List, range: _) -> List {
-        match (remaining, range) {
+    fn RangeToIndexRecursive<saved, remaining, to: Unsigned>(saved: List, remaining: List, RangeTo::<to>: _) -> List {
+        match (remaining, to) {
             #[generics(head, tail: List, uint: Unsigned, bit: Bit)]
-            (Cons::<head, tail>, RangeTo::<UInt<uint, bit>>) => {
+            (Cons::<head, tail>, UInt::<uint, bit>) => {
                 let new_saved = Cons::<head, saved>;
-                let upper = UInt::<uint, bit>;
-                let new_upper = upper - 1u;
-                let new_range = RangeTo::<new_upper>;
+                let new_to: Unsigned = to - 1u;
+                let new_range = RangeTo::<new_to>;
                 RangeToIndexRecursive(new_saved, tail, new_range)
             }
             #[capture(remaining)]
-            (remaining, RangeTo::<UTerm>) => {
+            (remaining, UTerm) => {
                 Reverse(saved)
             }
         }
