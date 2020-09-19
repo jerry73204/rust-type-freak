@@ -353,28 +353,20 @@ typ! {
 
     pub fn All<list>(list: List) -> Bit {
         match list {
-            #[generics(head: Bit, tail: List)]
-            Cons::<head, tail> => {
-                if head {
-                    All(tail)
-                } else {
-                    false
-                }
-            }
+            #[generics(tail: List)]
+            Cons::<B1, tail> => All(tail),
+            #[generics(tail: List)]
+            Cons::<B0, tail> => false,
             Nil => true,
         }
     }
 
     pub fn Any<list>(list: List) -> Bit {
         match list {
-            #[generics(head: Bit, tail: List)]
-            Cons::<head, tail> => {
-                if head {
-                    true
-                } else {
-                    Any(tail)
-                }
-            }
+            #[generics(tail: List)]
+            Cons::<B1, tail> => true,
+            #[generics(tail: List)]
+            Cons::<B0, tail> => Any(tail),
             Nil => false,
         }
     }
@@ -513,6 +505,12 @@ mod tests {
 
     #[test]
     fn list_test() {
+        let _: SameOp<AllOp<List![]>, B1> = ();
+        let _: SameOp<AllOp<List![B1, B0, B1]>, B0> = ();
+        let _: SameOp<AllOp<List![B1, B1, B1]>, B1> = ();
+        let _: SameOp<AnyOp<List![]>, B0> = ();
+        let _: SameOp<AnyOp<List![B0, B0, B0]>, B0> = ();
+        let _: SameOp<AnyOp<List![B1, B1, B0]>, B1> = ();
         let _: SameOp<PushBackOp<List![], A>, List![A]> = ();
         let _: SameOp<PushBackOp<List![A], B>, List![A, B]> = ();
         let _: SameOp<PushBackOp<List![B, C], A>, List![B, C, A]> = ();
