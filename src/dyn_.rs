@@ -412,7 +412,7 @@ macro_rules! typenum_signed_impl {
 
 // type
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Dyn<T>(pub T);
 
 impl<T> Dyn<T> {
