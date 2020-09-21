@@ -114,15 +114,6 @@ typ! {
         }
     }
 
-    pub fn Get<head, tail: List, index>(Cons::<head, tail>: List, index: Unsigned) {
-        if index == 0u {
-            head
-        } else {
-            let new_index: Unsigned = index - 1u;
-            Get(tail, new_index)
-        }
-    }
-
     pub fn Reverse<list>(list: List) -> List {
         ReverseRecursive(Nil, list)
     }
@@ -196,71 +187,71 @@ typ! {
         }
     }
 
-    pub fn Index<list, index>(list: List, index: _) {
+    pub fn Get<list, index>(list: List, index: _) {
         match index {
-            UTerm => NumIndex(list, UTerm),
+            UTerm => GetByUnsigned(list, UTerm),
             #[generics(uint: Unsigned, bit: Bit)]
             UInt::<uint, bit> => {
                 let index: Unsigned = index;
-                NumIndex(list, index)
+                GetByUnsigned(list, index)
             }
             #[generics(range_index)]
-            Range::<range_index> => RangeIndex(list, index),
+            Range::<range_index> => GetByRange(list, index),
             #[generics(range_index)]
-            RangeInclusive::<range_index> => RangeInclusiveIndex(list, index),
+            RangeInclusive::<range_index> => GetByRangeInclusive(list, index),
             #[generics(range_index)]
-            RangeTo::<range_index> => RangeToIndex(list, index),
+            RangeTo::<range_index> => GetByRangeTo(list, index),
             #[generics(range_index)]
-            RangeToInclusive::<range_index> => RangeToInclusiveIndex(list, index),
+            RangeToInclusive::<range_index> => GetByRangeToInclusive(list, index),
             #[generics(range_index)]
-            RangeFrom::<range_index> => RangeFromIndex(list, index),
+            RangeFrom::<range_index> => GetByRangeFrom(list, index),
             RangeFull => list,
         }
     }
 
-    pub fn NumIndex<list, index>(list: List, index: Unsigned) {
+    pub fn GetByUnsigned<list, index>(list: List, index: Unsigned) {
         match (list, index) {
             #[generics(head, tail: List)]
             (Cons::<head, tail>, UTerm) => head,
             #[generics(head, tail: List, uint: Unsigned, bit: Bit)]
             (Cons::<head, tail>, UInt::<uint, bit>) => {
                 let new_index: Unsigned = index - 1u;
-                NumIndex(tail, new_index)
+                GetByUnsigned(tail, new_index)
             }
         }
     }
 
-    pub fn RangeIndex<list, from: Unsigned, to: Unsigned>(list: List, Range::<(from, to)>: _) -> List {
+    pub fn GetByRange<list, from: Unsigned, to: Unsigned>(list: List, Range::<(from, to)>: _) -> List {
         match (list, from) {
             #[generics(head, tail: List, uint: Unsigned, bit: Bit)]
             (Cons::<head, tail>, UInt::<uint, bit>) => {
                 let new_from: Unsigned = from - 1u;
                 let new_to: Unsigned = to - 1u;
                 let new_range = Range::<(new_from, new_to)>;
-                RangeIndex(tail, new_range)
+                GetByRange(tail, new_range)
             }
             #[capture(list)]
             (list, UTerm) => {
                 let new_range = RangeTo::<to>;
-                RangeToIndex(list, new_range)
+                GetByRangeTo(list, new_range)
             }
         }
     }
 
-    pub fn RangeInclusiveIndex<list, from: Unsigned, to: Unsigned>(list: List, RangeInclusive::<(from, to)>: _) -> List {
+    pub fn GetByRangeInclusive<list, from: Unsigned, to: Unsigned>(list: List, RangeInclusive::<(from, to)>: _) -> List {
         let new_to: Unsigned = to + 1u;
         let new_range = Range::<(from, new_to)>;
-        RangeIndex(list, new_range)
+        GetByRange(list, new_range)
     }
 
 
-    pub fn RangeFromIndex<list, index: Unsigned>(list: List, RangeFrom::<index>: _) -> List {
+    pub fn GetByRangeFrom<list, index: Unsigned>(list: List, RangeFrom::<index>: _) -> List {
         match (list, index) {
             #[generics(head, tail: List, uint: Unsigned, bit: Bit)]
             (Cons::<head, tail>, UInt::<uint, bit>) => {
                 let new_index: Unsigned = index - 1u;
                 let new_range = RangeFrom::<new_index>;
-                RangeFromIndex(tail, new_range)
+                GetByRangeFrom(tail, new_range)
             }
             #[capture(list)]
             (list, UTerm) => {
@@ -269,24 +260,24 @@ typ! {
         }
     }
 
-    pub fn RangeToIndex<list, range>(list: List, range: _) -> List {
-        RangeToIndexRecursive(Nil, list, range)
+    pub fn GetByRangeTo<list, range>(list: List, range: _) -> List {
+        GetByRangeToRecursive(Nil, list, range)
     }
 
-    pub fn RangeToInclusiveIndex<list, index: Unsigned>(list: List, RangeToInclusive::<index>: _) -> List {
+    pub fn GetByRangeToInclusive<list, index: Unsigned>(list: List, RangeToInclusive::<index>: _) -> List {
         let new_index: Unsigned = index + 1u;
         let new_range = RangeTo::<new_index>;
-        RangeToIndexRecursive(Nil, list, new_range)
+        GetByRangeToRecursive(Nil, list, new_range)
     }
 
-    fn RangeToIndexRecursive<saved, remaining, to: Unsigned>(saved: List, remaining: List, RangeTo::<to>: _) -> List {
+    fn GetByRangeToRecursive<saved, remaining, to: Unsigned>(saved: List, remaining: List, RangeTo::<to>: _) -> List {
         match (remaining, to) {
             #[generics(head, tail: List, uint: Unsigned, bit: Bit)]
             (Cons::<head, tail>, UInt::<uint, bit>) => {
                 let new_saved = Cons::<head, saved>;
                 let new_to: Unsigned = to - 1u;
                 let new_range = RangeTo::<new_to>;
-                RangeToIndexRecursive(new_saved, tail, new_range)
+                GetByRangeToRecursive(new_saved, tail, new_range)
             }
             #[capture(remaining)]
             (remaining, UTerm) => {
@@ -510,8 +501,6 @@ mod tests {
         let _: SameOp<RemoveItemOp<List![A], A, _>, List![]> = ();
         let _: SameOp<RemoveItemOp<List![B, C], C, _>, List![B]> = ();
         let _: SameOp<ExtendOp<List![A], List![B, C]>, List![A, B, C]> = ();
-        let _: SameOp<GetOp<List![B, C], U0>, B> = ();
-        let _: SameOp<GetOp<List![B, C], U1>, C> = ();
         let _: SameOp<IndexOfOp<List![B, C], B, _>, U0> = ();
         let _: SameOp<IndexOfOp<List![B, C], C, _>, U1> = ();
         let _: SameOp<ReverseOp<List![B, C]>, List![C, B]> = ();
@@ -528,32 +517,32 @@ mod tests {
         let _: SameOp<IsEmptyOp<List![]>, B1> = ();
         let _: SameOp<IsEmptyOp<List![A]>, B0> = ();
         let _: SameOp<IsEmptyOp<List![A, B, C]>, B0> = ();
-        let _: SameOp<IndexOp<List![A, B, C], U0>, A> = ();
-        let _: SameOp<IndexOp<List![A, B, C], U1>, B> = ();
-        let _: SameOp<IndexOp<List![A, B, C], U2>, C> = ();
-        let _: SameOp<IndexOp<List![A, B, C], RangeFull>, List![A, B, C]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], Range<(U0, U0)>>, List![]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], Range<(U1, U1)>>, List![]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], Range<(U2, U2)>>, List![]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], Range<(U0, U1)>>, List![A]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], Range<(U2, U3)>>, List![C]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], Range<(U1, U3)>>, List![B, C]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], RangeInclusive<(U0, U0)>>, List![A]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], RangeInclusive<(U1, U1)>>, List![B]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], RangeInclusive<(U2, U2)>>, List![C]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], RangeInclusive<(U0, U1)>>, List![A, B]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], RangeInclusive<(U0, U2)>>, List![A, B, C]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], RangeInclusive<(U1, U2)>>, List![B, C]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], RangeTo<U0>>, List![]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], RangeTo<U1>>, List![A]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], RangeTo<U2>>, List![A, B]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], RangeTo<U3>>, List![A, B, C]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], RangeToInclusive<U0>>, List![A]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], RangeToInclusive<U1>>, List![A, B]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], RangeToInclusive<U2>>, List![A, B, C]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], RangeFrom<U0>>, List![A, B, C]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], RangeFrom<U1>>, List![B, C]> = ();
-        let _: SameOp<IndexOp<List![A, B, C], RangeFrom<U2>>, List![C]> = ();
+        let _: SameOp<GetOp<List![A, B, C], U0>, A> = ();
+        let _: SameOp<GetOp<List![A, B, C], U1>, B> = ();
+        let _: SameOp<GetOp<List![A, B, C], U2>, C> = ();
+        let _: SameOp<GetOp<List![A, B, C], RangeFull>, List![A, B, C]> = ();
+        let _: SameOp<GetOp<List![A, B, C], Range<(U0, U0)>>, List![]> = ();
+        let _: SameOp<GetOp<List![A, B, C], Range<(U1, U1)>>, List![]> = ();
+        let _: SameOp<GetOp<List![A, B, C], Range<(U2, U2)>>, List![]> = ();
+        let _: SameOp<GetOp<List![A, B, C], Range<(U0, U1)>>, List![A]> = ();
+        let _: SameOp<GetOp<List![A, B, C], Range<(U2, U3)>>, List![C]> = ();
+        let _: SameOp<GetOp<List![A, B, C], Range<(U1, U3)>>, List![B, C]> = ();
+        let _: SameOp<GetOp<List![A, B, C], RangeInclusive<(U0, U0)>>, List![A]> = ();
+        let _: SameOp<GetOp<List![A, B, C], RangeInclusive<(U1, U1)>>, List![B]> = ();
+        let _: SameOp<GetOp<List![A, B, C], RangeInclusive<(U2, U2)>>, List![C]> = ();
+        let _: SameOp<GetOp<List![A, B, C], RangeInclusive<(U0, U1)>>, List![A, B]> = ();
+        let _: SameOp<GetOp<List![A, B, C], RangeInclusive<(U0, U2)>>, List![A, B, C]> = ();
+        let _: SameOp<GetOp<List![A, B, C], RangeInclusive<(U1, U2)>>, List![B, C]> = ();
+        let _: SameOp<GetOp<List![A, B, C], RangeTo<U0>>, List![]> = ();
+        let _: SameOp<GetOp<List![A, B, C], RangeTo<U1>>, List![A]> = ();
+        let _: SameOp<GetOp<List![A, B, C], RangeTo<U2>>, List![A, B]> = ();
+        let _: SameOp<GetOp<List![A, B, C], RangeTo<U3>>, List![A, B, C]> = ();
+        let _: SameOp<GetOp<List![A, B, C], RangeToInclusive<U0>>, List![A]> = ();
+        let _: SameOp<GetOp<List![A, B, C], RangeToInclusive<U1>>, List![A, B]> = ();
+        let _: SameOp<GetOp<List![A, B, C], RangeToInclusive<U2>>, List![A, B, C]> = ();
+        let _: SameOp<GetOp<List![A, B, C], RangeFrom<U0>>, List![A, B, C]> = ();
+        let _: SameOp<GetOp<List![A, B, C], RangeFrom<U1>>, List![B, C]> = ();
+        let _: SameOp<GetOp<List![A, B, C], RangeFrom<U2>>, List![C]> = ();
         let _: SameOp<ReduceSumOp<List![U3, U2, U7]>, U12> = ();
         let _: SameOp<ReduceProductOp<List![U3, U2, U7]>, U42> = ();
         let _: SameOp<ZipExOp<List![]>, List![]> = ();
