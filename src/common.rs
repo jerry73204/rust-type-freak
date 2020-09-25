@@ -1,8 +1,8 @@
 pub use std::{
     marker::PhantomData,
     ops::{
-        Add, BitXor, Div, Mul, Neg, Range, RangeFrom, RangeFull, RangeInclusive, RangeTo,
-        RangeToInclusive, Sub,
+        Add, BitAnd, BitOr, BitXor, Div, Index, Mul, Neg, Not, Range, RangeFrom, RangeFull,
+        RangeInclusive, RangeTo, RangeToInclusive, Sub,
     },
 };
 pub use typ::{tyint, typ, tyuint};

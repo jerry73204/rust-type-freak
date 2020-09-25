@@ -467,6 +467,39 @@ where
     }
 }
 
+impl<T> BitAnd<Dyn<T>> for Dyn<T>
+where
+    T: BitAnd<T>,
+{
+    type Output = Dyn<<T as BitAnd<T>>::Output>;
+
+    fn bitand(self, rhs: Dyn<T>) -> Self::Output {
+        Dyn(self.0.bitand(rhs.0))
+    }
+}
+
+impl<T> BitOr<Dyn<T>> for Dyn<T>
+where
+    T: BitOr<T>,
+{
+    type Output = Dyn<<T as BitOr<T>>::Output>;
+
+    fn bitor(self, rhs: Dyn<T>) -> Self::Output {
+        Dyn(self.0.bitor(rhs.0))
+    }
+}
+
+impl<T> Not for Dyn<T>
+where
+    T: Not,
+{
+    type Output = Dyn<<T as Not>::Output>;
+
+    fn not(self) -> Self::Output {
+        Dyn(self.0.not())
+    }
+}
+
 typenum_unsigned_impl!(usize, USIZE);
 typenum_unsigned_impl!(u8, U8);
 typenum_unsigned_impl!(u16, U16);
