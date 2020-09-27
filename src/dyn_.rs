@@ -500,6 +500,8 @@ where
     }
 }
 
+// impls for typenum ops
+
 typenum_unsigned_impl!(usize, USIZE);
 typenum_unsigned_impl!(u8, U8);
 typenum_unsigned_impl!(u16, U16);
@@ -511,3 +513,69 @@ typenum_signed_impl!(i8, I8);
 typenum_signed_impl!(i16, I16);
 typenum_signed_impl!(i32, I32);
 typenum_signed_impl!(i64, I64);
+
+// impls for bool ops
+
+impl BitAnd<B1> for Dyn<bool> {
+    type Output = Dyn<bool>;
+
+    fn bitand(self, _rhs: B1) -> Self::Output {
+        Dyn(self.0.bitand(B1::BOOL))
+    }
+}
+
+impl BitAnd<B0> for Dyn<bool> {
+    type Output = B0;
+
+    fn bitand(self, rhs: B0) -> Self::Output {
+        rhs
+    }
+}
+
+impl BitAnd<Dyn<bool>> for B1 {
+    type Output = Dyn<bool>;
+
+    fn bitand(self, rhs: Dyn<bool>) -> Self::Output {
+        Dyn(B1::BOOL.bitand(rhs.0))
+    }
+}
+
+impl BitAnd<Dyn<bool>> for B0 {
+    type Output = B0;
+
+    fn bitand(self, _rhs: Dyn<bool>) -> Self::Output {
+        self
+    }
+}
+
+impl BitOr<B1> for Dyn<bool> {
+    type Output = B1;
+
+    fn bitor(self, rhs: B1) -> Self::Output {
+        rhs
+    }
+}
+
+impl BitOr<B0> for Dyn<bool> {
+    type Output = Dyn<bool>;
+
+    fn bitor(self, _rhs: B0) -> Self::Output {
+        Dyn(self.0.bitor(B1::BOOL))
+    }
+}
+
+impl BitOr<Dyn<bool>> for B1 {
+    type Output = B1;
+
+    fn bitor(self, _rhs: Dyn<bool>) -> Self::Output {
+        self
+    }
+}
+
+impl BitOr<Dyn<bool>> for B0 {
+    type Output = Dyn<bool>;
+
+    fn bitor(self, rhs: Dyn<bool>) -> Self::Output {
+        Dyn(B0::BOOL.bitor(rhs.0))
+    }
+}
